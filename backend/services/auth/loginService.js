@@ -122,6 +122,7 @@ class AuthService {
     try {
       // Verify JWT
       const decoded = jwt.verify(token, JWT_SECRET);
+      console.log(decoded)
 
       // Check if session exists and is active
       const session = await prisma.userSession.findUnique({
@@ -167,7 +168,8 @@ class AuthService {
 
       return { user, session };
     } catch (error) {
-      throw new Error('Invalid or expired token');
+      console.error('Auth verifyToken error:', error)
+      throw new AuthorizationError('Invalid or expired token');
     }
   }
 

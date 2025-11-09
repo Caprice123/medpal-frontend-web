@@ -1,0 +1,282 @@
+import { actions } from '@store/credit/reducer'
+import Endpoints from '@config/endpoint'
+import { handleApiError } from '@utils/errorUtils'
+import { getWithToken, patchWithToken, postWithToken, putWithToken } from '../../utils/requestUtils'
+
+const {
+  setLoading,
+  setBalance,
+  setPlans,
+  setTransactions,
+  setPagination,
+  clearError,
+  addTransaction,
+  updatePlan,
+  addPlan
+} = actions
+
+// ============= User Credit Actions =============
+
+/**
+ * Fetch user's credit balance
+ */
+export const fetchCreditBalance = () => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isBalanceLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(`${Endpoints.credits}/balance`)
+
+    dispatch(setBalance(response.data.data.balance))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isBalanceLoading', value: false }))
+  }
+}
+
+/**
+ * Fetch user's credit transactions
+ */
+export const fetchCreditTransactions = (params = {}) => async (dispatch) => {
+
+  try {
+    dispatch(setLoading({ key: 'isTransactionsLoading', value: true }))
+    dispatch(clearError())
+
+    const { limit = 50, offset = 0, type } = params
+
+    const queryParams = {
+      limit,
+      offset,
+      type,
+    }
+
+    const subRoute = '/transactions'
+    const route = Endpoints.credits + subRoute
+    const response = await getWithToken(route, queryParams)
+
+    dispatch(setTransactions(response.data.data.transactions))
+    dispatch(setPagination(response.data.data.pagination))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isTransactionsLoading', value: false }))
+  }
+}
+
+/**
+ * Purchase credits
+ */
+export const purchaseCredits = (creditPlanId, paymentMethod = 'xendit') => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isPurchaseLoading', value: true }))
+    dispatch(clearError())
+
+    const requestBody = {
+        creditPlanId,
+        paymentMethod
+    }
+    const subRoute = "/purchase"
+    const route = Endpoints.credits + subRoute
+    const response = await postWithToken(route, requestBody)
+
+    dispatch(addTransaction(response.data.data.transaction))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isPurchaseLoading', value: false }))
+  }
+}
+
+/**
+ * Deduct credits (when using a feature)
+ */
+export const deductCredits = (amount, description, sessionId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isDeductLoading', value: true }))
+    dispatch(clearError())
+
+    const requestBody = {
+        amount,
+        description,
+        sessionId,
+    }
+    const subRoute = "/deduct"
+    const route = Endpoints.credits + subRoute
+    const response = await postWithToken(route, requestBody)
+
+    dispatch(setBalance(response.data.data.newBalance))
+    dispatch(addTransaction(response.data.data.transaction))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isDeductLoading', value: false }))
+  }
+}
+
+// ============= Credit Plans Actions =============
+
+/**
+ * Fetch all credit plans (admin)
+ */
+export const fetchAllCreditPlans = () => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isPlansLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(`${Endpoints.creditPlans}`)
+
+    dispatch(setPlans(response.data.data))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isPlansLoading', value: false }))
+  }
+}
+
+/**
+ * Fetch active credit plans (for users)
+ */
+export const fetchActiveCreditPlans = () => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isPlansLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(`${Endpoints.creditPlans}/active`)
+
+    dispatch(setPlans(response.data.data))
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isPlansLoading', value: false }))
+  }
+}
+
+/**
+ * Create credit plan (admin)
+ */
+export const createCreditPlan = (planData) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isCreatePlanLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(
+      `${Endpoints.creditPlans}`,
+      planData,
+    )
+
+    dispatch(addPlan(response.data.data))
+  } catch (err) {
+    handleApiError(err, dispatch)
+    
+  } finally {
+    dispatch(setLoading({ key: 'isCreatePlanLoading', value: false }))
+  }
+}
+
+/**
+ * Update credit plan (admin)
+ */
+export const updateCreditPlan = (planId, planData) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isUpdatePlanLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await putWithToken(
+      `${Endpoints.creditPlans}/${planId}`,
+      planData,
+    )
+
+    dispatch(updatePlan(response.data.data))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isUpdatePlanLoading', value: false }))
+  }
+}
+
+/**
+ * Toggle credit plan status (admin)
+ */
+export const toggleCreditPlanStatus = (planId) => async (dispatch) => {
+  try {
+    dispatch(clearError())
+
+    const response = await patchWithToken(
+      `${Endpoints.creditPlans}/${planId}/toggle`,
+      {},
+    )
+
+    dispatch(updatePlan(response.data.data))
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+  }
+}
+
+// ============= Admin Actions =============
+
+/**
+ * Fetch all transactions (admin)
+ */
+export const fetchAllTransactions = (params = {}) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isTransactionsLoading', value: true }))
+    dispatch(clearError())
+
+    const { limit = 100, offset = 0, type, status } = params
+
+    const queryParams = {
+      limit,
+      offset,
+      type,
+      status,
+    }
+
+    const response = await getWithToken(
+      `${Endpoints.credits}/transactions/all`,
+      queryParams
+    )
+
+    dispatch(setTransactions(response.data.data.transactions))
+    dispatch(setPagination(response.data.data.pagination))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isTransactionsLoading', value: false }))
+  }
+}
+
+/**
+ * Confirm payment (admin)
+ */
+export const confirmPayment = (transactionId, status) => async (dispatch) => {
+  try {
+    dispatch(clearError())
+
+    await postWithToken(
+      `${Endpoints.credits}/confirm/${transactionId}`,
+      { status },
+    )
+  } catch (err) {
+    handleApiError(err, dispatch)  
+  }
+}
+
+/**
+ * Add bonus credits (admin)
+ */
+export const addBonusCredits = (userId, amount, description) => async (dispatch) => {
+  try {
+    dispatch(clearError())
+
+    await postWithToken(
+      `${Endpoints.credits}/bonus`,
+      { userId, amount, description },
+    )
+  } catch (err) {
+    handleApiError(err, dispatch)
+  }
+}

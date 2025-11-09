@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { startCronJobs } from './jobs/cron.js';
 import authRoutes from './routes/auth.routes.js';
+import creditRoutes from './routes/credit.routes.js';
+import creditPlanRoutes from './routes/creditPlan.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
 
@@ -25,6 +28,9 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api', authRoutes);
+app.use('/api/credits', creditRoutes);
+app.use('/api/credit-plans', creditPlanRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

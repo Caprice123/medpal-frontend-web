@@ -10,10 +10,10 @@ function makeRequestWithToken(
     additionalConfig = {},
 ) {
     const token = getToken()
-
+    
     const isFormData = typeof FormData !== "undefined" && requestBody instanceof FormData;
-
-    const headers = { ...additionalHeaders, "Authorization": `Bearer ${token.accessToken}`}
+    
+    const headers = { ...additionalHeaders, "Authorization": `Bearer ${token}`}
 
     if (isFormData) {
         headers["Content-Type"] = "multipart/form-data"

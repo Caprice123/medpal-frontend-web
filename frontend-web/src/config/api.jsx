@@ -97,6 +97,20 @@ export const setupAxiosInterceptors = (navigate, dispatch) => {
             return config;
         },
     );
+
+    // Response interceptor to handle 401 errors
+    api.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // If we get a 401 error, the token is invalid or expired
+            if (error.response && error.response.status === 401) {
+                // Clear the token and redirect to login
+                setToken(null);
+                navigate(SIGN_IN_ROUTE);
+            }
+            return Promise.reject(error);
+        }
+    );
 };
 
 

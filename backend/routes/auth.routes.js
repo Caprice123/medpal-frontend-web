@@ -17,26 +17,4 @@ router.post('/v1/login', authController.login);
  * @access  Private
  */
 router.post('/logout', authController.logout);
-
-/**
- * @route   GET /api/auth/verify
- * @desc    Verify token validity
- * @access  Public
- */
-router.get('/verify', authController.verifyToken);
-
-/**
- * @route   GET /api/auth/me
- * @desc    Get current user info
- * @access  Private
- */
-router.get('/me', authenticate, authController.getMe);
-
-/**
- * @route   GET /api/auth/sessions
- * @desc    Get all active sessions for current user
- * @access  Private
- */
-router.get('/sessions', authenticate, authController.getSessions);
-
 export default router;

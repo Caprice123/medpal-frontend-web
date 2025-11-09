@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { colors } from '@config/colors'
 import { logout } from '@store/auth/action'
+import { fetchCreditBalance, fetchCreditTransactions, deductCredits } from '@store/credit/action'
 import { getUserData } from '@utils/authToken'
+import CreditPurchase from '@components/CreditPurchase'
 
 const DashboardContainer = styled.div`
   min-height: 100vh;
@@ -480,43 +482,47 @@ function Dashboard() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [user, setUser] = useState(null)
-  const [balance, setBalance] = useState(100) // Default balance, should fetch from API
+  const [balance, setBalance] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [sessions, setSessions] = useState([
-    // Mock data - should be fetched from API
-    {
-      id: 1,
-      featureName: 'Asisten Diagnosis AI',
-      featureIcon: '🔬',
-      creditUsed: 10,
-      createdAt: new Date('2025-11-09T08:30:00'),
-      status: 'completed'
-    },
-    {
-      id: 2,
-      featureName: 'Pemeriksa Interaksi Obat',
-      featureIcon: '💊',
-      creditUsed: 5,
-      createdAt: new Date('2025-11-08T14:20:00'),
-      status: 'completed'
-    },
-    {
-      id: 3,
-      featureName: 'Analisis Laporan Lab',
-      featureIcon: '📊',
-      creditUsed: 15,
-      createdAt: new Date('2025-11-07T10:15:00'),
-      status: 'completed'
-    }
-  ])
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Get user data from localStorage
     const userData = getUserData()
     setUser(userData)
 
-    // TODO: Fetch user sessions from API
+    // Fetch user credit balance and sessions
+    fetchUserData()
   }, [])
+
+  const fetchUserData = () => {
+    setLoading(true)
+
+    // Fetch credit balance
+    dispatch(fetchCreditBalance((data) => {
+      setBalance(data.balance)
+    }))
+
+    // Fetch transactions
+    dispatch(fetchCreditTransactions(
+      { limit: 10, type: 'deduction' },
+      (data) => {
+        // Transform transactions to sessions format
+        const formattedSessions = data.transactions.map(t => ({
+          id: t.id,
+          featureName: t.description || 'Feature Usage',
+          featureIcon: '🎓',
+          creditUsed: Math.abs(t.amount),
+          createdAt: t.createdAt,
+          status: 'completed'
+        }))
+        setSessions(formattedSessions)
+        setLoading(false)
+      }
+    ))
+  }
 
   const handleLogout = () => {
     const onSuccess = () => {
@@ -525,37 +531,55 @@ function Dashboard() {
     dispatch(logout(onSuccess))
   }
 
-  const handleUseFeature = (catalog) => {
+  const handleUseFeature = async (catalog) => {
     if (balance < catalog.cost) {
       alert('Kredit tidak mencukupi! Silakan isi ulang untuk melanjutkan.')
+      setIsPurchaseModalOpen(true)
       return
     }
 
-    // Deduct credits
-    setBalance(prevBalance => prevBalance - catalog.cost)
+    try {
+      await new Promise((resolve, reject) => {
+        dispatch(deductCredits(
+          catalog.cost,
+          `Menggunakan fitur: ${catalog.title}`,
+          null,
+          (data) => {
+            // Update local state
+            setBalance(data.newBalance)
 
-    // Add new session to history
-    const newSession = {
-      id: sessions.length + 1,
-      featureName: catalog.title,
-      featureIcon: catalog.icon,
-      creditUsed: catalog.cost,
-      createdAt: new Date(),
-      status: 'completed'
+            // Add new session to history
+            const newSession = {
+              id: data.transaction.id,
+              featureName: catalog.title,
+              featureIcon: catalog.icon,
+              creditUsed: catalog.cost,
+              createdAt: new Date(),
+              status: 'completed'
+            }
+            setSessions([newSession, ...sessions])
+
+            resolve(data)
+          },
+          (error) => reject(error)
+        ))
+      })
+
+      // Close modal
+      setIsModalOpen(false)
+      alert(`${catalog.title} diaktifkan! ${catalog.cost} kredit dikurangkan.`)
+    } catch (error) {
+      alert('Gagal menggunakan fitur: ' + (error.response?.data?.message || error.message))
     }
-    setSessions([newSession, ...sessions])
-
-    // Close modal
-    setIsModalOpen(false)
-
-    alert(`${catalog.title} diaktifkan! ${catalog.cost} kredit dikurangkan.`)
-
-    // TODO: Call API to create session and deduct credits from backend
   }
 
   const handleTopUp = () => {
-    // In a real app, this would open a payment modal
-    alert('Fitur isi ulang segera hadir!')
+    setIsPurchaseModalOpen(true)
+  }
+
+  const handlePurchaseSuccess = () => {
+    // Refresh user data after successful purchase
+    fetchUserData()
   }
 
   const formatDate = (date) => {
@@ -683,6 +707,13 @@ function Dashboard() {
           </ModalContent>
         </ModalOverlay>
       )}
+
+      {/* Credit Purchase Modal */}
+      <CreditPurchase
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setIsPurchaseModalOpen(false)}
+        onPurchaseSuccess={handlePurchaseSuccess}
+      />
     </DashboardContainer>
   )
 }

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUserData } from '@utils/authToken'
 import styled from 'styled-components'
+import CreditPlans from './CreditPlans/index'
+import Transactions from './Transactions'
 
 const AdminContainer = styled.div`
   min-height: 100vh;
@@ -278,15 +280,24 @@ function AdminPanel() {
       </Header>
 
       <MainContent>
-        <PageTitle>Admin Panel</PageTitle>
-        <PageSubtitle>Kelola fitur pembelajaran dan topik untuk mahasiswa</PageSubtitle>
-
         <TabContainer>
           <Tab
             active={activeTab === 'features'}
             onClick={() => setActiveTab('features')}
           >
             Kelola Fitur
+          </Tab>
+          <Tab
+            active={activeTab === 'creditPlans'}
+            onClick={() => setActiveTab('creditPlans')}
+          >
+            Paket Kredit
+          </Tab>
+          <Tab
+            active={activeTab === 'transactions'}
+            onClick={() => setActiveTab('transactions')}
+          >
+            Transaksi
           </Tab>
           <Tab
             active={activeTab === 'users'}
@@ -344,6 +355,10 @@ function AdminPanel() {
               )}
             </>
           )}
+
+          {activeTab === 'creditPlans' && <CreditPlans />}
+
+          {activeTab === 'transactions' && <Transactions />}
 
           {activeTab === 'users' && (
             <EmptyState>

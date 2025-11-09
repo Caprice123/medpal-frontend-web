@@ -120,5 +120,54 @@ model UserCredit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  transactions CreditTransaction[]
+
   @@map("user_credits")
+  @@index([userId])
+}
+
+// Credit Plans model - For admin to create credit packages
+model CreditPlan {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  credits     Int      // Amount of credits in this plan
+  price       Decimal  @db.Decimal(10, 2) // Price in IDR or other currency
+  isActive    Boolean  @default(true)
+  isPopular   Boolean  @default(false) // To highlight popular plans
+  discount    Int      @default(0) // Discount percentage (0-100)
+  order       Int      @default(0) // Display order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions CreditTransaction[]
+
+  @@map("credit_plans")
+}
+
+// Credit Transactions model - Track all credit movements
+model CreditTransaction {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  userCreditId    Int
+  type            String   // 'purchase', 'deduction', 'refund', 'bonus'
+  amount          Int      // Positive for additions, negative for deductions
+  balanceBefore   Int
+  balanceAfter    Int
+  description     String?
+  creditPlanId    Int?     // Reference to credit plan if it's a purchase
+  sessionId       Int?     // Reference to session if it's a deduction
+  paymentStatus   String?  // 'pending', 'completed', 'failed' for purchases
+  paymentMethod   String?  // 'manual', 'midtrans', etc.
+  paymentReference String? // Payment gateway reference/transaction ID
+  createdAt       DateTime @default(now())
+
+  userCredit   UserCredit   @relation(fields: [userCreditId], references: [id])
+  creditPlan   CreditPlan?  @relation(fields: [creditPlanId], references: [id])
+
+  @@map("credit_transactions")
+  @@index([userId])
+  @@index([userCreditId])
+  @@index([type])
+  @@index([paymentStatus])
 }

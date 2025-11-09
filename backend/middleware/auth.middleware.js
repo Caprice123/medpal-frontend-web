@@ -11,7 +11,10 @@ export const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        throw new AuthorizationError("Authorization token is required")
+      return res.status(401).json({
+        success: false,
+        message: 'Authorization token is required'
+      });
     }
 
     const token = authHeader.replace('Bearer ', '');
@@ -25,7 +28,11 @@ export const authenticate = async (req, res, next) => {
 
     next();
   } catch (error) {
-    throw new AuthorizationError("Invalid token")
+    console.error('Auth middleware error:', error)
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired token'
+    });
   }
 };
 
@@ -53,7 +60,15 @@ export const authorize = (...roles) => {
   };
 };
 
+// Alias for consistency with route files
+export const authenticateToken = authenticate;
+
+// Helper middleware to require admin role
+export const requireAdmin = authorize('admin');
+
 export default {
   authenticate,
-  authorize
+  authorize,
+  authenticateToken,
+  requireAdmin
 };
