@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { GoogleLogin } from '@react-oauth/google'
 import {
   BrandSection,
@@ -24,7 +23,6 @@ import {
   SignInHeader,
   SignInTitle,
   SignInSubtitle,
-  ErrorMessage,
   GoogleButtonWrapper,
   Divider,
   StatsSection,
@@ -37,19 +35,12 @@ import { login } from '@store/auth/action'
 export function Login() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { isAuthenticated, error } = useSelector((state) => state.auth)
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard')
-    }
-  }, [isAuthenticated, navigate])
 
   const handleGoogleSuccess = async (credentialResponse) => {
     const onSuccess = () => {
         navigate('/dashboard')
     }
-    
+
     await dispatch(login(credentialResponse.credential, onSuccess))
   }
 
@@ -70,44 +61,44 @@ export function Login() {
             <LogoIcon>🏥</LogoIcon>
             MedPalm
           </LogoText>
-          <Tagline>Ubah Konten Medis Jadi Pembelajaran Interaktif</Tagline>
+          <Tagline>Katalog Pembelajaran Medis Berbasis Kredit</Tagline>
           <Description>
-            Platform AI yang mengubah dokumen, gambar, dan URL medis menjadi
-            materi pembelajaran yang menarik dan mudah dipahami
+            Platform pembelajaran untuk mahasiswa kedokteran dengan 7 fitur interaktif.
+            Gunakan kredit untuk mengakses fitur dan topik yang telah dikonfigurasi oleh admin.
           </Description>
         </BrandSection>
 
         <FeaturesGrid>
           <FeatureCard>
-            <FeatureIcon>📄</FeatureIcon>
-            <FeatureTitle>Unggah Dokumen Medis</FeatureTitle>
+            <FeatureIcon>📚</FeatureIcon>
+            <FeatureTitle>7 Fitur Pembelajaran</FeatureTitle>
           </FeatureCard>
           <FeatureCard>
-            <FeatureIcon>🔗</FeatureIcon>
-            <FeatureTitle>Tempel URL Medis</FeatureTitle>
+            <FeatureIcon>💳</FeatureIcon>
+            <FeatureTitle>Sistem Kredit Fleksibel</FeatureTitle>
           </FeatureCard>
           <FeatureCard>
-            <FeatureIcon>📸</FeatureIcon>
-            <FeatureTitle>Bagikan Gambar Medis</FeatureTitle>
+            <FeatureIcon>🎯</FeatureIcon>
+            <FeatureTitle>Topik Terstruktur</FeatureTitle>
           </FeatureCard>
           <FeatureCard>
-            <FeatureIcon>⚡</FeatureIcon>
-            <FeatureTitle>Buat Kuis Instan</FeatureTitle>
+            <FeatureIcon>📊</FeatureIcon>
+            <FeatureTitle>Dashboard Pribadi</FeatureTitle>
           </FeatureCard>
         </FeaturesGrid>
 
         <StatsSection>
           <StatItem>
-            <StatValue>1.000+</StatValue>
-            <StatLabel>Mahasiswa Kedokteran</StatLabel>
+            <StatValue>1,000+</StatValue>
+            <StatLabel>Mahasiswa Aktif</StatLabel>
           </StatItem>
           <StatItem>
-            <StatValue>5.000+</StatValue>
-            <StatLabel>Kuis Dibuat</StatLabel>
+            <StatValue>10,000+</StatValue>
+            <StatLabel>Sesi Belajar</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue>95%</StatValue>
-            <StatLabel>Tingkat Keberhasilan</StatLabel>
+            <StatLabel>Tingkat Kepuasan</StatLabel>
           </StatItem>
         </StatsSection>
       </LeftPanel>
@@ -117,29 +108,25 @@ export function Login() {
         <MobileLogo>
           <MobileLogoIcon>🏥</MobileLogoIcon>
           <MobileLogoText>MedPalm</MobileLogoText>
-          <MobileTagline>Platform Pembelajaran Medis AI</MobileTagline>
+          <MobileTagline>Platform Pembelajaran Medis Berbasis Kredit</MobileTagline>
         </MobileLogo>
 
         <SignInCard>
           <SignInHeader>
-            <SignInTitle>Selamat Datang</SignInTitle>
+            <SignInTitle>Selamat Datang Kembali</SignInTitle>
             <SignInSubtitle>
-              Masuk untuk melanjutkan pembelajaran medis Anda
+              Masuk untuk mengakses katalog pembelajaran dan pantau kredit Anda
             </SignInSubtitle>
           </SignInHeader>
-
-          {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <GoogleButtonWrapper>
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
-              useOneTap
               theme="outline"
               size="large"
               text="continue_with"
               shape="rectangular"
-              width="100%"
             />
           </GoogleButtonWrapper>
 

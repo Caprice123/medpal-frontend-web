@@ -55,3 +55,70 @@ model Query {
 
   @@map("queries")
 }
+
+// Feature model - The 7 learning features
+model Feature {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  icon        String
+  cost        Int      // Credits required to use this feature
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topics      Topic[]
+  sessions    Session[]
+
+  @@map("features")
+}
+
+// Topic model - Topics configured by admin for each feature
+model Topic {
+  id          Int      @id @default(autoincrement())
+  featureId   Int
+  title       String
+  description String?
+  content     String?  // Additional content or configuration
+  isActive    Boolean  @default(true)
+  order       Int      @default(0) // Display order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  feature     Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  sessions    Session[]
+
+  @@map("topics")
+  @@index([featureId])
+}
+
+// Session model - User's learning sessions
+model Session {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  featureId   Int
+  topicId     Int?
+  creditsUsed Int
+  status      String   @default("active") // active, completed, cancelled
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  feature     Feature  @relation(fields: [featureId], references: [id])
+  topic       Topic?   @relation(fields: [topicId], references: [id])
+
+  @@map("sessions")
+  @@index([userId])
+  @@index([featureId])
+  @@index([topicId])
+}
+
+// User Credits model
+model UserCredit {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  balance   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_credits")
+}

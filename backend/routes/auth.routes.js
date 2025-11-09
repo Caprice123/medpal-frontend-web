@@ -9,7 +9,7 @@ const router = express.Router();
  * @desc    Login or create new user
  * @access  Public
  */
-router.post('/login', authController.login);
+router.post('/v1/login', authController.login);
 
 /**
  * @route   POST /api/auth/logout

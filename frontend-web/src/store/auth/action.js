@@ -16,7 +16,7 @@ export const login = (googleCredential, onSuccess) => async (dispatch) => {
         }
 
         const response = await api.post(Endpoints.Login, requestBody)
-        const data = response.data
+        const { data } = response.data
         setUser(data.user)
         setToken(data.token)
         onSuccess()

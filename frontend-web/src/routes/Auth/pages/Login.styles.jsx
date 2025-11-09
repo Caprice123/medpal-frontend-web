@@ -6,7 +6,7 @@ export const LoginContainer = styled.div`
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: ${colors.neutral.white};
+  background: #f0fdfa;
 
   @media (max-width: 968px) {
     grid-template-columns: 1fr;
@@ -14,13 +14,13 @@ export const LoginContainer = styled.div`
 `
 
 export const LeftPanel = styled.div`
-  background: linear-gradient(135deg, ${colors.primary.main} 0%, ${colors.primary.dark} 100%);
+  background: linear-gradient(135deg, ${colors.gradient.start} 0%, ${colors.gradient.end} 100%);
   padding: 3rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: white;
   position: relative;
+  color: white;
 
   @media (max-width: 968px) {
     padding: 2rem 1.5rem;
@@ -41,12 +41,18 @@ export const BackButton = styled(Link)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
-  opacity: 0.9;
-  transition: opacity 0.3s;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
 
   &:hover {
-    opacity: 1;
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(-4px);
   }
 `
 
@@ -97,7 +103,7 @@ export const FeaturesGrid = styled.div`
 `
 
 export const FeatureCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 1.5rem;
@@ -105,37 +111,53 @@ export const FeatureCard = styled.div`
 `
 
 export const FeatureIcon = styled.div`
-  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
   margin-bottom: 0.75rem;
 `
 
 export const FeatureTitle = styled.h3`
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
 `
 
 export const StatsSection = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  flex-wrap: wrap;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 
   @media (max-width: 968px) {
     gap: 1.5rem;
   }
 `
 
-export const StatItem = styled.div``
+export const StatItem = styled.div`
+  text-align: center;
+`
 
 export const StatValue = styled.div`
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, ${colors.gradient.light1} 0%, ${colors.gradient.light2} 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `
 
 export const StatLabel = styled.div`
-  font-size: 0.875rem;
-  opacity: 0.9;
+  font-size: 0.9rem;
+  opacity: 0.85;
 `
 
 export const RightPanel = styled.div`
@@ -144,7 +166,7 @@ export const RightPanel = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${colors.background.default};
+  background: transparent;
   position: relative;
 
   @media (max-width: 968px) {
@@ -185,15 +207,16 @@ export const MobileTagline = styled.div`
 
 export const SignInCard = styled.div`
   width: 100%;
-  max-width: 450px;
-  background: ${colors.curio.cardBg};
+  max-width: 480px;
+  background: white;
   padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(14, 116, 144, 0.1);
+  border: 1px solid #e5e7eb;
 
   @media (max-width: 480px) {
     padding: 2rem 1.5rem;
-    box-shadow: none;
+    box-shadow: 0 2px 10px rgba(14, 116, 144, 0.08);
   }
 `
 
@@ -205,7 +228,7 @@ export const SignInHeader = styled.div`
 export const SignInTitle = styled.h2`
   font-size: 2rem;
   font-weight: 700;
-  color: ${colors.text.primary};
+  color: #0891b2;
   margin-bottom: 0.5rem;
 
   @media (max-width: 480px) {

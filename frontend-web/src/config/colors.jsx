@@ -1,11 +1,19 @@
-// Medical theme color palette - Exact match with Curio by Mediko
+// Medical theme color palette - Teal gradient theme
 export const colors = {
-  // Primary colors - Curio Teal (exact match)
+  // Primary colors - Teal gradient
   primary: {
-    main: '#0e7490',      // Curio's primary dark cyan
-    light: '#06b6d4',     // Cyan-500 - Lighter variant
-    dark: '#164e63',      // Curio's very dark cyan for text
+    main: '#0e7490',      // Primary dark cyan
+    light: '#14b8a6',     // Teal-500 - Lighter variant for gradient end
+    dark: '#164e63',      // Very dark cyan for text
     hover: '#0891b2',     // Cyan-600 - Hover state
+  },
+
+  // Gradient colors
+  gradient: {
+    start: '#0e7490',     // Gradient start (dark cyan)
+    end: '#14b8a6',       // Gradient end (teal)
+    light1: '#67e8f9',    // Light cyan for accents
+    light2: '#a7f3d0',    // Light green for accents
   },
 
   // Secondary colors - Complementary teal shades
@@ -61,9 +69,10 @@ export const colors = {
 
   // Background colors
   background: {
-    default: '#F9FAFB',   // Light gray background
-    paper: '#FFFFFF',     // Card/Paper background
-    dark: '#0F172A',      // Dark mode background
+    default: '#F9FAFB',        // Light gray background
+    paper: '#FFFFFF',          // Card/Paper background
+    dark: '#0F172A',           // Dark mode background
+    lightGradient: 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)', // Light teal gradient
   },
 
   // Text colors

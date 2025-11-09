@@ -7,7 +7,7 @@ import { handleApiError } from '@utils/errorUtils';
 const SIGN_IN_ROUTE = '/sign-in';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_SERVER_URL,
+    baseURL: import.meta.env.VITE_API_BASE_URL,
 })
 
 const isTokenExpired = (isoString) => {
