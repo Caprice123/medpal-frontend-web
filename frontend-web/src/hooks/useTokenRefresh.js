@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { clearAuth } from '@/store/slices/authSlice'
-import { resetCredits } from '@/store/slices/creditsSlice'
+import { clearAuth } from '@store/slices/authSlice'
+import { resetCredits } from '@store/slices/creditsSlice'
 import { jwtDecode } from 'jwt-decode'
 
 /**

@@ -15,22 +15,23 @@ datasource db {
 
 // User model
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("user")
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  name       String?
+  picture    String?
+  googleId   String?  @unique
+  role       String   @default("user")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("users")
 }
 
 // User sessions model
 model UserSession {
-  id           String   @id @default(uuid())
-  userId       String
+  id           Int      @id @default(autoincrement())
+  userId       Int
   token        String   @unique
   isActive     Boolean  @default(true)
   userAgent    String?
@@ -46,10 +47,10 @@ model UserSession {
 
 // Query model
 model Query {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   question  String
   answer    String?
-  userId    String
+  userId    Int
   createdAt DateTime @default(now())
 
   @@map("queries")

@@ -2,10 +2,10 @@ import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { colors } from '@/theme/colors'
-import { logoutThunk } from '@/store/slices/authSlice'
-import { deductCreditsThunk, fetchUserCreditsThunk } from '@/store/slices/creditsSlice'
-import { useTokenRefresh } from '@/hooks/useTokenRefresh'
+import { colors } from '@theme/colors'
+import { logoutThunk } from '@store/slices/authSlice'
+import { deductCreditsThunk, fetchUserCreditsThunk } from '@store/slices/creditsSlice'
+import { useTokenRefresh } from '@hooks/useTokenRefresh'
 
 const DashboardContainer = styled.div`
   min-height: 100vh;

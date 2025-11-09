@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { increment, decrement } from '@/store/slices/exampleSlice'
+import { increment, decrement } from '@store/slices/exampleSlice'
 
 function Home() {
   const count = useSelector((state) => state.example.value)

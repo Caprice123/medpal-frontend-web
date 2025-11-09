@@ -1,49 +1,38 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Navigate, useRoutes, useNavigate } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { useSelector } from 'react-redux'
-import { GlobalStyles } from '@/theme/GlobalStyles'
-import { GOOGLE_CLIENT_ID } from '@/config/googleOAuth'
-import Login from '@/routes/Login'
-import Dashboard from '@/routes/Dashboard'
+import { GOOGLE_CLIENT_ID } from '@config/googleOAuth'
+import appRoutes from './appRoutes'
+import { useEffect } from 'react'
+import { setupAxiosInterceptors } from './config/api'
+import { Provider, useDispatch } from 'react-redux'
+import { store } from './store/store'
+import Middleware from '@middleware/Middleware'
+import { GlobalStyles } from './theme/GlobalStyles'
 
-// Protected Route Component
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useSelector((state) => state.auth)
-  return isAuthenticated ? children : <Navigate to="/login" replace />
-}
+const AxiosInterceptorSetup = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch()
 
-// Public Route Component (redirect to dashboard if already logged in)
-function PublicRoute({ children }) {
-  const { isAuthenticated } = useSelector((state) => state.auth)
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />
-}
+    useEffect(() => {
+        setupAxiosInterceptors(navigate, dispatch);
+    }, [navigate, dispatch]);
+
+    return null;
+};
+
+const AppRouter = () => useRoutes(appRoutes);
 
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <GlobalStyles />
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
+        <Provider store={store}>
+            <Router>
+                <AxiosInterceptorSetup />
+                <Middleware />
+                <AppRouter />
+				<GlobalStyles />
+			</Router>
+        </Provider>
     </GoogleOAuthProvider>
   )
 }

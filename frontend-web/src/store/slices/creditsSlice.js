@@ -4,7 +4,7 @@ import {
   deductUserCredits,
   topUpCredits,
   getCreditTransactions,
-} from '@/services/authService'
+} from '@services/authService'
 
 const initialState = {
   balance: 0,

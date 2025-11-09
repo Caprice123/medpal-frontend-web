@@ -7,8 +7,8 @@ import api from './api'
 // Login with Google OAuth token
 export const loginWithGoogle = async (googleCredential) => {
   try {
-    const response = await api.post('/auth/google', {
-      credential: googleCredential,
+    const response = await api.post('/auth/login', {
+      googleToken: googleCredential,
     })
     return response.data
   } catch (error) {

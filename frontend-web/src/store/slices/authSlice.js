@@ -1,30 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { loginWithGoogle, getCurrentUser, logout as logoutService } from '@/services/authService'
+import { loginWithGoogle, getCurrentUser, logout as logoutService } from '@services/authService'
 
 // Load initial state from localStorage
 const loadInitialState = () => {
-  const accessToken = localStorage.getItem('accessToken')
-  const refreshToken = localStorage.getItem('refreshToken')
+  const token = localStorage.getItem('token')
   const userStr = localStorage.getItem('user')
 
-  if (accessToken && refreshToken && userStr) {
+  if (token && userStr) {
     try {
       return {
         user: JSON.parse(userStr),
+        token: token,
         isAuthenticated: true,
         loading: false,
         error: null,
       }
     } catch (error) {
       // If parsing fails, clear everything
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('user')
     }
   }
 
   return {
     user: null,
+    token: null,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -38,14 +38,17 @@ export const loginWithGoogleThunk = createAsyncThunk(
   'auth/loginWithGoogle',
   async (googleCredential, { rejectWithValue }) => {
     try {
-      const data = await loginWithGoogle(googleCredential)
+      const response = await loginWithGoogle(googleCredential)
 
-      // Store tokens and user data
-      localStorage.setItem('accessToken', data.accessToken)
-      localStorage.setItem('refreshToken', data.refreshToken)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      // Backend returns { data: { user, token, expiredAt } }
+      const { user, token, expiredAt } = response.data
 
-      return data
+      // Store token and user data
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('tokenExpiry', expiredAt)
+
+      return { user, token, expiredAt }
     } catch (error) {
       return rejectWithValue(error.message || 'Login failed')
     }
@@ -71,16 +74,16 @@ export const logoutThunk = createAsyncThunk(
       await logoutService()
 
       // Clear local storage
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('tokenExpiry')
 
       return null
     } catch (error) {
       // Even if API call fails, clear local data
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('tokenExpiry')
 
       return rejectWithValue(error.message || 'Logout failed')
     }
@@ -101,12 +104,13 @@ export const authSlice = createSlice({
     },
     clearAuth: (state) => {
       state.user = null
+      state.token = null
       state.isAuthenticated = false
       state.loading = false
       state.error = null
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('tokenExpiry')
     },
   },
   extraReducers: (builder) => {
@@ -120,6 +124,7 @@ export const authSlice = createSlice({
         state.loading = false
         state.isAuthenticated = true
         state.user = action.payload.user
+        state.token = action.payload.token
         state.error = null
       })
       .addCase(loginWithGoogleThunk.rejected, (state, action) => {
