@@ -4,3 +4,5 @@ export class ValidationError extends Error {
     this.message = message;
   }
 }
+
+
