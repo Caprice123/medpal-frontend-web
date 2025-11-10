@@ -3,11 +3,13 @@ import {useSelector, useDispatch } from 'react-redux';
 import auth from "./auth";
 import common from "./common";
 import credit from "./credit";
+import exercise from "./exercise";
 
 export const rootReducer = combineReducers({
     auth,
     common,
     credit,
+    exercise,
 })
 
 export const store = configureStore({

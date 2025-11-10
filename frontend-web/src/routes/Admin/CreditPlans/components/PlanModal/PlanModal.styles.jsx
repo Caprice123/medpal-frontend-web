@@ -18,7 +18,7 @@ export const Modal = styled.div`
 export const ModalContent = styled.div`
   background: white;
   border-radius: 16px;
-  max-width: 500px;
+  max-width: 800px;
   width: 100%;
   max-height: 90vh;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -68,8 +68,10 @@ export const CloseButton = styled.button`
   }
 `
 
-export const ModalBody = styled.div`
+export const ModalBody = styled.form`
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   flex: 1;
 `

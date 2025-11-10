@@ -4,6 +4,7 @@ import { getUserData } from '@utils/authToken'
 import styled from 'styled-components'
 import CreditPlans from './CreditPlans/index'
 import Transactions from './Transactions'
+import Features from './Features/index'
 
 const AdminContainer = styled.div`
   min-height: 100vh;
@@ -96,107 +97,6 @@ const ContentArea = styled.div`
   border: 1px solid #e5e7eb;
 `
 
-const AddButton = styled.button`
-  background: linear-gradient(135deg, #0e7490, #14b8a6);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(14, 116, 144, 0.3);
-  }
-`
-
-const FeaturesList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`
-
-const FeatureCard = styled.div`
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #0891b2;
-    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.1);
-  }
-`
-
-const FeatureInfo = styled.div`
-  flex: 1;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-`
-
-const FeatureIcon = styled.div`
-  font-size: 2rem;
-  width: 60px;
-  height: 60px;
-  background: rgba(8, 145, 178, 0.1);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
-const FeatureDetails = styled.div``
-
-const FeatureName = styled.div`
-  font-weight: 600;
-  color: #0891b2;
-  font-size: 1.125rem;
-  margin-bottom: 0.25rem;
-`
-
-const FeatureDescription = styled.div`
-  color: #6b7280;
-  font-size: 0.875rem;
-`
-
-const FeatureCost = styled.div`
-  font-weight: 600;
-  color: #0891b2;
-  margin-right: 1rem;
-`
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`
-
-const ActionButton = styled.button`
-  background: ${props => props.variant === 'danger' ? '#ef4444' : '#0891b2'};
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-  }
-`
-
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem;
@@ -207,25 +107,6 @@ function AdminPanel() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [activeTab, setActiveTab] = useState('features')
-  const [features, setFeatures] = useState([
-    // Mock data - will be replaced with API calls
-    {
-      id: 1,
-      name: 'Asisten Diagnosis AI',
-      description: 'Dapatkan saran diagnosis bertenaga AI berdasarkan gejala dan riwayat medis pasien.',
-      icon: '🔬',
-      cost: 10,
-      isActive: true
-    },
-    {
-      id: 2,
-      name: 'Pemeriksa Interaksi Obat',
-      description: 'Periksa potensi interaksi obat dan kontraindikasi untuk keamanan pasien.',
-      icon: '💊',
-      cost: 5,
-      isActive: true
-    }
-  ])
 
   useEffect(() => {
     const userData = getUserData()
@@ -237,31 +118,7 @@ function AdminPanel() {
     }
 
     setUser(userData)
-
-    // TODO: Fetch features from API
   }, [navigate])
-
-  const handleAddFeature = () => {
-    // TODO: Open modal to add new feature
-    alert('Fitur tambah feature akan segera hadir!')
-  }
-
-  const handleEditFeature = (featureId) => {
-    // TODO: Open modal to edit feature
-    alert(`Edit feature ${featureId}`)
-  }
-
-  const handleDeleteFeature = (featureId) => {
-    if (confirm('Apakah Anda yakin ingin menghapus fitur ini?')) {
-      // TODO: Delete feature via API
-      setFeatures(features.filter(f => f.id !== featureId))
-    }
-  }
-
-  const handleManageTopics = (featureId) => {
-    // TODO: Navigate to topic management page
-    alert(`Manage topics for feature ${featureId}`)
-  }
 
   if (!user) {
     return <div>Loading...</div>
@@ -308,53 +165,7 @@ function AdminPanel() {
         </TabContainer>
 
         <ContentArea>
-          {activeTab === 'features' && (
-            <>
-              <AddButton onClick={handleAddFeature}>
-                <span>+</span>
-                Tambah Fitur Baru
-              </AddButton>
-
-              {features.length > 0 ? (
-                <FeaturesList>
-                  {features.map((feature) => (
-                    <FeatureCard key={feature.id}>
-                      <FeatureInfo>
-                        <FeatureIcon>{feature.icon}</FeatureIcon>
-                        <FeatureDetails>
-                          <FeatureName>{feature.name}</FeatureName>
-                          <FeatureDescription>{feature.description}</FeatureDescription>
-                        </FeatureDetails>
-                      </FeatureInfo>
-                      <FeatureCost>{feature.cost} kredit</FeatureCost>
-                      <ActionButtons>
-                        <ActionButton onClick={() => handleManageTopics(feature.id)}>
-                          Topik
-                        </ActionButton>
-                        <ActionButton onClick={() => handleEditFeature(feature.id)}>
-                          Edit
-                        </ActionButton>
-                        <ActionButton
-                          variant="danger"
-                          onClick={() => handleDeleteFeature(feature.id)}
-                        >
-                          Hapus
-                        </ActionButton>
-                      </ActionButtons>
-                    </FeatureCard>
-                  ))}
-                </FeaturesList>
-              ) : (
-                <EmptyState>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                  <div>Belum ada fitur yang dibuat</div>
-                  <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                    Klik "Tambah Fitur Baru" untuk memulai
-                  </div>
-                </EmptyState>
-              )}
-            </>
-          )}
+          {activeTab === 'features' && <Features />}
 
           {activeTab === 'creditPlans' && <CreditPlans />}
 

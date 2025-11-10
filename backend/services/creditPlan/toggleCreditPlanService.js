@@ -1,0 +1,34 @@
+import { ValidationError } from "../../errors/validationError.js"
+import prisma from "../../prisma/client.js"
+import { BaseService } from "../baseService.js"
+
+export class ToggleCreditPlanService extends BaseService {
+    static async call(id, req) {
+        const { isActive, isPopular } = req.body
+
+        // Validate input
+        await this.validate({ id, isActive, isPopular })
+
+        // Prepare update data
+        const updateData = {}
+        if (isActive !== undefined) updateData.isActive = isActive
+        if (isPopular !== undefined) updateData.isPopular = isPopular
+
+        const plan = await prisma.creditPlan.update({
+            where: { id: parseInt(id) },
+            data: updateData
+        })
+        return plan
+    }
+
+    static async validate({ id, isActive, isPopular }) {
+        // Check if plan exists
+        const existingPlan = await prisma.creditPlan.findUnique({
+            where: { id: parseInt(id) }
+        })
+
+        if (!existingPlan) {
+            throw new ValidationError("Credit plan not found")
+        }
+    }
+}

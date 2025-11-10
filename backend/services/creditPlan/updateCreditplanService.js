@@ -1,0 +1,53 @@
+import { ValidationError } from "../../errors/validationError.js";
+import prisma from "../../prisma/client.js";
+import { BaseService } from "../baseService.js";
+
+export class updateCreditPlanService extends BaseService {
+    static async call(id, req) {
+        const { name, description, credits, price, isActive, isPopular, discount, order } = req.body
+
+        // Validate input
+        await this.validate({ id, name, description, credits, price, discount })
+
+        // Prepare update data
+        const updateData = {}
+        if (name !== undefined) updateData.name = name
+        if (description !== undefined) updateData.description = description
+        if (credits !== undefined) updateData.credits = parseInt(credits)
+        if (price !== undefined) updateData.price = parseFloat(price)
+        if (isActive !== undefined) updateData.isActive = isActive
+        if (isPopular !== undefined) updateData.isPopular = isPopular
+        if (discount !== undefined) updateData.discount = parseInt(discount)
+        if (order !== undefined) updateData.order = parseInt(order)
+
+        const plan = await prisma.creditPlan.update({
+            where: { id: parseInt(id) },
+            data: updateData
+        })
+        return plan
+    }
+
+    static async validate({ id, name, description, credits, price, discount }) {
+        // Check if plan exists
+        const existingPlan = await prisma.creditPlan.findUnique({
+            where: { id: parseInt(id) }
+        })
+
+        if (!existingPlan) {
+            throw new ValidationError("Credit plan not found")
+        }
+
+        // Validation
+        if (credits !== undefined && credits <= 0) {
+            throw new ValidationError('Credits must be greater than 0')
+        }
+
+        if (price !== undefined && price <= 0) {
+            throw new ValidationError('Price must be greater than 0')
+        }
+
+        if (discount !== undefined && (discount < 0 || discount > 100)) {
+            throw new ValidationError('Discount must be between 0 and 100')
+        }
+    }
+}

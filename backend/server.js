@@ -2,9 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { startCronJobs } from './jobs/cron.js';
-import authRoutes from './routes/auth.routes.js';
+import authRoutes from './routes/api/v1/auth.routes.js';
 import creditRoutes from './routes/credit.routes.js';
-import creditPlanRoutes from './routes/creditPlan.routes.js';
+import creditPlanRoutes from './routes/api/v1/creditPlan.routes.js';
+import adminCreditPlanRoutes from './routes/admin/v1/creditPlan.routes.js';
+import adminExerciseRoutes from './routes/admin/v1/exercise.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
@@ -29,8 +31,13 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api', authRoutes);
 app.use('/api/credits', creditRoutes);
-app.use('/api/credit-plans', creditPlanRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/v1/credit-plans', creditPlanRoutes);
+
+// Admin Routes
+app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);
+app.use('/admin/v1/exercises', adminExerciseRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

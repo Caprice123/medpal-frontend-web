@@ -1,0 +1,24 @@
+import { PrismaClient } from '@prisma/client'
+import { CreditPlanSerializer } from '../../../serializers/api/v1/creditPlanSerializer.js';
+
+const prisma = new PrismaClient()
+
+class CreditPlanController {
+    async index(req, res) {
+        const plans = await prisma.creditPlan.findMany({
+            where: {
+                isActive: true
+            },
+            orderBy: [
+                { order: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        })
+
+        res.status(200).json({
+            data: CreditPlanSerializer.serialize(plans)
+        })
+    }
+}
+
+export default new CreditPlanController();

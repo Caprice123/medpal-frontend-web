@@ -171,3 +171,77 @@ model CreditTransaction {
   @@index([type])
   @@index([paymentStatus])
 }
+
+// Tag master data model - For categorizing topics (university, semester, etc.)
+model Tag {
+  id         Int      @id @default(autoincrement())
+  name       String   // Tag name (e.g., "Universitas Indonesia", "Semester 1")
+  type       String   // Tag type: 'university' or 'semester'
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  topics     ExerciseTopicTag[]
+
+  @@map("tags")
+  @@unique([name, type])
+  @@index([type])
+  @@index([is_active])
+}
+
+// Exercise Topic model - Topics for the fill-in-the-blank feature
+model ExerciseTopic {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String?
+  content_type String   // 'text' or 'pdf'
+  content      String?  @db.Text // Original text content if type is text
+  pdf_url      String?  // URL to PDF file if type is pdf
+  status       String   @default("draft") // 'draft', 'generating_questions', 'ready', 'published'
+  is_active    Boolean  @default(true)
+  created_by   Int      // Admin user ID
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  questions    ExerciseQuestion[]
+  tags         ExerciseTopicTag[]
+
+  @@map("exercise_topics")
+  @@index([is_active])
+  @@index([created_by])
+  @@index([status])
+}
+
+// Junction table for Exercise Topics and Tags (many-to-many)
+model ExerciseTopicTag {
+  id        Int      @id @default(autoincrement())
+  topic_id  Int
+  tag_id    Int
+  created_at DateTime @default(now())
+
+  topic     ExerciseTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  tag       Tag           @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@map("exercise_topic_tags")
+  @@unique([topic_id, tag_id])
+  @@index([topic_id])
+  @@index([tag_id])
+}
+
+// Exercise Question model - Fill-in-the-blank questions
+model ExerciseQuestion {
+  id          Int      @id @default(autoincrement())
+  topic_id    Int
+  question    String   @db.Text // Question text with ____ as placeholder
+  answer      String   // Correct answer for the blank
+  explanation String   @db.Text // Explanation why this is the correct answer
+  order       Int      @default(0) // Display order within topic
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  topic       ExerciseTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+
+  @@map("exercise_questions")
+  @@index([topic_id])
+  @@index([order])
+}

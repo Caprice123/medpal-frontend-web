@@ -27,7 +27,6 @@ function PlanModal({ isOpen, editingPlan, formData, onChange, onSubmit, onClose 
           <ModalTitle>{editingPlan ? 'Edit Credit Plan' : 'Add Credit Plan'}</ModalTitle>
           <CloseButton onClick={onClose}>×</CloseButton>
         </ModalHeader>
-        <form onSubmit={onSubmit}>
           <ModalBody>
             <FormGroup>
               <Label htmlFor="name">Plan Name *</Label>
@@ -131,18 +130,16 @@ function PlanModal({ isOpen, editingPlan, formData, onChange, onSubmit, onClose 
               <CheckboxLabel htmlFor="isPopular">Mark as Popular</CheckboxLabel>
             </CheckboxGroup>
           </ModalBody>
-
-          <ModalFooter>
-            <ButtonGroup>
-              <Button type="button" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary">
-                {editingPlan ? 'Update Plan' : 'Create Plan'}
-              </Button>
-            </ButtonGroup>
-          </ModalFooter>
-        </form>
+        <ModalFooter>
+        <ButtonGroup>
+            <Button type="button" onClick={onClose}>
+            Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+            {editingPlan ? 'Update Plan' : 'Create Plan'}
+            </Button>
+        </ButtonGroup>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   )
