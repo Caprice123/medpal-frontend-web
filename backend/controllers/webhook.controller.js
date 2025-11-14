@@ -34,7 +34,7 @@ export const handleXenditInvoiceWebhook = async (req, res) => {
 
     // Find transaction by external ID (our payment reference)
     // The external_id is the unique reference we generated
-    const transactions = await prisma.creditTransaction.findMany({
+    const transactions = await prisma.credit_transactions.findMany({
       where: {
         OR: [
           { paymentReference: invoiceId }, // Xendit invoice ID
@@ -104,7 +104,7 @@ async function handlePaidInvoice(transaction, paymentDetails) {
     const { paidAmount, paymentMethod, paymentChannel, paidAt, invoiceId } = paymentDetails
 
     // Get user credit
-    const userCredit = await prisma.userCredit.findUnique({
+    const userCredit = await prisma.user_credits.findUnique({
       where: { id: transaction.userCreditId }
     })
 
@@ -117,12 +117,12 @@ async function handlePaidInvoice(transaction, paymentDetails) {
     // Update transaction and user credit in a single transaction
     await prisma.$transaction([
       // Update user credit balance
-      prisma.userCredit.update({
+      prisma.user_credits.update({
         where: { id: transaction.userCreditId },
         data: { balance: newBalance }
       }),
       // Update transaction status
-      prisma.creditTransaction.update({
+      prisma.credit_transactions.update({
         where: { id: transaction.id },
         data: {
           paymentStatus: 'completed',
@@ -146,7 +146,7 @@ async function handlePaidInvoice(transaction, paymentDetails) {
  */
 async function handleExpiredInvoice(transaction) {
   try {
-    await prisma.creditTransaction.update({
+    await prisma.credit_transactions.update({
       where: { id: transaction.id },
       data: {
         paymentStatus: 'failed',
@@ -188,7 +188,7 @@ export const handleXenditVAWebhook = async (req, res) => {
     } = webhookData
 
     // Find transaction by external ID
-    const transaction = await prisma.creditTransaction.findFirst({
+    const transaction = await prisma.credit_transactions.findFirst({
       where: {
         paymentReference: { contains: externalId },
         paymentStatus: 'pending'

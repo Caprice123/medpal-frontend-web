@@ -26,7 +26,7 @@ const {
 // ============= Topics Actions =============
 
 /**
- * Fetch all exercise topics
+ * Fetch all exercise topics (user endpoint)
  */
 export const fetchExerciseTopics = (filters = {}) => async (dispatch) => {
   try {
@@ -36,11 +36,10 @@ export const fetchExerciseTopics = (filters = {}) => async (dispatch) => {
     const queryParams = {}
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
-    if (filters.status) queryParams.status = filters.status
 
     const response = await getWithToken(Endpoints.exercises.topics, queryParams)
 
-    dispatch(setTopics(response.data.topics))
+    dispatch(setTopics(response.data.data || response.data.topics || []))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -49,26 +48,51 @@ export const fetchExerciseTopics = (filters = {}) => async (dispatch) => {
 }
 
 /**
- * Fetch single topic with questions
+ * Fetch all exercise topics for admin panel
+ */
+export const fetchAdminExerciseTopics = (filters = {}) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isTopicsLoading', value: true }))
+    dispatch(clearError())
+
+    const queryParams = {}
+    if (filters.university) queryParams.university = filters.university
+    if (filters.semester) queryParams.semester = filters.semester
+
+    const response = await getWithToken(Endpoints.exercises.admin.topics, queryParams)
+
+    dispatch(setTopics(response.data.data || response.data.topics || []))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isTopicsLoading', value: false }))
+  }
+}
+
+/**
+ * Fetch single topic with questions (for editing in admin)
  */
 export const fetchExerciseTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isQuestionsLoading', value: true }))
     dispatch(clearError())
 
-    const response = await getWithToken(Endpoints.exercises.topic(topicId))
+    const response = await getWithToken(Endpoints.exercises.admin.topic(topicId))
 
-    dispatch(setSelectedTopic(response.data.topic))
-    dispatch(setQuestions(response.data.topic.questions || []))
+    const topic = response.data.data || response.data.topic
+    dispatch(setSelectedTopic(topic))
+    dispatch(setQuestions(topic.questions || []))
+    return topic
   } catch (err) {
     handleApiError(err, dispatch)
+    throw err
   } finally {
     dispatch(setLoading({ key: 'isQuestionsLoading', value: false }))
   }
 }
 
 /**
- * Generate questions using Gemini
+ * Generate questions using Gemini (admin only)
  */
 export const generateQuestions = (content, type, questionCount = 10) => async (dispatch) => {
   try {
@@ -81,10 +105,11 @@ export const generateQuestions = (content, type, questionCount = 10) => async (d
       questionCount
     }
 
-    const response = await postWithToken(Endpoints.exercises.generate, requestBody)
+    const response = await postWithToken(Endpoints.exercises.admin.generate, requestBody)
 
-    dispatch(setGeneratedQuestions(response.data.questions))
-    return response.data.questions
+    const questions = response.data.data || response.data.questions || []
+    dispatch(setGeneratedQuestions(questions))
+    return questions
   } catch (err) {
     handleApiError(err, dispatch)
     throw err
@@ -94,18 +119,18 @@ export const generateQuestions = (content, type, questionCount = 10) => async (d
 }
 
 /**
- * Create new topic with questions
+ * Create new topic with questions (for regular users)
  */
-export const createExerciseTopic = (topicData) => async (dispatch) => {
+export const createUserExerciseTopic = (topicData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreatingTopic', value: true }))
     dispatch(clearError())
 
-    const response = await postWithToken(Endpoints.exercises.topics, topicData)
+    const response = await postWithToken(Endpoints.exercises.createTopic, topicData)
 
-    dispatch(addTopic(response.data.topic))
-    dispatch(clearGeneratedQuestions())
-    return response.data.topic
+    const topic = response.data.data || response.data.topic
+    dispatch(addTopic(topic))
+    return topic
   } catch (err) {
     handleApiError(err, dispatch)
     throw err
@@ -115,7 +140,29 @@ export const createExerciseTopic = (topicData) => async (dispatch) => {
 }
 
 /**
- * Update topic questions
+ * Create new topic with questions (admin only)
+ */
+export const createExerciseTopic = (topicData) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isCreatingTopic', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(Endpoints.exercises.admin.topics, topicData)
+
+    const topic = response.data.data || response.data.topic
+    dispatch(addTopic(topic))
+    dispatch(clearGeneratedQuestions())
+    return topic
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isCreatingTopic', value: false }))
+  }
+}
+
+/**
+ * Update topic questions (admin only)
  */
 export const updateTopicQuestions = (topicId, questions) => async (dispatch) => {
   try {
@@ -123,12 +170,13 @@ export const updateTopicQuestions = (topicId, questions) => async (dispatch) => 
     dispatch(clearError())
 
     const response = await putWithToken(
-      Endpoints.exercises.questions(topicId),
+      Endpoints.exercises.admin.topic(topicId),
       { questions }
     )
 
-    dispatch(updateTopic(response.data.topic))
-    return response.data.topic
+    const topic = response.data.data || response.data.topic
+    dispatch(updateTopic(topic))
+    return topic
   } catch (err) {
     handleApiError(err, dispatch)
     throw err
@@ -138,14 +186,14 @@ export const updateTopicQuestions = (topicId, questions) => async (dispatch) => 
 }
 
 /**
- * Add manual question to topic
+ * Add manual question to topic (admin only)
  */
 export const addManualQuestion = (topicId, questionData) => async (dispatch) => {
   try {
     dispatch(clearError())
 
     const response = await postWithToken(
-      Endpoints.exercises.questions(topicId),
+      Endpoints.exercises.admin.topic(topicId),
       questionData
     )
 
@@ -158,14 +206,14 @@ export const addManualQuestion = (topicId, questionData) => async (dispatch) => 
 }
 
 /**
- * Delete topic
+ * Delete topic (admin only)
  */
 export const deleteExerciseTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeletingTopic', value: true }))
     dispatch(clearError())
 
-    await deleteWithToken(Endpoints.exercises.topic(topicId))
+    await deleteWithToken(Endpoints.exercises.admin.topic(topicId))
 
     dispatch(removeTopic(topicId))
   } catch (err) {
@@ -179,7 +227,7 @@ export const deleteExerciseTopic = (topicId) => async (dispatch) => {
 // ============= Tags Actions =============
 
 /**
- * Fetch all tags
+ * Fetch all tags (admin endpoint)
  */
 export const fetchExerciseTags = (type = null) => async (dispatch) => {
   try {
@@ -189,9 +237,9 @@ export const fetchExerciseTags = (type = null) => async (dispatch) => {
     const queryParams = {}
     if (type) queryParams.type = type
 
-    const response = await getWithToken(Endpoints.exercises.tags, queryParams)
+    const response = await getWithToken(Endpoints.exercises.admin.tags, queryParams)
 
-    dispatch(setTags(response.data.tags))
+    dispatch(setTags(response.data.data || response.data.tags || []))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -220,4 +268,49 @@ export const clearExerciseFilters = () => (dispatch) => {
  */
 export const clearExerciseSelection = () => (dispatch) => {
   dispatch(clearSelectedTopic())
+}
+
+// ============= Constants Actions =============
+
+/**
+ * Fetch exercise constants (admin only)
+ */
+export const fetchExerciseConstants = (keys = null) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
+    dispatch(clearError())
+
+    const queryParams = {}
+    if (keys && Array.isArray(keys)) {
+      queryParams.keys = keys.join(',')
+    }
+
+    const response = await getWithToken(Endpoints.exercises.admin.constants, queryParams)
+
+    return response.data.data || {}
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
+  }
+}
+
+/**
+ * Update exercise constants (admin only)
+ */
+export const updateExerciseConstants = (constants) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isUpdatingConstants', value: true }))
+    dispatch(clearError())
+
+    const response = await putWithToken(Endpoints.exercises.admin.constants, constants)
+
+    return response.data.data || {}
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isUpdatingConstants', value: false }))
+  }
 }

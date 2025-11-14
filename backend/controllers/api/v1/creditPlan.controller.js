@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 class CreditPlanController {
     async index(req, res) {
-        const plans = await prisma.creditPlan.findMany({
+        const plans = await prisma.credit_plans.findMany({
             where: {
                 isActive: true
             },

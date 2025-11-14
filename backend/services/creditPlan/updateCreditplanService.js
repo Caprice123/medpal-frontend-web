@@ -20,7 +20,7 @@ export class updateCreditPlanService extends BaseService {
         if (discount !== undefined) updateData.discount = parseInt(discount)
         if (order !== undefined) updateData.order = parseInt(order)
 
-        const plan = await prisma.creditPlan.update({
+        const plan = await prisma.credit_plans.update({
             where: { id: parseInt(id) },
             data: updateData
         })
@@ -29,7 +29,7 @@ export class updateCreditPlanService extends BaseService {
 
     static async validate({ id, name, description, credits, price, discount }) {
         // Check if plan exists
-        const existingPlan = await prisma.creditPlan.findUnique({
+        const existingPlan = await prisma.credit_plans.findUnique({
             where: { id: parseInt(id) }
         })
 

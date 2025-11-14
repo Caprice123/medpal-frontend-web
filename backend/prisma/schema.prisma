@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,23 +7,255 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model
-model User {
+model constants {
   id         Int      @id @default(autoincrement())
-  email      String   @unique
-  name       String?
-  picture    String?
-  googleId   String?  @unique
-  role       String   @default("user")
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  key        String   @unique
+  value      String
+  created_at DateTime @default(now())
+  updated_at DateTime
 
-  @@map("users")
+  @@index([key])
 }
 
-// User sessions model
-model UserSession {
+model credit_plans {
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  description         String?
+  credits             Int
+  price               Decimal               @db.Decimal(10, 2)
+  isActive            Boolean               @default(true)
+  isPopular           Boolean               @default(false)
+  discount            Int                   @default(0)
+  order               Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  credit_transactions credit_transactions[]
+}
+
+model credit_transactions {
+  id               Int           @id @default(autoincrement())
+  userId           Int
+  userCreditId     Int
+  type             String
+  amount           Int
+  balanceBefore    Int
+  balanceAfter     Int
+  description      String?
+  creditPlanId     Int?
+  sessionId        Int?
+  paymentStatus    String?
+  paymentMethod    String?
+  paymentReference String?
+  createdAt        DateTime      @default(now())
+  credit_plans     credit_plans? @relation(fields: [creditPlanId], references: [id])
+  user_credits     user_credits  @relation(fields: [userCreditId], references: [id])
+
+  @@index([paymentStatus])
+  @@index([type])
+  @@index([userCreditId])
+  @@index([userId])
+}
+
+model exercise_questions {
+  id              Int             @id @default(autoincrement())
+  topic_id        Int
+  question        String
+  answer          String
+  explanation     String
+  order           Int             @default(0)
+  created_at      DateTime        @default(now())
+  updated_at      DateTime
+  exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+
+  @@index([order])
+  @@index([topic_id])
+}
+
+model exercise_session_answers {
+  id                           Int                          @id @default(autoincrement())
+  exercise_session_id          Int
+  exercise_session_question_id Int
+  user_answer                  String
+  is_correct                   Boolean
+  answered_at                  DateTime                     @default(now())
+  time_taken_seconds           Int?
+  exercise_sessions            exercise_sessions            @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
+  exercise_session_questions   exercise_session_questions   @relation(fields: [exercise_session_question_id], references: [id], onDelete: Cascade)
+
+  @@index([answered_at])
+  @@index([exercise_session_id])
+  @@index([exercise_session_question_id])
+}
+
+model exercise_sessions {
+  id                          Int                           @id @default(autoincrement())
+  user_learning_session_id    Int
+  user_id                     Int
+  exercise_topic_id           Int?
+  topic_snapshot              String?
+  credits_used                Int                           @default(0)
+  started_at                  DateTime                      @default(now())
+  completed_at                DateTime?
+  status                      String                        @default("not_started")
+  score                       Int                           @default(0)
+  total_questions             Int                           @default(0)
+  exercise_session_answers    exercise_session_answers[]
+  exercise_session_questions  exercise_session_questions[]
+  exercise_topics             exercise_topics?              @relation(fields: [exercise_topic_id], references: [id])
+  user_learning_sessions      user_learning_sessions        @relation(fields: [user_learning_session_id], references: [id], onDelete: Cascade)
+
+  @@index([exercise_topic_id])
+  @@index([started_at])
+  @@index([status])
+  @@index([user_id])
+  @@index([user_learning_session_id])
+}
+
+model exercise_session_questions {
+  id                       Int                        @id @default(autoincrement())
+  exercise_session_id      Int
+  question_id              Int
+  question_text            String
+  answer_text              String
+  explanation              String
+  order                    Int
+  created_at               DateTime                   @default(now())
+  exercise_sessions        exercise_sessions          @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
+  exercise_session_answers exercise_session_answers[]
+
+  @@index([exercise_session_id])
+  @@index([order])
+}
+
+model exercise_topic_tags {
+  id              Int             @id @default(autoincrement())
+  topic_id        Int
+  tag_id          Int
+  created_at      DateTime        @default(now())
+  tags            tags            @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+
+  @@unique([topic_id, tag_id])
+  @@index([tag_id])
+  @@index([topic_id])
+}
+
+model exercise_topics {
+  id                  Int                   @id @default(autoincrement())
+  title               String
+  description         String?
+  content_type        String
+  content             String?
+  pdf_url             String?
+  status              String                @default("draft")
+  is_active           Boolean               @default(true)
+  created_by          Int
+  created_at          DateTime              @default(now())
+  updated_at          DateTime
+  exercise_questions  exercise_questions[]
+  exercise_sessions   exercise_sessions[]
+  exercise_topic_tags exercise_topic_tags[]
+
+  @@index([created_by])
+  @@index([is_active])
+  @@index([status])
+}
+
+model features {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String @db.Text
+  icon        String @db.Text
+  cost        Int 
+  isActive    Boolean @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  sessions    sessions[]
+  topics      topics[]
+}
+
+model queries {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String?
+  userId    Int
+  createdAt DateTime @default(now())
+}
+
+model sessions {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  featureId   Int
+  topicId     Int?
+  creditsUsed Int
+  status      String    @default("active")
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  features    features  @relation(fields: [featureId], references: [id])
+  topics      topics?   @relation(fields: [topicId], references: [id])
+
+  @@index([featureId])
+  @@index([topicId])
+  @@index([userId])
+}
+
+model tags {
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  type                String
+  is_active           Boolean               @default(true)
+  created_at          DateTime              @default(now())
+  updated_at          DateTime
+  exercise_topic_tags exercise_topic_tags[]
+
+  @@unique([name, type])
+  @@index([is_active])
+  @@index([type])
+}
+
+model topics {
+  id          Int        @id @default(autoincrement())
+  featureId   Int
+  title       String
+  description String?
+  content     String?
+  isActive    Boolean    @default(true)
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  sessions    sessions[]
+  features    features   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@index([featureId])
+}
+
+model user_credits {
+  id                  Int                   @id @default(autoincrement())
+  userId              Int                   @unique
+  balance             Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  credit_transactions credit_transactions[]
+
+  @@index([userId])
+}
+
+model user_learning_sessions {
+  id                Int                 @id @default(autoincrement())
+  user_id           Int
+  type              String              @default("exercise")
+  started_at        DateTime            @default(now())
+  ended_at          DateTime?
+  status            String              @default("active")
+  exercise_sessions exercise_sessions[]
+
+  @@index([started_at])
+  @@index([status])
+  @@index([type])
+  @@index([user_id])
+}
+
+model user_sessions {
   id           Int      @id @default(autoincrement())
   userId       Int
   token        String   @unique
@@ -40,208 +266,18 @@ model UserSession {
   lastActiveAt DateTime @default(now())
   createdAt    DateTime @default(now())
 
-  @@map("user_sessions")
-  @@index([userId])
   @@index([token])
+  @@index([userId])
 }
 
-// Query model
-model Query {
+model users {
   id        Int      @id @default(autoincrement())
-  question  String
-  answer    String?
-  userId    Int
+  email     String   @unique
+  name      String?
+  picture   String?
+  googleId  String?  @unique
+  role      String   @default("user")
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-
-  @@map("queries")
-}
-
-// Feature model - The 7 learning features
-model Feature {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  icon        String
-  cost        Int      // Credits required to use this feature
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  topics      Topic[]
-  sessions    Session[]
-
-  @@map("features")
-}
-
-// Topic model - Topics configured by admin for each feature
-model Topic {
-  id          Int      @id @default(autoincrement())
-  featureId   Int
-  title       String
-  description String?
-  content     String?  // Additional content or configuration
-  isActive    Boolean  @default(true)
-  order       Int      @default(0) // Display order
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  feature     Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  sessions    Session[]
-
-  @@map("topics")
-  @@index([featureId])
-}
-
-// Session model - User's learning sessions
-model Session {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  featureId   Int
-  topicId     Int?
-  creditsUsed Int
-  status      String   @default("active") // active, completed, cancelled
-  startedAt   DateTime @default(now())
-  completedAt DateTime?
-
-  feature     Feature  @relation(fields: [featureId], references: [id])
-  topic       Topic?   @relation(fields: [topicId], references: [id])
-
-  @@map("sessions")
-  @@index([userId])
-  @@index([featureId])
-  @@index([topicId])
-}
-
-// User Credits model
-model UserCredit {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  balance   Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  transactions CreditTransaction[]
-
-  @@map("user_credits")
-  @@index([userId])
-}
-
-// Credit Plans model - For admin to create credit packages
-model CreditPlan {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  credits     Int      // Amount of credits in this plan
-  price       Decimal  @db.Decimal(10, 2) // Price in IDR or other currency
-  isActive    Boolean  @default(true)
-  isPopular   Boolean  @default(false) // To highlight popular plans
-  discount    Int      @default(0) // Discount percentage (0-100)
-  order       Int      @default(0) // Display order
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  transactions CreditTransaction[]
-
-  @@map("credit_plans")
-}
-
-// Credit Transactions model - Track all credit movements
-model CreditTransaction {
-  id              Int      @id @default(autoincrement())
-  userId          Int
-  userCreditId    Int
-  type            String   // 'purchase', 'deduction', 'refund', 'bonus'
-  amount          Int      // Positive for additions, negative for deductions
-  balanceBefore   Int
-  balanceAfter    Int
-  description     String?
-  creditPlanId    Int?     // Reference to credit plan if it's a purchase
-  sessionId       Int?     // Reference to session if it's a deduction
-  paymentStatus   String?  // 'pending', 'completed', 'failed' for purchases
-  paymentMethod   String?  // 'manual', 'midtrans', etc.
-  paymentReference String? // Payment gateway reference/transaction ID
-  createdAt       DateTime @default(now())
-
-  userCredit   UserCredit   @relation(fields: [userCreditId], references: [id])
-  creditPlan   CreditPlan?  @relation(fields: [creditPlanId], references: [id])
-
-  @@map("credit_transactions")
-  @@index([userId])
-  @@index([userCreditId])
-  @@index([type])
-  @@index([paymentStatus])
-}
-
-// Tag master data model - For categorizing topics (university, semester, etc.)
-model Tag {
-  id         Int      @id @default(autoincrement())
-  name       String   // Tag name (e.g., "Universitas Indonesia", "Semester 1")
-  type       String   // Tag type: 'university' or 'semester'
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  topics     ExerciseTopicTag[]
-
-  @@map("tags")
-  @@unique([name, type])
-  @@index([type])
-  @@index([is_active])
-}
-
-// Exercise Topic model - Topics for the fill-in-the-blank feature
-model ExerciseTopic {
-  id           Int      @id @default(autoincrement())
-  title        String
-  description  String?
-  content_type String   // 'text' or 'pdf'
-  content      String?  @db.Text // Original text content if type is text
-  pdf_url      String?  // URL to PDF file if type is pdf
-  status       String   @default("draft") // 'draft', 'generating_questions', 'ready', 'published'
-  is_active    Boolean  @default(true)
-  created_by   Int      // Admin user ID
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-
-  questions    ExerciseQuestion[]
-  tags         ExerciseTopicTag[]
-
-  @@map("exercise_topics")
-  @@index([is_active])
-  @@index([created_by])
-  @@index([status])
-}
-
-// Junction table for Exercise Topics and Tags (many-to-many)
-model ExerciseTopicTag {
-  id        Int      @id @default(autoincrement())
-  topic_id  Int
-  tag_id    Int
-  created_at DateTime @default(now())
-
-  topic     ExerciseTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
-  tag       Tag           @relation(fields: [tag_id], references: [id], onDelete: Cascade)
-
-  @@map("exercise_topic_tags")
-  @@unique([topic_id, tag_id])
-  @@index([topic_id])
-  @@index([tag_id])
-}
-
-// Exercise Question model - Fill-in-the-blank questions
-model ExerciseQuestion {
-  id          Int      @id @default(autoincrement())
-  topic_id    Int
-  question    String   @db.Text // Question text with ____ as placeholder
-  answer      String   // Correct answer for the blank
-  explanation String   @db.Text // Explanation why this is the correct answer
-  order       Int      @default(0) // Display order within topic
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  topic       ExerciseTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
-
-  @@map("exercise_questions")
-  @@index([topic_id])
-  @@index([order])
+  updatedAt DateTime
 }

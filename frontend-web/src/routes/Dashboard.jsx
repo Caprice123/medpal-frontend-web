@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { createSession, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { colors } from '@config/colors'
 import { logout } from '@store/auth/action'
 import { fetchCreditBalance, fetchCreditTransactions, deductCredits } from '@store/credit/action'
+import { fetchSessions } from '@store/session/action'
+import { fetchFeatures } from '@store/feature/action'
 import { getUserData } from '@utils/authToken'
 import CreditPurchase from '@components/CreditPurchase'
 
@@ -426,102 +428,43 @@ const EmptyStateSubtext = styled.div`
   font-size: 0.875rem;
 `
 
-const catalogs = [
-  {
-    id: 1,
-    icon: '🔬',
-    title: 'Asisten Diagnosis AI',
-    description: 'Dapatkan saran diagnosis bertenaga AI berdasarkan gejala dan riwayat medis pasien.',
-    cost: 10,
-  },
-  {
-    id: 2,
-    icon: '💊',
-    title: 'Pemeriksa Interaksi Obat',
-    description: 'Periksa potensi interaksi obat dan kontraindikasi untuk keamanan pasien.',
-    cost: 5,
-  },
-  {
-    id: 3,
-    icon: '📊',
-    title: 'Analisis Laporan Lab',
-    description: 'Unggah dan analisis laporan laboratorium dengan wawasan bertenaga AI.',
-    cost: 15,
-  },
-  {
-    id: 4,
-    icon: '🩺',
-    title: 'Pencarian Literatur Medis',
-    description: 'Cari melalui jutaan makalah penelitian dan jurnal medis terkini.',
-    cost: 8,
-  },
-  {
-    id: 5,
-    icon: '🧬',
-    title: 'Penilaian Risiko Genetik',
-    description: 'Analisis data genetik untuk potensi risiko kesehatan dan kondisi herediter.',
-    cost: 20,
-  },
-  {
-    id: 6,
-    icon: '📋',
-    title: 'Generator Rencana Perawatan',
-    description: 'Buat rencana perawatan komprehensif berdasarkan diagnosis dan kondisi pasien.',
-    cost: 12,
-  },
-  {
-    id: 7,
-    icon: '🎓',
-    title: 'Materi Pembelajaran Interaktif',
-    description: 'Akses materi pembelajaran kedokteran dengan metode interaktif dan AI.',
-    cost: 7,
-  },
-]
-
 function Dashboard() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+
+  // Redux selectors
+  const { balance } = useSelector(state => state.credit)
+  const { sessions } = useSelector(state => state.session)
+  const { isLoadingSessions } = useSelector(state => state.session.loading)
+  const { features } = useSelector(state => state.feature)
+  const { isLoadingFeatures } = useSelector(state => state.feature.loading)
+
   const [user, setUser] = useState(null)
-  const [balance, setBalance] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
-  const [sessions, setSessions] = useState([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Get user data from localStorage
     const userData = getUserData()
     setUser(userData)
 
-    // Fetch user credit balance and sessions
+    // Fetch user credit balance, sessions, and features
     fetchUserData()
-  }, [])
+  }, [dispatch])
 
-  const fetchUserData = () => {
-    setLoading(true)
+  const fetchUserData = async () => {
+    try {
+      // Fetch credit balance
+      await dispatch(fetchCreditBalance())
 
-    // Fetch credit balance
-    dispatch(fetchCreditBalance((data) => {
-      setBalance(data.balance)
-    }))
+      // Fetch sessions from actual session endpoint
+      await dispatch(fetchSessions())
 
-    // Fetch transactions
-    dispatch(fetchCreditTransactions(
-      { limit: 10, type: 'deduction' },
-      (data) => {
-        // Transform transactions to sessions format
-        const formattedSessions = data.transactions.map(t => ({
-          id: t.id,
-          featureName: t.description || 'Feature Usage',
-          featureIcon: '🎓',
-          creditUsed: Math.abs(t.amount),
-          createdAt: t.createdAt,
-          status: 'completed'
-        }))
-        setSessions(formattedSessions)
-        setLoading(false)
-      }
-    ))
+      // Fetch features
+      await dispatch(fetchFeatures())
+    } catch (error) {
+      console.error('Failed to fetch user data:', error)
+    }
   }
 
   const handleLogout = () => {
@@ -531,45 +474,19 @@ function Dashboard() {
     dispatch(logout(onSuccess))
   }
 
-  const handleUseFeature = async (catalog) => {
-    if (balance < catalog.cost) {
-      alert('Kredit tidak mencukupi! Silakan isi ulang untuk melanjutkan.')
-      setIsPurchaseModalOpen(true)
-      return
-    }
+  const handleUseFeature = async (feature) => {
+    // Close modal
+    setIsModalOpen(false)
 
     try {
-      await new Promise((resolve, reject) => {
-        dispatch(deductCredits(
-          catalog.cost,
-          `Menggunakan fitur: ${catalog.title}`,
-          null,
-          (data) => {
-            // Update local state
-            setBalance(data.newBalance)
+      // Create session (doesn't deduct credits yet)
+      const sessionData = await dispatch(createSession('exercise'))
 
-            // Add new session to history
-            const newSession = {
-              id: data.transaction.id,
-              featureName: catalog.title,
-              featureIcon: catalog.icon,
-              creditUsed: catalog.cost,
-              createdAt: new Date(),
-              status: 'completed'
-            }
-            setSessions([newSession, ...sessions])
-
-            resolve(data)
-          },
-          (error) => reject(error)
-        ))
-      })
-
-      // Close modal
-      setIsModalOpen(false)
-      alert(`${catalog.title} diaktifkan! ${catalog.cost} kredit dikurangkan.`)
+      // Navigate to session detail page
+      navigate(`/session/${sessionData.exercise_session_id}`)
     } catch (error) {
-      alert('Gagal menggunakan fitur: ' + (error.response?.data?.message || error.message))
+      console.error('Failed to create session:', error)
+      alert('Gagal membuat sesi: ' + (error.message || 'Terjadi kesalahan'))
     }
   }
 
@@ -651,16 +568,21 @@ function Dashboard() {
             </CreateSessionButton>
           </SectionHeaderRow>
 
-          {sessions.length > 0 ? (
+          {isLoadingSessions ? (
+            <EmptyState>
+              <EmptyStateIcon>⏳</EmptyStateIcon>
+              <EmptyStateText>Memuat riwayat sesi...</EmptyStateText>
+            </EmptyState>
+          ) : sessions.length > 0 ? (
             <SessionsList>
               {sessions.map((session) => (
                 <SessionCard key={session.id}>
-                  <SessionIcon>{session.featureIcon}</SessionIcon>
+                  <SessionIcon>📚</SessionIcon>
                   <SessionInfo>
-                    <SessionName>{session.featureName}</SessionName>
-                    <SessionDate>{formatDate(session.createdAt)}</SessionDate>
+                    <SessionName>{session.topic_title || 'Untitled'}</SessionName>
+                    <SessionDate>{formatDate(session.started_at)}</SessionDate>
                   </SessionInfo>
-                  <SessionCredit>-{session.creditUsed} kredit</SessionCredit>
+                  <SessionCredit>-{session.credits_used} kredit</SessionCredit>
                 </SessionCard>
               ))}
             </SessionsList>
@@ -683,26 +605,32 @@ function Dashboard() {
               <CloseButton onClick={() => setIsModalOpen(false)}>×</CloseButton>
             </ModalHeader>
             <ModalBody>
-              <CatalogGrid>
-                {catalogs.map((catalog) => (
-                  <CatalogCard key={catalog.id}>
-                    <CardIcon>{catalog.icon}</CardIcon>
-                    <CardTitle>{catalog.title}</CardTitle>
-                    <CardDescription>{catalog.description}</CardDescription>
-                    <CardFooter>
-                      <CreditCost>
-                        💎 {catalog.cost} kredit
-                      </CreditCost>
-                      <UseButton
-                        onClick={() => handleUseFeature(catalog)}
-                        disabled={balance < catalog.cost}
-                      >
-                        Gunakan Fitur
-                      </UseButton>
-                    </CardFooter>
-                  </CatalogCard>
-                ))}
-              </CatalogGrid>
+              {isLoadingFeatures ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                  Memuat fitur...
+                </div>
+              ) : (
+                <CatalogGrid>
+                  {features.map((feature) => (
+                    <CatalogCard key={feature.id}>
+                      <CardIcon>{feature.icon}</CardIcon>
+                      <CardTitle>{feature.name}</CardTitle>
+                      <CardDescription>{feature.description}</CardDescription>
+                      <CardFooter>
+                        <CreditCost>
+                          💎 {feature.cost} kredit
+                        </CreditCost>
+                        <UseButton
+                          onClick={() => handleUseFeature(feature)}
+                          disabled={balance < feature.cost}
+                        >
+                          Gunakan Fitur
+                        </UseButton>
+                      </CardFooter>
+                    </CatalogCard>
+                  ))}
+                </CatalogGrid>
+              )}
             </ModalBody>
           </ModalContent>
         </ModalOverlay>

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { createTag, updateTagAction, deleteTag } from '@store/tags/action'
 import styled from 'styled-components'
 
 const Overlay = styled.div`
@@ -232,7 +233,7 @@ const EmptyState = styled.div`
 
 function TagManagementModal({ isOpen, onClose }) {
   const dispatch = useDispatch()
-  const tags = useSelector(state => state.exercise.tags)
+  const tags = useSelector(state => state.tags.tags)
 
   const [newTagName, setNewTagName] = useState('')
   const [newTagType, setNewTagType] = useState('university')
@@ -249,12 +250,9 @@ function TagManagementModal({ isOpen, onClose }) {
     }
 
     try {
-      // TODO: Dispatch action to create tag
-      // await dispatch(createExerciseTag({ name: newTagName, type: newTagType }))
-
-      // For now, just alert
-      alert(`Tag "${newTagName}" (${newTagType}) akan ditambahkan`)
+      await dispatch(createTag({ name: newTagName, type: newTagType }))
       setNewTagName('')
+      alert(`Tag "${newTagName}" berhasil ditambahkan`)
     } catch (error) {
       alert('Gagal menambahkan tag: ' + error.message)
     }
@@ -265,17 +263,15 @@ function TagManagementModal({ isOpen, onClose }) {
     setEditingTagName(tag.name)
   }
 
-  const handleSaveEdit = async (tagId) => {
+  const handleSaveEdit = async (tagId, tagType) => {
     if (!editingTagName.trim()) {
       alert('Nama tag tidak boleh kosong')
       return
     }
 
     try {
-      // TODO: Dispatch action to update tag
-      // await dispatch(updateExerciseTag(tagId, { name: editingTagName }))
-
-      alert(`Tag akan diupdate menjadi "${editingTagName}"`)
+      await dispatch(updateTagAction(tagId, { name: editingTagName, type: tagType }))
+      alert(`Tag berhasil diupdate menjadi "${editingTagName}"`)
       setEditingTagId(null)
       setEditingTagName('')
     } catch (error) {
@@ -289,10 +285,8 @@ function TagManagementModal({ isOpen, onClose }) {
     }
 
     try {
-      // TODO: Dispatch action to delete tag
-      // await dispatch(deleteExerciseTag(tagId))
-
-      alert(`Tag "${tagName}" akan dihapus`)
+      await dispatch(deleteTag(tagId))
+      alert(`Tag "${tagName}" berhasil dihapus`)
     } catch (error) {
       alert('Gagal menghapus tag: ' + error.message)
     }
@@ -351,7 +345,7 @@ function TagManagementModal({ isOpen, onClose }) {
                           autoFocus
                         />
                         <TagActions>
-                          <IconButton onClick={() => handleSaveEdit(tag.id)}>
+                          <IconButton onClick={() => handleSaveEdit(tag.id, tag.type)}>
                             ✓
                           </IconButton>
                           <IconButton onClick={handleCancelEdit}>
@@ -399,7 +393,7 @@ function TagManagementModal({ isOpen, onClose }) {
                           autoFocus
                         />
                         <TagActions>
-                          <IconButton onClick={() => handleSaveEdit(tag.id)}>
+                          <IconButton onClick={() => handleSaveEdit(tag.id, tag.type)}>
                             ✓
                           </IconButton>
                           <IconButton onClick={handleCancelEdit}>

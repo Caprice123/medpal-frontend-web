@@ -123,7 +123,7 @@ function TagSelector({ selectedTags, onChange, type, label, required }) {
   const [selectedTagId, setSelectedTagId] = useState('')
 
   // Get tags from Redux
-  const allTags = useSelector(state => state.exercise.tags)
+  const allTags = useSelector(state => state.tags.tags)
 
   const availableTagsForType = allTags.filter(tag => tag.type === type)
   const currentSelectedTags = selectedTags.filter(tag => tag.type === type)

@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  fetchExerciseTopics,
-  fetchExerciseTags,
-  generateQuestions,
+  fetchAdminExerciseTopics,
+  fetchExerciseTopic,
   createExerciseTopic,
   updateExerciseFilters,
   clearExerciseFilters
 } from '@store/exercise/action'
+import { fetchTags } from '@store/tags/action'
 import TopicModal from './components/TopicModal'
-import QuestionPreviewModal from './components/QuestionPreviewModal'
 import TagManagementModal from './components/TagManagementModal'
+import ExerciseSettingsModal from './components/ExerciseSettingsModal'
 import {
   Container,
   Header,
@@ -38,7 +38,7 @@ import {
   TopicStats,
   StatItem,
   EmptyState
-} from './LatihanSoal.styles'
+} from './Exercise.styles'
 
 function LatihanSoal({ onBack }) {
   const dispatch = useDispatch()
@@ -46,101 +46,62 @@ function LatihanSoal({ onBack }) {
   // Redux state
   const {
     topics,
-    tags,
-    generatedQuestions,
     filters,
     loading
   } = useSelector(state => state.exercise)
 
+  const { tags } = useSelector(state => state.tags)
+
   // Local state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [isTopicModalOpen, setIsTopicModalOpen] = useState(false)
   const [isTagModalOpen, setIsTagModalOpen] = useState(false)
-  const [selectedTopic, setSelectedTopic] = useState(null)
-  const [generatingStatus, setGeneratingStatus] = useState('')
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [topicToEdit, setTopicToEdit] = useState(null)
 
   // Fetch topics and tags on mount
   useEffect(() => {
-    dispatch(fetchExerciseTopics(filters))
-    dispatch(fetchExerciseTags())
+    dispatch(fetchAdminExerciseTopics(filters))
+    dispatch(fetchTags())
   }, [])
 
-  const handleCreateTopic = async (topicData) => {
+  const handleOpenCreateModal = () => {
+    setTopicToEdit(null)
+    setIsTopicModalOpen(true)
+  }
+
+  const handleTopicClick = async (topic) => {
     try {
-      setGeneratingStatus('Generating questions...')
-
-      // Prepare content based on type
-      let content = topicData.content
-      if (topicData.type === 'pdf') {
-        // TODO: Handle PDF upload and text extraction
-        alert('PDF upload not yet implemented. Please use text input for now.')
-        setGeneratingStatus('')
-        return
-      }
-
-      // Generate questions using Redux action
-      await dispatch(generateQuestions(content, topicData.type, 10))
-
-      setSelectedTopic(topicData)
-      setIsCreateModalOpen(false)
-      setIsPreviewModalOpen(true)
+      // Fetch full topic detail with questions
+      const fullTopic = await dispatch(fetchExerciseTopic(topic.id))
+      setTopicToEdit(fullTopic)
+      setIsTopicModalOpen(true)
     } catch (error) {
-      console.error('Error generating questions:', error)
-      alert('Gagal generate soal: ' + (error.message || 'Terjadi kesalahan'))
-    } finally {
-      setGeneratingStatus('')
+      console.error('Failed to fetch topic details:', error)
+      alert('Failed to load topic details')
     }
   }
 
-  const handleSaveQuestions = async (questions) => {
-    try {
-      setGeneratingStatus('Saving topic...')
-
-      // Prepare topic data
-      const topicData = {
-        title: selectedTopic.title,
-        description: selectedTopic.description || '',
-        content_type: selectedTopic.type,
-        content: selectedTopic.content || '',
-        pdf_url: selectedTopic.pdf_url || '',
-        tags: selectedTopic.tags,
-        questions: questions.map((q, index) => ({
-          question: q.question,
-          answer: q.answer,
-          explanation: q.explanation,
-          order: index
-        }))
-      }
-
-      // Create topic using Redux action
-      await dispatch(createExerciseTopic(topicData))
-
-      setIsPreviewModalOpen(false)
-      setSelectedTopic(null)
-      alert('Topik berhasil disimpan!')
-    } catch (error) {
-      console.error('Error saving topic:', error)
-      alert('Gagal menyimpan topik: ' + (error.message || 'Terjadi kesalahan'))
-    } finally {
-      setGeneratingStatus('')
-    }
+  const handleCloseTopicModal = () => {
+    setIsTopicModalOpen(false)
+    setTopicToEdit(null)
   }
 
-  const handleTopicClick = (topic) => {
-    // TODO: Show topic details and questions
-    console.log('Topic clicked:', topic)
+  const handleTopicSubmit = async () => {
+    // Modal handles all the logic internally, just refresh the list
+    await dispatch(fetchAdminExerciseTopics(filters))
+    handleCloseTopicModal()
   }
 
   // Filter handling - topics are already filtered by backend
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value }
     dispatch(updateExerciseFilters(newFilters))
-    dispatch(fetchExerciseTopics(newFilters))
+    dispatch(fetchAdminExerciseTopics(newFilters))
   }
 
   const handleClearFilters = () => {
     dispatch(clearExerciseFilters())
-    dispatch(fetchExerciseTopics({}))
+    dispatch(fetchAdminExerciseTopics({}))
   }
 
   // Get tags by type from Redux
@@ -159,11 +120,15 @@ function LatihanSoal({ onBack }) {
             <Title>Latihan Soal - Topic Management</Title>
           </TitleSection>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <AddTopicButton onClick={() => setIsSettingsModalOpen(true)} style={{ background: 'linear-gradient(135deg, #64748b, #475569)' }}>
+              <span>⚙️</span>
+              Pengaturan
+            </AddTopicButton>
             <AddTopicButton onClick={() => setIsTagModalOpen(true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
               <span>🏷️</span>
               Kelola Tag
             </AddTopicButton>
-            <AddTopicButton onClick={() => setIsCreateModalOpen(true)}>
+            <AddTopicButton onClick={handleOpenCreateModal}>
               <span>+</span>
               Buat Topik Baru
             </AddTopicButton>
@@ -258,19 +223,10 @@ function LatihanSoal({ onBack }) {
       )}
 
       <TopicModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateTopic}
-        isGenerating={!!generatingStatus}
-      />
-
-      <QuestionPreviewModal
-        isOpen={isPreviewModalOpen}
-        questions={generatedQuestions}
-        topic={selectedTopic}
-        onClose={() => setIsPreviewModalOpen(false)}
-        onSave={handleSaveQuestions}
-        isSaving={generatingStatus === 'Saving topic...'}
+        isOpen={isTopicModalOpen}
+        onClose={handleCloseTopicModal}
+        onSuccess={handleTopicSubmit}
+        topicToEdit={topicToEdit}
       />
 
       <TagManagementModal
@@ -278,42 +234,10 @@ function LatihanSoal({ onBack }) {
         onClose={() => setIsTagModalOpen(false)}
       />
 
-      {generatingStatus && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '12px',
-            textAlign: 'center',
-            minWidth: '300px'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              border: '4px solid #e5e7eb',
-              borderTop: '4px solid #8b5cf6',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem'
-            }} />
-            <p style={{ margin: 0, fontWeight: 600, color: '#374151' }}>
-              {generatingStatus}
-            </p>
-          </div>
-        </div>
-      )}
+      <ExerciseSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
     </Container>
   )
 }

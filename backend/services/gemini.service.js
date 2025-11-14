@@ -11,7 +11,7 @@ class GeminiService {
    */
   async generateQuestionsFromText(content, questionCount = 10) {
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
       const prompt = `
 Kamu adalah seorang dosen medis yang ahli dalam membuat soal latihan untuk mahasiswa kedokteran.

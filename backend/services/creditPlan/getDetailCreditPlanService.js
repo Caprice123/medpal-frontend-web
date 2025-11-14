@@ -3,7 +3,7 @@ import { BaseService } from "../baseService.js";
 
 export class GetDetailCreditPlanService extends BaseService {
     static async call(id) {
-        const plan = await prisma.creditPlan.findUnique({
+        const plan = await prisma.credit_plans.findUnique({
             where: { id: Number(id) }
         })
         if (!plan) {

@@ -14,7 +14,7 @@ export class ToggleCreditPlanService extends BaseService {
         if (isActive !== undefined) updateData.isActive = isActive
         if (isPopular !== undefined) updateData.isPopular = isPopular
 
-        const plan = await prisma.creditPlan.update({
+        const plan = await prisma.credit_plans.update({
             where: { id: parseInt(id) },
             data: updateData
         })
@@ -23,7 +23,7 @@ export class ToggleCreditPlanService extends BaseService {
 
     static async validate({ id, isActive, isPopular }) {
         // Check if plan exists
-        const existingPlan = await prisma.creditPlan.findUnique({
+        const existingPlan = await prisma.credit_plans.findUnique({
             where: { id: parseInt(id) }
         })
 

@@ -8,7 +8,7 @@ export class CreateCreditPlanService extends BaseService {
 
         this.validate({ name, credits, price })
 
-        const plan = await prisma.creditPlan.create({
+        const plan = await prisma.credit_plans.create({
             data: {
                 name,
                 description: description || null,

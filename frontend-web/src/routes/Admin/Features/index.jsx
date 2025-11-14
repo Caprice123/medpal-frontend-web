@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import FeaturesList from './components/FeaturesList'
 import FeatureConfig from './components/FeatureConfig'
-import LatihanSoal from './subpages/LatihanSoal'
+import Exercise from './subpages/Exercise'
 import {
   Container,
   HeaderSection,
@@ -106,7 +106,7 @@ function Features() {
     // Check if feature has custom subpage
     if (selectedFeature?.id === 2) {
       // Latihan Soal
-      return <LatihanSoal onBack={handleBackToList} />
+      return <Exercise onBack={handleBackToList} />
     }
 
     // Default feature config for other features

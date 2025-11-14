@@ -11,13 +11,13 @@ export const getUserCreditBalance = async (req, res) => {
   try {
     const userId = req.user.id
 
-    let userCredit = await prisma.userCredit.findUnique({
+    let userCredit = await prisma.user_credits.findUnique({
       where: { userId }
     })
 
     // Create user credit record if it doesn't exist
     if (!userCredit) {
-      userCredit = await prisma.userCredit.create({
+      userCredit = await prisma.user_credits.create({
         data: {
           userId,
           balance: 0
@@ -54,7 +54,7 @@ export const getUserCreditTransactions = async (req, res) => {
     }
 
     const [transactions, total] = await Promise.all([
-      prisma.creditTransaction.findMany({
+      prisma.credit_transactions.findMany({
         where,
         include: {
           creditPlan: {
@@ -69,7 +69,7 @@ export const getUserCreditTransactions = async (req, res) => {
         take: parseInt(limit),
         skip: parseInt(offset)
       }),
-      prisma.creditTransaction.count({ where })
+      prisma.credit_transactions.count({ where })
     ])
 
     res.status(200).json({
@@ -109,7 +109,7 @@ export const purchaseCredit = async (req, res) => {
     }
 
     // Get credit plan
-    const creditPlan = await prisma.creditPlan.findUnique({
+    const creditPlan = await prisma.credit_plans.findUnique({
       where: { id: parseInt(creditPlanId) }
     })
 
@@ -128,12 +128,12 @@ export const purchaseCredit = async (req, res) => {
     }
 
     // Get or create user credit
-    let userCredit = await prisma.userCredit.findUnique({
+    let userCredit = await prisma.user_credits.findUnique({
       where: { userId }
     })
 
     if (!userCredit) {
-      userCredit = await prisma.userCredit.create({
+      userCredit = await prisma.user_credits.create({
         data: {
           userId,
           balance: 0
@@ -150,7 +150,7 @@ export const purchaseCredit = async (req, res) => {
       : creditPlan.price
 
     // Create transaction record
-    const transaction = await prisma.creditTransaction.create({
+    const transaction = await prisma.credit_transactions.create({
       data: {
         userId,
         userCreditId: userCredit.id,
@@ -180,7 +180,7 @@ export const purchaseCredit = async (req, res) => {
         })
 
         // Update transaction with Xendit invoice ID
-        await prisma.creditTransaction.update({
+        await prisma.credit_transactions.update({
           where: { id: transaction.id },
           data: {
             paymentReference: invoice.id // Store Xendit invoice ID
@@ -211,7 +211,7 @@ export const purchaseCredit = async (req, res) => {
         console.error('Xendit error:', xenditError)
 
         // Delete transaction if Xendit fails
-        await prisma.creditTransaction.delete({
+        await prisma.credit_transactions.delete({
           where: { id: transaction.id }
         })
 
@@ -254,7 +254,7 @@ export const confirmPayment = async (req, res) => {
     const { transactionId } = req.params
     const { status = 'completed' } = req.body // 'completed' or 'failed'
 
-    const transaction = await prisma.creditTransaction.findUnique({
+    const transaction = await prisma.credit_transactions.findUnique({
       where: { id: parseInt(transactionId) },
       include: { creditPlan: true }
     })
@@ -275,7 +275,7 @@ export const confirmPayment = async (req, res) => {
 
     if (status === 'completed') {
       // Add credits to user's account
-      const userCredit = await prisma.userCredit.findUnique({
+      const userCredit = await prisma.user_credits.findUnique({
         where: { id: transaction.userCreditId }
       })
 
@@ -283,11 +283,11 @@ export const confirmPayment = async (req, res) => {
 
       // Update in transaction
       await prisma.$transaction([
-        prisma.userCredit.update({
+        prisma.user_credits.update({
           where: { id: transaction.userCreditId },
           data: { balance: newBalance }
         }),
-        prisma.creditTransaction.update({
+        prisma.credit_transactions.update({
           where: { id: parseInt(transactionId) },
           data: {
             paymentStatus: 'completed',
@@ -303,7 +303,7 @@ export const confirmPayment = async (req, res) => {
       })
     } else {
       // Mark as failed
-      await prisma.creditTransaction.update({
+      await prisma.credit_transactions.update({
         where: { id: parseInt(transactionId) },
         data: { paymentStatus: 'failed' }
       })
@@ -337,7 +337,7 @@ export const deductCredits = async (req, res) => {
     }
 
     // Get user credit
-    const userCredit = await prisma.userCredit.findUnique({
+    const userCredit = await prisma.user_credits.findUnique({
       where: { userId }
     })
 
@@ -363,11 +363,11 @@ export const deductCredits = async (req, res) => {
 
     // Deduct credits in transaction
     const [updatedCredit, transaction] = await prisma.$transaction([
-      prisma.userCredit.update({
+      prisma.user_credits.update({
         where: { userId },
         data: { balance: newBalance }
       }),
-      prisma.creditTransaction.create({
+      prisma.credit_transactions.create({
         data: {
           userId,
           userCreditId: userCredit.id,
@@ -412,12 +412,12 @@ export const addBonusCredits = async (req, res) => {
     }
 
     // Get or create user credit
-    let userCredit = await prisma.userCredit.findUnique({
+    let userCredit = await prisma.user_credits.findUnique({
       where: { userId: parseInt(userId) }
     })
 
     if (!userCredit) {
-      userCredit = await prisma.userCredit.create({
+      userCredit = await prisma.user_credits.create({
         data: {
           userId: parseInt(userId),
           balance: 0
@@ -429,11 +429,11 @@ export const addBonusCredits = async (req, res) => {
 
     // Add bonus in transaction
     const [updatedCredit, transaction] = await prisma.$transaction([
-      prisma.userCredit.update({
+      prisma.user_credits.update({
         where: { userId: parseInt(userId) },
         data: { balance: newBalance }
       }),
-      prisma.creditTransaction.create({
+      prisma.credit_transactions.create({
         data: {
           userId: parseInt(userId),
           userCreditId: userCredit.id,
@@ -474,7 +474,7 @@ export const getAllCreditTransactions = async (req, res) => {
     if (status) where.paymentStatus = status
 
     const [transactions, total] = await Promise.all([
-      prisma.creditTransaction.findMany({
+      prisma.credit_transactions.findMany({
         where,
         include: {
           creditPlan: {
@@ -489,7 +489,7 @@ export const getAllCreditTransactions = async (req, res) => {
         take: parseInt(limit),
         skip: parseInt(offset)
       }),
-      prisma.creditTransaction.count({ where })
+      prisma.credit_transactions.count({ where })
     ])
 
     res.status(200).json({

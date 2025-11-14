@@ -6,7 +6,7 @@ export class GetListCreditsService extends BaseService {
         const where = {}
 
 
-        const plans = await prisma.creditPlan.findMany({
+        const plans = await prisma.credit_plans.findMany({
             where: where,
             orderBy: [
                 { order: 'asc' },

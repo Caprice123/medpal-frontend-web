@@ -2,9 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { startCronJobs } from './jobs/cron.js';
+import { errorHandler } from './middleware/errorHandler.middleware.js';
 import authRoutes from './routes/api/v1/auth.routes.js';
 import creditRoutes from './routes/credit.routes.js';
 import creditPlanRoutes from './routes/api/v1/creditPlan.routes.js';
+import exerciseRoutes from './routes/api/v1/exercise.routes.js';
+import tagRoutes from './routes/api/v1/tag.routes.js';
+import sessionRoutes from './routes/api/v1/session.routes.js';
+import featureRoutes from './routes/api/v1/feature.routes.js';
 import adminCreditPlanRoutes from './routes/admin/v1/creditPlan.routes.js';
 import adminExerciseRoutes from './routes/admin/v1/exercise.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
@@ -33,17 +38,18 @@ app.use('/api', authRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/v1/credit-plans', creditPlanRoutes);
+app.use('/api/v1/exercises', exerciseRoutes);
+app.use('/api/v1/tags', tagRoutes);
+app.use('/api/v1/sessions', sessionRoutes);
+app.use('/api/v1/features', featureRoutes);
 
 // Admin Routes
 app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);
 app.use('/admin/v1/exercises', adminExerciseRoutes);
 
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

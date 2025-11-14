@@ -24,7 +24,7 @@ class AuthService {
     }
 
     // Check if user exists by email or googleId
-    let user = await prisma.user.findFirst({
+    let user = await prisma.users.findFirst({
       where: {
         OR: [
           { email: googleUserInfo.email },
@@ -35,7 +35,7 @@ class AuthService {
 
     if (!user) {
       // Create new user
-      user = await prisma.user.create({
+      user = await prisma.users.create({
         data: {
           email: googleUserInfo.email,
           name: googleUserInfo.name,
@@ -47,7 +47,7 @@ class AuthService {
       });
     } else {
       // Update user info from Google if changed
-      user = await prisma.user.update({
+      user = await prisma.users.update({
         where: { id: user.id },
         data: {
           name: googleUserInfo.name,
@@ -79,7 +79,7 @@ class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
 
-    await prisma.userSession.create({
+    await prisma.user_sessions.create({
       data: {
         userId: user.id,
         token,
@@ -102,7 +102,7 @@ class AuthService {
    * @param {String} userId
    */
   async deactivateUserSessions(userId) {
-    await prisma.userSession.updateMany({
+    await prisma.user_sessions.updateMany({
       where: {
         userId,
         isActive: true
@@ -121,11 +121,12 @@ class AuthService {
   async verifyToken(token) {
     try {
       // Verify JWT
+      console.log(token)
       const decoded = jwt.verify(token, JWT_SECRET);
       console.log(decoded)
 
       // Check if session exists and is active
-      const session = await prisma.userSession.findUnique({
+      const session = await prisma.user_sessions.findUnique({
         where: { token }
       });
 
@@ -135,7 +136,7 @@ class AuthService {
 
       // Check if session has expired
       if (new Date() > session.expiresAt) {
-        await prisma.userSession.update({
+        await prisma.user_sessions.update({
           where: { id: session.id },
           data: { isActive: false }
         });
@@ -143,7 +144,7 @@ class AuthService {
       }
 
       // Get user
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: decoded.userId },
         select: {
           id: true,
@@ -161,7 +162,7 @@ class AuthService {
       }
 
       // Update last active time
-      await prisma.userSession.update({
+      await prisma.user_sessions.update({
         where: { id: session.id },
         data: { lastActiveAt: new Date() }
       });
@@ -178,12 +179,12 @@ class AuthService {
    * @param {String} token
    */
   async logout(token) {
-    const session = await prisma.userSession.findUnique({
+    const session = await prisma.user_sessions.findUnique({
       where: { token }
     });
 
     if (session) {
-      await prisma.userSession.update({
+      await prisma.user_sessions.update({
         where: { id: session.id },
         data: { isActive: false }
       });
@@ -197,7 +198,7 @@ class AuthService {
    * @param {String} userId
    */
   async getUserSessions(userId) {
-    return await prisma.userSession.findMany({
+    return await prisma.user_sessions.findMany({
       where: {
         userId,
         isActive: true

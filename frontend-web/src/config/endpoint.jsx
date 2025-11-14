@@ -6,11 +6,35 @@ export default {
     Logout: "/api/v1/logout",
     creditPlans: `${API_BASE_URL}/api/credit-plans`,
     credits: `${API_BASE_URL}/api/credits`,
+    tags: {
+        list: `${API_BASE_URL}/api/v1/tags`,
+        create: `${API_BASE_URL}/api/v1/tags`,
+        update: (id) => `${API_BASE_URL}/api/v1/tags/${id}`,
+        delete: (id) => `${API_BASE_URL}/api/v1/tags/${id}`,
+    },
     exercises: {
-        generate: `${API_BASE_URL}/admin/v1/exercises/generate`,
-        topics: `${API_BASE_URL}/admin/v1/exercises/topics`,
-        topic: (id) => `${API_BASE_URL}/admin/v1/exercises/topics/${id}`,
-        questions: (id) => `${API_BASE_URL}/admin/v1/exercises/topics/${id}/questions`,
-        tags: `${API_BASE_URL}/admin/v1/exercises/tags`,
+        // User endpoints
+        topics: `${API_BASE_URL}/api/v1/exercises/topics`,
+        createTopic: `${API_BASE_URL}/api/v1/exercises/topics`,
+
+        // Admin endpoints
+        admin: {
+            generate: `${API_BASE_URL}/admin/v1/exercises/generate`,
+            topics: `${API_BASE_URL}/admin/v1/exercises/topics`,
+            topic: (id) => `${API_BASE_URL}/admin/v1/exercises/topics/${id}`,
+            constants: `${API_BASE_URL}/admin/v1/exercises/constants`,
+        }
+    },
+    sessions: {
+        create: `${API_BASE_URL}/api/v1/sessions`,
+        startExercise: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}/start`,
+        createExercise: `${API_BASE_URL}/api/v1/sessions/exercise`,
+        submitAnswer: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}/answer`,
+        complete: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}/complete`,
+        list: `${API_BASE_URL}/api/v1/sessions`,
+        detail: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}`,
+    },
+    features: {
+        list: `${API_BASE_URL}/api/v1/features`,
     },
 }
