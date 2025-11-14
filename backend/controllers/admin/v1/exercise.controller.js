@@ -6,6 +6,7 @@ import { ExerciseTopicSerializer } from '../../../serializers/admin/v1/exerciseT
 import { GetExerciseTopicsService } from '../../../services/exercise/getExerciseTopicsService.js'
 import { GetExerciseTopicDetailService } from '../../../services/exercise/getExerciseTopicDetailService.js'
 import { UpdateExerciseQuestionsService } from '../../../services/exercise/updateExerciseQuestionsService.js'
+import idriveService from '../../../services/idrive.service.js'
 
 class ExerciseController {
   async generateQuestions(req, res) {
@@ -33,6 +34,13 @@ class ExerciseController {
       })
     }
 
+    // Upload PDF to iDrive E2 cloud storage
+    const uploadResult = await idriveService.uploadExercisePDF(
+      req.file.path,
+      req.file.originalname.replace('.pdf', '')
+    )
+
+    // Generate questions from the uploaded PDF
     const questions = await GenerateQuestionService.call({
       pdfFilePath: req.file.path,
       type: 'pdf',
@@ -41,7 +49,12 @@ class ExerciseController {
 
     return res.status(200).json({
       success: true,
-      data: QuestionSerializer.serialize(questions)
+      data: {
+        questions: QuestionSerializer.serialize(questions),
+        pdf_url: uploadResult.url,
+        pdf_key: uploadResult.key,
+        pdf_filename: uploadResult.fileName
+      }
     })
   }
 
@@ -58,6 +71,8 @@ class ExerciseController {
       content_type,
       content,
       pdf_url,
+      pdf_key,
+      pdf_filename,
       tags,
       questions
     } = req.body
@@ -68,6 +83,8 @@ class ExerciseController {
       content_type,
       content,
       pdf_url,
+      pdf_key,
+      pdf_filename,
       tags,
       questions,
       created_by: req.user.id

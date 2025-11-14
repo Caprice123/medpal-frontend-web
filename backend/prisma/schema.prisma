@@ -71,134 +71,113 @@ model exercise_questions {
   @@index([topic_id])
 }
 
-model exercise_session_answers {
-  id                           Int                          @id @default(autoincrement())
-  exercise_session_id          Int
-  exercise_session_question_id Int
-  user_answer                  String
-  is_correct                   Boolean
-  answered_at                  DateTime                     @default(now())
-  time_taken_seconds           Int?
-  exercise_sessions            exercise_sessions            @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
-  exercise_session_questions   exercise_session_questions   @relation(fields: [exercise_session_question_id], references: [id], onDelete: Cascade)
-
-  @@index([answered_at])
-  @@index([exercise_session_id])
-  @@index([exercise_session_question_id])
-}
-
 model exercise_sessions {
-  id                          Int                           @id @default(autoincrement())
-  user_learning_session_id    Int
-  user_id                     Int
-  exercise_topic_id           Int?
-  topic_snapshot              String?
-  credits_used                Int                           @default(0)
-  started_at                  DateTime                      @default(now())
-  completed_at                DateTime?
-  status                      String                        @default("not_started")
-  score                       Int                           @default(0)
-  total_questions             Int                           @default(0)
-  exercise_session_answers    exercise_session_answers[]
-  exercise_session_questions  exercise_session_questions[]
-  exercise_topics             exercise_topics?              @relation(fields: [exercise_topic_id], references: [id])
-  user_learning_sessions      user_learning_sessions        @relation(fields: [user_learning_session_id], references: [id], onDelete: Cascade)
+    id                       Int                        @id @default(autoincrement())
+    user_learning_session_id Int                        @unique
+    exercise_topic_id        Int?
+    total_question           Int
+    credits_used             Int                        @default(0)
+    number_of_attempts       Int                        @default(0)
+    created_at               DateTime                   @default(now())
+    updated_at               DateTime                   @default(now())
+    
+    exercise_session_attempts   exercise_session_attempts[]
+    user_learning_session       user_learning_sessions          @relation(fields: [user_learning_session_id], references: [id], onDelete: Cascade)
+    exercise_session_questions  exercise_session_questions[]
+    exercise_topic              exercise_topics?                @relation(fields: [exercise_topic_id], references: [id])
 
-  @@index([exercise_topic_id])
-  @@index([started_at])
-  @@index([status])
-  @@index([user_id])
-  @@index([user_learning_session_id])
+    @@index([user_learning_session_id])
+    @@index([exercise_topic_id])
 }
+
 
 model exercise_session_questions {
-  id                       Int                        @id @default(autoincrement())
-  exercise_session_id      Int
-  question_id              Int
-  question_text            String
-  answer_text              String
-  explanation              String
-  order                    Int
-  created_at               DateTime                   @default(now())
-  exercise_sessions        exercise_sessions          @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
-  exercise_session_answers exercise_session_answers[]
+    id                           Int                        @id @default(autoincrement())
+    exercise_session_id          Int
+    question_text                String
+    answer_text                  String
+    explanation                  String
+    order                        Int
+    created_at                   DateTime                   @default(now())
 
-  @@index([exercise_session_id])
-  @@index([order])
+    exercise_session             exercise_sessions  @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
+    exercise_session_answers     exercise_session_answers[]
+
+    @@index([order])
+}
+
+model exercise_session_attempts {
+    id                          Int                           @id @default(autoincrement())
+    exercise_session_id         Int
+    attempt_number              Int                           @default(1)
+    status                      String                        @default("not_started")
+    score                       Int                           @default(0)
+    started_at                  DateTime                      @default(now())
+    completed_at                DateTime?
+    created_at                  DateTime                      @default(now())
+    updated_at                  DateTime                      @default(now())
+
+    exercise_session_answers    exercise_session_answers[]
+    exercise_session            exercise_sessions             @relation(fields: [exercise_session_id], references: [id], onDelete: Cascade)
+
+    @@index([exercise_session_id])
+    @@index([started_at])
+    @@index([status])
+}
+
+
+model exercise_session_answers {
+    id                           Int                          @id @default(autoincrement())
+    exercise_session_attempt_id  Int
+    exercise_session_question_id Int
+    user_answer                  String
+    is_correct                   Boolean
+    answered_at                  DateTime                     @default(now())
+    time_taken_seconds           Int?
+
+    exercise_session_attempts    exercise_session_attempts    @relation(fields: [exercise_session_attempt_id], references: [id], onDelete: Cascade)
+    exercise_session_questions   exercise_session_questions   @relation(fields: [exercise_session_question_id], references: [id], onDelete: Cascade)
+
+    @@index([answered_at])
+    @@index([exercise_session_attempt_id])
+    @@index([exercise_session_question_id])
 }
 
 model exercise_topic_tags {
-  id              Int             @id @default(autoincrement())
-  topic_id        Int
-  tag_id          Int
-  created_at      DateTime        @default(now())
-  tags            tags            @relation(fields: [tag_id], references: [id], onDelete: Cascade)
-  exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+    id              Int             @id @default(autoincrement())
+    topic_id        Int
+    tag_id          Int
+    created_at      DateTime        @default(now())
+    tags            tags            @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+    exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
 
-  @@unique([topic_id, tag_id])
-  @@index([tag_id])
-  @@index([topic_id])
+    @@unique([topic_id, tag_id])
+    @@index([tag_id])
+    @@index([topic_id])
 }
 
 model exercise_topics {
-  id                  Int                   @id @default(autoincrement())
-  title               String
-  description         String?
-  content_type        String
-  content             String?
-  pdf_url             String?
-  pdf_key             String?
-  pdf_filename        String?
-  status              String                @default("draft")
-  is_active           Boolean               @default(true)
-  created_by          Int
-  created_at          DateTime              @default(now())
-  updated_at          DateTime              @default(now())
-  exercise_questions  exercise_questions[]
-  exercise_sessions   exercise_sessions[]
-  exercise_topic_tags exercise_topic_tags[]
+  id                        Int                        @id @default(autoincrement())
+  title                     String
+  description               String?
+  content_type              String
+  content                   String?
+  pdf_url                   String?
+  pdf_key                   String?
+  pdf_filename              String?
+  status                    String                     @default("draft")
+  is_active                 Boolean                    @default(true)
+  created_by                Int
+  created_at                DateTime                   @default(now())
+  updated_at                DateTime                   @default(now())
+  
+  exercise_session          exercise_sessions[]
+  exercise_questions        exercise_questions[]
+  exercise_topic_tags       exercise_topic_tags[]
 
   @@index([created_by])
   @@index([is_active])
   @@index([status])
-}
-
-model features {
-  id          Int        @id @default(autoincrement())
-  name        String
-  description String @db.Text
-  icon        String @db.Text
-  cost        Int 
-  isActive    Boolean @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime
-  sessions    sessions[]
-  topics      topics[]
-}
-
-model queries {
-  id        Int      @id @default(autoincrement())
-  question  String
-  answer    String?
-  userId    Int
-  createdAt DateTime @default(now())
-}
-
-model sessions {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  featureId   Int
-  topicId     Int?
-  creditsUsed Int
-  status      String    @default("active")
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  features    features  @relation(fields: [featureId], references: [id])
-  topics      topics?   @relation(fields: [topicId], references: [id])
-
-  @@index([featureId])
-  @@index([topicId])
-  @@index([userId])
 }
 
 model tags {
@@ -215,28 +194,12 @@ model tags {
   @@index([type])
 }
 
-model topics {
-  id          Int        @id @default(autoincrement())
-  featureId   Int
-  title       String
-  description String?
-  content     String?
-  isActive    Boolean    @default(true)
-  order       Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime
-  sessions    sessions[]
-  features    features   @relation(fields: [featureId], references: [id], onDelete: Cascade)
-
-  @@index([featureId])
-}
-
 model user_credits {
   id                  Int                   @id @default(autoincrement())
   userId              Int                   @unique
   balance             Int                   @default(0)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @default(now())
   credit_transactions credit_transactions[]
 
   @@index([userId])
@@ -245,14 +208,14 @@ model user_credits {
 model user_learning_sessions {
   id                Int                 @id @default(autoincrement())
   user_id           Int
+  title             String
   type              String              @default("exercise")
-  started_at        DateTime            @default(now())
-  ended_at          DateTime?
-  status            String              @default("active")
-  exercise_sessions exercise_sessions[]
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @default(now())
 
-  @@index([started_at])
-  @@index([status])
+  exercise_session exercise_sessions?
+
+  @@index([title])
   @@index([type])
   @@index([user_id])
 }

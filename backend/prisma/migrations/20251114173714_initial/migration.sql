@@ -61,31 +61,15 @@ CREATE TABLE "exercise_questions" (
 );
 
 -- CreateTable
-CREATE TABLE "exercise_session_answers" (
-    "id" SERIAL NOT NULL,
-    "exercise_session_id" INTEGER NOT NULL,
-    "exercise_session_question_id" INTEGER NOT NULL,
-    "user_answer" TEXT NOT NULL,
-    "is_correct" BOOLEAN NOT NULL,
-    "answered_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "time_taken_seconds" INTEGER,
-
-    CONSTRAINT "exercise_session_answers_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "exercise_sessions" (
     "id" SERIAL NOT NULL,
     "user_learning_session_id" INTEGER NOT NULL,
-    "user_id" INTEGER NOT NULL,
     "exercise_topic_id" INTEGER,
-    "topic_snapshot" TEXT,
+    "total_question" INTEGER NOT NULL,
     "credits_used" INTEGER NOT NULL DEFAULT 0,
-    "started_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "completed_at" TIMESTAMP(3),
-    "status" TEXT NOT NULL DEFAULT 'not_started',
-    "score" INTEGER NOT NULL DEFAULT 0,
-    "total_questions" INTEGER NOT NULL DEFAULT 0,
+    "number_of_attempts" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "exercise_sessions_pkey" PRIMARY KEY ("id")
 );
@@ -94,7 +78,6 @@ CREATE TABLE "exercise_sessions" (
 CREATE TABLE "exercise_session_questions" (
     "id" SERIAL NOT NULL,
     "exercise_session_id" INTEGER NOT NULL,
-    "question_id" INTEGER NOT NULL,
     "question_text" TEXT NOT NULL,
     "answer_text" TEXT NOT NULL,
     "explanation" TEXT NOT NULL,
@@ -102,6 +85,34 @@ CREATE TABLE "exercise_session_questions" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "exercise_session_questions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "exercise_session_attempts" (
+    "id" SERIAL NOT NULL,
+    "exercise_session_id" INTEGER NOT NULL,
+    "attempt_number" INTEGER NOT NULL DEFAULT 1,
+    "status" TEXT NOT NULL DEFAULT 'not_started',
+    "score" INTEGER NOT NULL DEFAULT 0,
+    "started_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "exercise_session_attempts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "exercise_session_answers" (
+    "id" SERIAL NOT NULL,
+    "exercise_session_attempt_id" INTEGER NOT NULL,
+    "exercise_session_question_id" INTEGER NOT NULL,
+    "user_answer" TEXT NOT NULL,
+    "is_correct" BOOLEAN NOT NULL,
+    "answered_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "time_taken_seconds" INTEGER,
+
+    CONSTRAINT "exercise_session_answers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -134,45 +145,6 @@ CREATE TABLE "exercise_topics" (
 );
 
 -- CreateTable
-CREATE TABLE "features" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "icon" TEXT NOT NULL,
-    "cost" INTEGER NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "features_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "queries" (
-    "id" SERIAL NOT NULL,
-    "question" TEXT NOT NULL,
-    "answer" TEXT,
-    "userId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "queries_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "sessions" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "featureId" INTEGER NOT NULL,
-    "topicId" INTEGER,
-    "creditsUsed" INTEGER NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'active',
-    "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "completedAt" TIMESTAMP(3),
-
-    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "tags" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
@@ -185,27 +157,12 @@ CREATE TABLE "tags" (
 );
 
 -- CreateTable
-CREATE TABLE "topics" (
-    "id" SERIAL NOT NULL,
-    "featureId" INTEGER NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT,
-    "content" TEXT,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "order" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "topics_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "user_credits" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "balance" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "user_credits_pkey" PRIMARY KEY ("id")
 );
@@ -214,10 +171,10 @@ CREATE TABLE "user_credits" (
 CREATE TABLE "user_learning_sessions" (
     "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
     "type" TEXT NOT NULL DEFAULT 'exercise',
-    "started_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "ended_at" TIMESTAMP(3),
-    "status" TEXT NOT NULL DEFAULT 'active',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "user_learning_sessions_pkey" PRIMARY KEY ("id")
 );
@@ -277,34 +234,34 @@ CREATE INDEX "exercise_questions_order_idx" ON "exercise_questions"("order");
 CREATE INDEX "exercise_questions_topic_id_idx" ON "exercise_questions"("topic_id");
 
 -- CreateIndex
-CREATE INDEX "exercise_session_answers_answered_at_idx" ON "exercise_session_answers"("answered_at");
-
--- CreateIndex
-CREATE INDEX "exercise_session_answers_exercise_session_id_idx" ON "exercise_session_answers"("exercise_session_id");
-
--- CreateIndex
-CREATE INDEX "exercise_session_answers_exercise_session_question_id_idx" ON "exercise_session_answers"("exercise_session_question_id");
-
--- CreateIndex
-CREATE INDEX "exercise_sessions_exercise_topic_id_idx" ON "exercise_sessions"("exercise_topic_id");
-
--- CreateIndex
-CREATE INDEX "exercise_sessions_started_at_idx" ON "exercise_sessions"("started_at");
-
--- CreateIndex
-CREATE INDEX "exercise_sessions_status_idx" ON "exercise_sessions"("status");
-
--- CreateIndex
-CREATE INDEX "exercise_sessions_user_id_idx" ON "exercise_sessions"("user_id");
+CREATE UNIQUE INDEX "exercise_sessions_user_learning_session_id_key" ON "exercise_sessions"("user_learning_session_id");
 
 -- CreateIndex
 CREATE INDEX "exercise_sessions_user_learning_session_id_idx" ON "exercise_sessions"("user_learning_session_id");
 
 -- CreateIndex
-CREATE INDEX "exercise_session_questions_exercise_session_id_idx" ON "exercise_session_questions"("exercise_session_id");
+CREATE INDEX "exercise_sessions_exercise_topic_id_idx" ON "exercise_sessions"("exercise_topic_id");
 
 -- CreateIndex
 CREATE INDEX "exercise_session_questions_order_idx" ON "exercise_session_questions"("order");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_attempts_exercise_session_id_idx" ON "exercise_session_attempts"("exercise_session_id");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_attempts_started_at_idx" ON "exercise_session_attempts"("started_at");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_attempts_status_idx" ON "exercise_session_attempts"("status");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_answers_answered_at_idx" ON "exercise_session_answers"("answered_at");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_answers_exercise_session_attempt_id_idx" ON "exercise_session_answers"("exercise_session_attempt_id");
+
+-- CreateIndex
+CREATE INDEX "exercise_session_answers_exercise_session_question_id_idx" ON "exercise_session_answers"("exercise_session_question_id");
 
 -- CreateIndex
 CREATE INDEX "exercise_topic_tags_tag_id_idx" ON "exercise_topic_tags"("tag_id");
@@ -325,15 +282,6 @@ CREATE INDEX "exercise_topics_is_active_idx" ON "exercise_topics"("is_active");
 CREATE INDEX "exercise_topics_status_idx" ON "exercise_topics"("status");
 
 -- CreateIndex
-CREATE INDEX "sessions_featureId_idx" ON "sessions"("featureId");
-
--- CreateIndex
-CREATE INDEX "sessions_topicId_idx" ON "sessions"("topicId");
-
--- CreateIndex
-CREATE INDEX "sessions_userId_idx" ON "sessions"("userId");
-
--- CreateIndex
 CREATE INDEX "tags_is_active_idx" ON "tags"("is_active");
 
 -- CreateIndex
@@ -343,19 +291,13 @@ CREATE INDEX "tags_type_idx" ON "tags"("type");
 CREATE UNIQUE INDEX "tags_name_type_key" ON "tags"("name", "type");
 
 -- CreateIndex
-CREATE INDEX "topics_featureId_idx" ON "topics"("featureId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "user_credits_userId_key" ON "user_credits"("userId");
 
 -- CreateIndex
 CREATE INDEX "user_credits_userId_idx" ON "user_credits"("userId");
 
 -- CreateIndex
-CREATE INDEX "user_learning_sessions_started_at_idx" ON "user_learning_sessions"("started_at");
-
--- CreateIndex
-CREATE INDEX "user_learning_sessions_status_idx" ON "user_learning_sessions"("status");
+CREATE INDEX "user_learning_sessions_title_idx" ON "user_learning_sessions"("title");
 
 -- CreateIndex
 CREATE INDEX "user_learning_sessions_type_idx" ON "user_learning_sessions"("type");
@@ -388,31 +330,25 @@ ALTER TABLE "credit_transactions" ADD CONSTRAINT "credit_transactions_userCredit
 ALTER TABLE "exercise_questions" ADD CONSTRAINT "exercise_questions_topic_id_fkey" FOREIGN KEY ("topic_id") REFERENCES "exercise_topics"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exercise_session_answers" ADD CONSTRAINT "exercise_session_answers_exercise_session_id_fkey" FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "exercise_session_answers" ADD CONSTRAINT "exercise_session_answers_exercise_session_question_id_fkey" FOREIGN KEY ("exercise_session_question_id") REFERENCES "exercise_session_questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "exercise_sessions" ADD CONSTRAINT "exercise_sessions_user_learning_session_id_fkey" FOREIGN KEY ("user_learning_session_id") REFERENCES "user_learning_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "exercise_sessions" ADD CONSTRAINT "exercise_sessions_exercise_topic_id_fkey" FOREIGN KEY ("exercise_topic_id") REFERENCES "exercise_topics"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exercise_sessions" ADD CONSTRAINT "exercise_sessions_user_learning_session_id_fkey" FOREIGN KEY ("user_learning_session_id") REFERENCES "user_learning_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "exercise_session_questions" ADD CONSTRAINT "exercise_session_questions_exercise_session_id_fkey" FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "exercise_session_questions" ADD CONSTRAINT "exercise_session_questions_exercise_session_id_fkey" FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "exercise_session_attempts" ADD CONSTRAINT "exercise_session_attempts_exercise_session_id_fkey" FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "exercise_session_answers" ADD CONSTRAINT "exercise_session_answers_exercise_session_attempt_id_fkey" FOREIGN KEY ("exercise_session_attempt_id") REFERENCES "exercise_session_attempts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "exercise_session_answers" ADD CONSTRAINT "exercise_session_answers_exercise_session_question_id_fkey" FOREIGN KEY ("exercise_session_question_id") REFERENCES "exercise_session_questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "exercise_topic_tags" ADD CONSTRAINT "exercise_topic_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "exercise_topic_tags" ADD CONSTRAINT "exercise_topic_tags_topic_id_fkey" FOREIGN KEY ("topic_id") REFERENCES "exercise_topics"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_featureId_fkey" FOREIGN KEY ("featureId") REFERENCES "features"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "topics"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "topics" ADD CONSTRAINT "topics_featureId_fkey" FOREIGN KEY ("featureId") REFERENCES "features"("id") ON DELETE CASCADE ON UPDATE CASCADE;

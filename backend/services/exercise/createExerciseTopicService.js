@@ -3,7 +3,7 @@ import prisma from "../../prisma/client.js"
 import { BaseService } from "../baseService.js"
 
 export class CreateExerciseTopicService extends BaseService {
-    static async call({ title, description, content_type, content, pdf_url, tags, questions, created_by }) {
+    static async call({ title, description, content_type, content, pdf_url, pdf_key, pdf_filename, tags, questions, created_by }) {
         // Validate inputs
         await this.validate({ title, description, content_type, content, pdf_url, tags, questions })
 
@@ -15,6 +15,8 @@ export class CreateExerciseTopicService extends BaseService {
                 content_type,
                 content: content_type === 'text' ? content : null,
                 pdf_url: content_type === 'pdf' ? pdf_url : null,
+                pdf_key: content_type === 'pdf' ? pdf_key : null,
+                pdf_filename: content_type === 'pdf' ? pdf_filename : null,
                 status: 'ready',
                 created_by: created_by,
                 exercise_questions: {

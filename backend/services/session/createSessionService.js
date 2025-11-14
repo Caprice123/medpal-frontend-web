@@ -25,13 +25,24 @@ export class CreateSessionService extends BaseService {
         }
       })
 
-      // Create exercise session with not_started status
-      let childSession = null
+      // Create exercise session (container)
+      let exerciseSession = null
+      let firstAttempt = null
+
       if (sessionType === 'exercise') {
-        childSession = await tx.exercise_sessions.create({
+        exerciseSession = await tx.exercise_sessions.create({
           data: {
             user_learning_session_id: userLearningSession.id,
             user_id: parseInt(userId),
+            number_of_attempts: 1,
+          }
+        })
+
+        // Create first attempt with not_started status
+        firstAttempt = await tx.exercise_session_attempts.create({
+          data: {
+            exercise_session_id: exerciseSession.id,
+            attempt_number: 1,
             status: 'not_started'
           }
         })
@@ -39,7 +50,8 @@ export class CreateSessionService extends BaseService {
 
       return {
         userLearningSession,
-        exerciseSession: childSession
+        exerciseSession,
+        firstAttempt
       }
     })
 
