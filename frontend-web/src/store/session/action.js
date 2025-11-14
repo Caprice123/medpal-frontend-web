@@ -159,15 +159,16 @@ export const nextQuestion = () => (dispatch, getState) => {
 }
 
 /**
- * Complete the current session
+ * Complete the current session with optional answers
  */
-export const completeSession = (sessionId) => async (dispatch) => {
+export const completeSession = (sessionId, answers = null) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCompletingSession', value: true }))
     dispatch(clearError())
 
     const response = await postWithToken(
-      Endpoints.sessions.complete(sessionId)
+      Endpoints.sessions.complete(sessionId),
+      answers ? { answers } : {}
     )
 
     const data = response.data.data

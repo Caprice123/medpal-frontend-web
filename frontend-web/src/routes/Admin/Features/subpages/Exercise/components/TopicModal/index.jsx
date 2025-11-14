@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { generateQuestions, createExerciseTopic } from '@store/exercise/action'
+import { generateQuestions, generateQuestionsFromPDF, createExerciseTopic } from '@store/exercise/action'
 import TagSelector from '../TagSelector'
 import {
   DndContext,
@@ -715,16 +715,19 @@ function TopicModal({ isOpen, onClose, onSuccess, topicToEdit = null }) {
     try {
       setIsGenerating(true)
 
-      // TODO: Handle PDF upload
-      if (formData.type === 'pdf') {
-        alert('PDF upload not yet implemented. Please use text input for now.')
-        return
-      }
+      let generatedQuestions
 
-      // Generate questions
-      const generatedQuestions = await dispatch(
-        generateQuestions(formData.content, formData.type, formData.numberOfQuestions)
-      )
+      if (formData.type === 'pdf') {
+        // Generate questions from PDF
+        generatedQuestions = await dispatch(
+          generateQuestionsFromPDF(formData.file, formData.numberOfQuestions)
+        )
+      } else {
+        // Generate questions from text
+        generatedQuestions = await dispatch(
+          generateQuestions(formData.content, formData.type, formData.numberOfQuestions)
+        )
+      }
 
       setQuestions(generatedQuestions)
     } catch (error) {
@@ -754,6 +757,7 @@ function TopicModal({ isOpen, onClose, onSuccess, topicToEdit = null }) {
       return
     }
 
+    // Questions must exist for both text and PDF
     if (questions.length === 0) {
       alert('Minimal satu soal harus ada. Klik "Generate Soal" terlebih dahulu.')
       return
@@ -762,11 +766,12 @@ function TopicModal({ isOpen, onClose, onSuccess, topicToEdit = null }) {
     try {
       setIsSaving(true)
 
+      // Both text and PDF now send questions in JSON format
       const topicData = {
         title: formData.title,
         description: formData.description || '',
         content_type: formData.type,
-        content: formData.content || '',
+        content: formData.type === 'text' ? formData.content : '',
         pdf_url: formData.pdf_url || '',
         tags: formData.tags,
         questions: questions.map((q, index) => ({

@@ -44,6 +44,10 @@ Pastikan output adalah valid JSON array.`
     {
       key: 'exercise_credit_cost',
       value: '10'
+    }, 
+    {
+        key: "exercise_session_type",
+        value: "exercise",
     }
   ]
 

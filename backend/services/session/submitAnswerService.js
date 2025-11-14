@@ -23,7 +23,7 @@ export class SubmitAnswerService extends BaseService {
     }
 
     // Get the question snapshot from exercise_session_questions table
-    const questionSnapshot = await prisma.exercise_sessionsQuestion.findFirst({
+    const questionSnapshot = await prisma.exercise_session_questions.findFirst({
       where: {
         exercise_session_id: parseInt(exerciseSessionId),
         question_id: parseInt(questionId)
@@ -35,7 +35,7 @@ export class SubmitAnswerService extends BaseService {
     }
 
     // Check if answer already exists
-    const existingAnswer = await prisma.exercise_sessionsAnswer.findFirst({
+    const existingAnswer = await prisma.exercise_session_answers.findFirst({
       where: {
         exercise_session_id: parseInt(exerciseSessionId),
         exercise_session_question_id: questionSnapshot.id
@@ -50,7 +50,7 @@ export class SubmitAnswerService extends BaseService {
     const isCorrect = questionSnapshot.answer_text.toLowerCase().trim() === userAnswer.toLowerCase().trim()
 
     // Save answer
-    const answer = await prisma.exercise_sessionsAnswer.create({
+    const answer = await prisma.exercise_session_answers.create({
       data: {
         exercise_session_id: parseInt(exerciseSessionId),
         exercise_session_question_id: questionSnapshot.id,

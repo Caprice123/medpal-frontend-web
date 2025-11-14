@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -64,15 +65,90 @@ Hasilkan HANYA JSON array tanpa teks tambahan apapun.
   }
 
   /**
-   * Generate fill-in-the-blank questions from PDF content
-   * @param {string} pdfText - Extracted text from PDF
+   * Generate fill-in-the-blank questions from PDF file
+   * This method uploads the PDF to Gemini and analyzes both text and images
+   * @param {string} pdfFilePath - Path to the PDF file
    * @param {number} questionCount - Number of questions to generate
    * @returns {Promise<Array>} Array of generated questions
    */
-  async generateQuestionsFromPDF(pdfText, questionCount = 10) {
-    // For now, use the same method as text generation
-    // In future, can add PDF-specific processing
-    return this.generateQuestionsFromText(pdfText, questionCount);
+  async generateQuestionsFromPDF(pdfFilePath, questionCount = 10) {
+    try {
+      // Check file size (max 20MB for inline PDFs)
+      const stats = fs.statSync(pdfFilePath);
+      const fileSizeMB = stats.size / (1024 * 1024);
+
+      console.log(`Processing PDF: ${pdfFilePath} - Size: ${fileSizeMB.toFixed(2)} MB`);
+
+      if (fileSizeMB > 20) {
+        throw new Error(`PDF too large: ${fileSizeMB.toFixed(2)} MB (max 20 MB for inline data)`);
+      }
+
+      // Read PDF file and convert to base64
+      const pdfBuffer = fs.readFileSync(pdfFilePath);
+      const pdfBase64 = pdfBuffer.toString('base64');
+
+      console.log('PDF converted to base64, generating questions...');
+
+      // Generate questions using inline PDF data
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+      const prompt = `
+Kamu adalah seorang dosen medis yang ahli dalam membuat soal latihan untuk mahasiswa kedokteran.
+
+Tugas: Analisis PDF materi medis yang diberikan (termasuk teks dan gambar/diagram jika ada), lalu buatlah ${questionCount} soal fill-in-the-blank berkualitas tinggi.
+
+Format Output (JSON):
+[
+  {
+    "question": "Pertanyaan dengan ____ sebagai tempat kosong yang harus diisi",
+    "answer": "jawaban yang benar",
+    "explanation": "Penjelasan lengkap mengapa ini jawaban yang benar"
+  }
+]
+
+Aturan:
+1. Setiap pertanyaan harus menggunakan TEPAT SATU ____ (empat underscore) sebagai tempat kosong
+2. Fokus pada konsep medis penting dari materi
+3. Jika ada diagram/gambar, buat pertanyaan yang relevan dengan visualisasi tersebut
+4. Jawaban harus SATU KATA atau FRASA PENDEK (maksimal 3 kata)
+5. Penjelasan harus jelas dan edukatif (2-3 kalimat)
+6. Gunakan bahasa Indonesia yang formal dan medis
+7. Pastikan pertanyaan bervariasi dan mencakup berbagai aspek materi
+8. Output harus berupa valid JSON array
+
+Hasilkan HANYA JSON array tanpa teks tambahan apapun.
+`;
+
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: 'application/pdf',
+            data: pdfBase64,
+          },
+        },
+        { text: prompt },
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+
+      // Parse JSON response
+      const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const questions = JSON.parse(cleanedText);
+
+      console.log(`Successfully generated ${questions.length} questions from PDF`);
+
+      // Validate and clean questions
+      return questions.map((q, index) => ({
+        question: q.question || '',
+        answer: q.answer || '',
+        explanation: q.explanation || '',
+        order: index
+      }));
+    } catch (error) {
+      console.error('Error generating questions from PDF:', error);
+      throw new Error('Failed to generate questions from PDF: ' + error.message);
+    }
   }
 
   /**

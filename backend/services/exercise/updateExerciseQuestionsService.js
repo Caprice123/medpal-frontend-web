@@ -18,12 +18,12 @@ export class UpdateExerciseQuestionsService extends BaseService {
         // Delete existing questions and create new ones in a transaction
         const updatedTopic = await prisma.$transaction(async (tx) => {
             // Delete existing questions
-            await tx.exerciseQuestion.deleteMany({
+            await tx.exercise_questions.deleteMany({
                 where: { topic_id: parseInt(topicId) }
             })
 
             // Create new questions
-            await tx.exerciseQuestion.createMany({
+            await tx.exercise_questions.createMany({
                 data: questions.map((q, index) => ({
                     topic_id: parseInt(topicId),
                     question: q.question,

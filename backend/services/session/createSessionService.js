@@ -17,7 +17,7 @@ export class CreateSessionService extends BaseService {
     // Create session in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create parent learning session
-      const userLearningSession = await tx.userLearningSession.create({
+      const userLearningSession = await tx.user_learning_sessions.create({
         data: {
           user_id: parseInt(userId),
           type: sessionType,
@@ -28,7 +28,7 @@ export class CreateSessionService extends BaseService {
       // Create exercise session with not_started status
       let childSession = null
       if (sessionType === 'exercise') {
-        childSession = await tx.exerciseSession.create({
+        childSession = await tx.exercise_sessions.create({
           data: {
             user_learning_session_id: userLearningSession.id,
             user_id: parseInt(userId),

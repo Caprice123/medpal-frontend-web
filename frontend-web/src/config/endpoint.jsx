@@ -20,6 +20,7 @@ export default {
         // Admin endpoints
         admin: {
             generate: `${API_BASE_URL}/admin/v1/exercises/generate`,
+            generateFromPDF: `${API_BASE_URL}/admin/v1/exercises/generate-from-pdf`,
             topics: `${API_BASE_URL}/admin/v1/exercises/topics`,
             topic: (id) => `${API_BASE_URL}/admin/v1/exercises/topics/${id}`,
             constants: `${API_BASE_URL}/admin/v1/exercises/constants`,

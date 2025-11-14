@@ -13,7 +13,7 @@ export class GetExerciseTopicsService extends BaseService {
 
         if (filters.university) {
             tagFilters.push({
-                tags: {
+                exercise_topic_tags: {
                     some: {
                         tag_id: parseInt(filters.university)
                     }
@@ -23,7 +23,7 @@ export class GetExerciseTopicsService extends BaseService {
 
         if (filters.semester) {
             tagFilters.push({
-                tags: {
+                exercise_topic_tags: {
                     some: {
                         tag_id: parseInt(filters.semester)
                     }
@@ -39,12 +39,12 @@ export class GetExerciseTopicsService extends BaseService {
         const topics = await prisma.exercise_topics.findMany({
             where,
             include: {
-                tags: {
+                exercise_topic_tags: {
                     include: {
-                        tag: true
+                        tags: true
                     }
                 },
-                questions: {
+                exercise_questions: {
                     select: {
                         id: true
                     }
@@ -63,12 +63,12 @@ export class GetExerciseTopicsService extends BaseService {
             content_type: topic.content_type,
             content: topic.content,
             pdf_url: topic.pdf_url,
-            tags: topic.tags.map(t => ({
-                id: t.tag.id,
-                name: t.tag.name,
-                type: t.tag.type
+            tags: topic.exercise_topic_tags.map(t => ({
+                id: t.tags.id,
+                name: t.tags.name,
+                type: t.tags.type
             })),
-            questionCount: topic.questions.length,
+            questionCount: topic.exercise_questions.length,
             createdAt: topic.created_at,
             updatedAt: topic.updated_at
         }))

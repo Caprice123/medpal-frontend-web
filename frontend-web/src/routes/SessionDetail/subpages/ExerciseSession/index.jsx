@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { fetchExerciseTopics } from '@store/exercise/action'
 import { fetchCreditBalance } from '@store/credit/action'
-import { startExerciseWithTopic, submitAnswer, nextQuestion, completeSession } from '@store/session/action'
-import ExercisePlayer from './ExercisePlayer'
+import { startExerciseWithTopic } from '@store/session/action'
+import ExercisePlayer from './components/ExercisePlayer'
 import SessionResults from '@components/SessionResults'
 import {
   Container,
@@ -32,13 +32,14 @@ import {
   EmptyState,
   LoadingContainer,
   LoadingSpinner
-} from './ExerciseSession.styles'
+} from './ExerciseSessionSubpage.styles'
+import { fetchSessionDetail } from '../../../../store/session/action'
 
-function ExerciseSession({ sessionId }) {
+function ExerciseSessionSubpage({ sessionId }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { currentSession, topicSnapshot } = useSelector(state => state.session)
+  const { topicSnapshot, sessionDetail } = useSelector(state => state.session)
   const { topics, isLoading } = useSelector(state => state.exercise)
   const { balance } = useSelector(state => state.credit)
 
@@ -50,11 +51,11 @@ function ExerciseSession({ sessionId }) {
 
   useEffect(() => {
     // Fetch topics and credit balance when status is not_started
-    if (currentSession?.status === 'not_started') {
+    if (sessionDetail?.status === 'not_started') {
       dispatch(fetchExerciseTopics())
       dispatch(fetchCreditBalance())
     }
-  }, [dispatch, currentSession?.status])
+  }, [dispatch, sessionDetail?.status])
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -73,17 +74,9 @@ function ExerciseSession({ sessionId }) {
 
     try {
       await dispatch(startExerciseWithTopic(sessionId, topic.id))
-      alert(`Sesi latihan dimulai! ${exerciseCost} kredit dikurangkan.`)
+      await dispatch(fetchSessionDetail(sessionId))
     } catch (error) {
       alert('Gagal memulai latihan: ' + (error.message || 'Terjadi kesalahan'))
-    }
-  }
-
-  const handleComplete = async () => {
-    try {
-      await dispatch(completeSession(sessionId))
-    } catch (error) {
-      console.error('Failed to complete session:', error)
     }
   }
 
@@ -101,7 +94,7 @@ function ExerciseSession({ sessionId }) {
   )].sort()
 
   // Show loading state
-  if (!currentSession) {
+  if (!sessionDetail) {
     return (
       <LoadingContainer>
         <LoadingSpinner />
@@ -113,10 +106,10 @@ function ExerciseSession({ sessionId }) {
   }
 
   // Show results if completed
-  if (currentSession.status === 'completed') {
+  if (sessionDetail.status === 'completed') {
     return (
       <SessionResults
-        session={currentSession}
+        sessionData={sessionDetail}
         onTryAgain={handleBackToDashboard}
         onViewHistory={handleBackToDashboard}
       />
@@ -124,12 +117,12 @@ function ExerciseSession({ sessionId }) {
   }
 
   // Show player if active
-  if (currentSession.status === 'active' && topicSnapshot) {
-    return <ExercisePlayer sessionId={sessionId} onComplete={handleComplete} />
+  if (sessionDetail.status === 'active' && topicSnapshot) {
+    return <ExercisePlayer sessionId={sessionId} />
   }
 
   // Show topic selection if not_started
-  if (currentSession.status === 'not_started') {
+  if (sessionDetail.status === 'not_started') {
     return (
       <Container>
         <Header>
@@ -234,4 +227,4 @@ function ExerciseSession({ sessionId }) {
   return null
 }
 
-export default ExerciseSession
+export default ExerciseSessionSubpage

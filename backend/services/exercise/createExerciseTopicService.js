@@ -17,7 +17,7 @@ export class CreateExerciseTopicService extends BaseService {
                 pdf_url: content_type === 'pdf' ? pdf_url : null,
                 status: 'ready',
                 created_by: created_by,
-                questions: {
+                exercise_questions: {
                     create: questions.map((q, index) => ({
                         question: q.question,
                         answer: q.answer,
@@ -25,19 +25,19 @@ export class CreateExerciseTopicService extends BaseService {
                         order: q.order !== undefined ? q.order : index
                     }))
                 },
-                tags: {
+                exercise_topic_tags: {
                     create: tags.map(tag => ({
                         tag_id: typeof tag === 'object' ? tag.id : tag
                     }))
                 }
             },
             include: {
-                questions: {
+                exercise_questions: {
                     orderBy: { order: 'asc' }
                 },
-                tags: {
+                exercise_topic_tags: {
                     include: {
-                        tag: true
+                        tags: true
                     }
                 }
             }
@@ -60,9 +60,7 @@ export class CreateExerciseTopicService extends BaseService {
             throw new ValidationError('Content is required for text type')
         }
 
-        if (content_type === 'pdf' && !pdf_url) {
-            throw new ValidationError('PDF URL is required for pdf type')
-        }
+        // PDF URL is optional - questions are pre-generated from PDF
 
         if (!tags || tags.length === 0) {
             throw new ValidationError('At least one tag is required')

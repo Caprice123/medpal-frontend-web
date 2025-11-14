@@ -24,13 +24,17 @@ import {
 } from './SessionResults.styles'
 
 function SessionResults({ sessionData, onViewHistory, onTryAgain }) {
-  const { answers, topicSnapshot } = useSelector(state => state.session)
+  const { sessionDetail } = useSelector(state => state.session)
 
-  const statistics = sessionData?.statistics || {}
-  const percentage = statistics.percentage || 0
-  const totalQuestions = statistics.total_questions || 0
-  const correctAnswers = statistics.correct_answers || 0
-  const creditsUsed = statistics.credits_used || 0
+  // Get data from sessionDetail (from fetchSessionDetail) or from sessionData prop (from complete)
+  const data = sessionData || sessionDetail
+  const topicSnapshot = data?.topic_snapshot
+  const answers = data?.answers || []
+
+  const percentage = data?.percentage || 0
+  const totalQuestions = data?.total_questions || 0
+  const correctAnswers = data?.score || 0
+  const creditsUsed = data?.credits_used || 0
 
   const getResultMessage = () => {
     if (percentage >= 80) return 'Luar Biasa!'
@@ -85,8 +89,9 @@ function SessionResults({ sessionData, onViewHistory, onTryAgain }) {
         <SectionTitle>Review Jawaban Anda</SectionTitle>
 
         {topicSnapshot?.questions.map((question, index) => {
-          const answer = answers[index]
-          const isCorrect = answer?.isCorrect
+          // Find answer by question_id
+          const answer = answers.find(a => a.question_id === question.id)
+          const isCorrect = answer?.is_correct
 
           return (
             <AnswerItem key={question.id} isCorrect={isCorrect}>
@@ -101,16 +106,16 @@ function SessionResults({ sessionData, onViewHistory, onTryAgain }) {
 
               <AnswerDetails>
                 <div>
-                  <strong>Jawaban Anda:</strong> {answer?.userAnswer || '-'}
+                  <strong>Jawaban Anda:</strong> {answer?.user_answer || '-'}
                 </div>
                 {!isCorrect && (
                   <div style={{ marginTop: '0.5rem' }}>
-                    <strong>Jawaban Benar:</strong> {answer?.correctAnswer || question.answer}
+                    <strong>Jawaban Benar:</strong> {answer?.answer_text || question.answer}
                   </div>
                 )}
-                {answer?.explanation && (
+                {(answer?.explanation || question.explanation) && (
                   <div style={{ marginTop: '0.5rem', fontStyle: 'italic' }}>
-                    <strong>Penjelasan:</strong> {answer.explanation}
+                    <strong>Penjelasan:</strong> {answer?.explanation || question.explanation}
                   </div>
                 )}
               </AnswerDetails>

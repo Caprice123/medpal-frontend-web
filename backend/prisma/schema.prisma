@@ -12,7 +12,7 @@ model constants {
   key        String   @unique
   value      String
   created_at DateTime @default(now())
-  updated_at DateTime
+  updated_at DateTime @default(now())
 
   @@index([key])
 }
@@ -28,7 +28,7 @@ model credit_plans {
   discount            Int                   @default(0)
   order               Int                   @default(0)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @default(now())
   credit_transactions credit_transactions[]
 }
 
@@ -64,7 +64,7 @@ model exercise_questions {
   explanation     String
   order           Int             @default(0)
   created_at      DateTime        @default(now())
-  updated_at      DateTime
+  updated_at      DateTime        @default(now())
   exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
 
   @@index([order])
@@ -147,11 +147,13 @@ model exercise_topics {
   content_type        String
   content             String?
   pdf_url             String?
+  pdf_key             String?
+  pdf_filename        String?
   status              String                @default("draft")
   is_active           Boolean               @default(true)
   created_by          Int
   created_at          DateTime              @default(now())
-  updated_at          DateTime
+  updated_at          DateTime              @default(now())
   exercise_questions  exercise_questions[]
   exercise_sessions   exercise_sessions[]
   exercise_topic_tags exercise_topic_tags[]
@@ -205,7 +207,7 @@ model tags {
   type                String
   is_active           Boolean               @default(true)
   created_at          DateTime              @default(now())
-  updated_at          DateTime
+  updated_at          DateTime              @default(now())
   exercise_topic_tags exercise_topic_tags[]
 
   @@unique([name, type])
@@ -279,5 +281,5 @@ model users {
   role      String   @default("user")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @default(now())
 }

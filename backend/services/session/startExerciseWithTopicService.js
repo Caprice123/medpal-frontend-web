@@ -5,9 +5,13 @@ import { GetConstantsService } from '../constant/getConstantsService.js'
 
 export class StartExerciseWithTopicService extends BaseService {
   static async call({ exerciseSessionId, exerciseTopicId, userId }) {
+    // Get credit cost from constants BEFORE transaction
+    const constants = await GetConstantsService.call(['exercise_credit_cost'])
+    const creditCost = parseInt(constants.exercise_credit_cost)
+
     const result = await prisma.$transaction(async (tx) => {
       // Get the exercise session
-      const session = await tx.exerciseSession.findUnique({
+      const session = await tx.exercise_sessions.findUnique({
         where: { id: parseInt(exerciseSessionId) }
       })
 
@@ -24,14 +28,14 @@ export class StartExerciseWithTopicService extends BaseService {
       }
 
       // Get the topic with questions
-      const topic = await tx.exerciseTopic.findUnique({
+      const topic = await tx.exercise_topics.findUnique({
         where: { id: parseInt(exerciseTopicId) },
         include: {
-          questions: {
+          exercise_questions: {
             orderBy: { order: 'asc' }
           },
-          tags: {
-            include: { tag: true }
+          exercise_topic_tags: {
+            include: { tags: true }
           }
         }
       })
@@ -40,16 +44,12 @@ export class StartExerciseWithTopicService extends BaseService {
         throw new ValidationError('Topic not found')
       }
 
-      if (topic.questions.length === 0) {
+      if (topic.exercise_questions.length === 0) {
         throw new ValidationError('Topic has no questions')
       }
 
-      // Get credit cost from constants
-      const constants = await GetConstantsService.call(['exercise_credit_cost'])
-      const creditCost = parseInt(constants.exercise_credit_cost)
-
       // Get user credit
-      const userCredit = await tx.userCredit.findUnique({
+      const userCredit = await tx.user_credits.findUnique({
         where: { userId: parseInt(userId) }
       })
 
@@ -63,15 +63,22 @@ export class StartExerciseWithTopicService extends BaseService {
         title: topic.title || 'Untitled',
         description: topic.description || '',
         content_type: topic.content_type || 'text',
-        tags: (topic.tags || []).map(t => ({
-          id: t.tag?.id || t.id,
-          name: t.tag?.name || t.name || '',
-          type: t.tag?.type || t.type || ''
+        tags: (topic.exercise_topic_tags || []).map(t => ({
+          id: t.tags?.id || t.id,
+          name: t.tags?.name || t.name || '',
+          type: t.tags?.type || t.type || ''
+        })),
+        questions: topic.exercise_questions.map((q, index) => ({
+          id: q.id,
+          question: q.question || '',
+          answer: q.answer || '',
+          explanation: q.explanation || '',
+          order: q.order !== undefined ? q.order : index
         }))
       }
 
-      // Create question snapshots
-      const questionSnapshots = topic.questions.map((q, index) => ({
+      // Create question snapshots for database
+      const questionSnapshots = topic.exercise_questions.map((q, index) => ({
         exercise_session_id: session.id,
         question_id: q.id,
         question_text: q.question || '',
@@ -80,29 +87,29 @@ export class StartExerciseWithTopicService extends BaseService {
         order: q.order !== undefined ? q.order : index
       }))
 
-      await tx.exerciseSessionQuestion.createMany({
+      await tx.exercise_session_questions.createMany({
         data: questionSnapshots
       })
 
       // Update exercise session
-      const updatedSession = await tx.exerciseSession.update({
+      const updatedSession = await tx.exercise_sessions.update({
         where: { id: session.id },
         data: {
           exercise_topic_id: topic.id,
           topic_snapshot: JSON.stringify(topicSnapshot),
-          total_questions: topic.questions.length,
+          total_questions: topic.exercise_questions.length,
           credits_used: creditCost,
           status: 'active'
         },
         include: {
-          questions: {
+          exercise_session_questions: {
             orderBy: { order: 'asc' }
           }
         }
       })
 
       // Deduct credits
-      await tx.userCredit.update({
+      await tx.user_credits.update({
         where: { userId: parseInt(userId) },
         data: {
           balance: { decrement: creditCost }
@@ -110,7 +117,7 @@ export class StartExerciseWithTopicService extends BaseService {
       })
 
       // Record credit transaction
-      await tx.creditTransaction.create({
+      await tx.credit_transactions.create({
         data: {
           userId: parseInt(userId),
           userCreditId: userCredit.id,

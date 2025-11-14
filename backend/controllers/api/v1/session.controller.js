@@ -96,19 +96,18 @@ class SessionController {
   // Complete a session
   async completeSession(req, res) {
     const { sessionId } = req.params
+    const { answers } = req.body
     const userId = req.user.id
 
     const result = await CompleteSessionService.call({
       exerciseSessionId: sessionId,
-      userId
+      userId,
+      answers
     })
 
     return res.status(200).json({
       success: true,
-      data: {
-        session: result.session,
-        statistics: result.statistics
-      },
+      data: result,
       message: 'Session completed successfully'
     })
   }

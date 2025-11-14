@@ -84,14 +84,14 @@ export class CreateExerciseSessionService extends BaseService {
     // Create session in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create parent learning session
-      const userLearningSession = await tx.userLearningSession.findUnique({
+      const userLearningSession = await tx.user_learning_sessions.findUnique({
         where: {
             id: sessionId,
         }
       })
 
       // Create exercise session
-      const exerciseSession = await tx.exerciseSession.update({
+      const exerciseSession = await tx.exercise_questions.update({
         where: {
             user_learning_session_id: userLearningSession.id,
         },
@@ -105,7 +105,7 @@ export class CreateExerciseSessionService extends BaseService {
       })
 
       // Deduct credits
-      await tx.userCredit.update({
+      await tx.user_credits.update({
         where: { userId: parseInt(userId) },
         data: {
           balance: { decrement: creditsUsed }
@@ -113,7 +113,7 @@ export class CreateExerciseSessionService extends BaseService {
       })
 
       // Record credit transaction
-      await tx.creditTransaction.create({
+      await tx.credit_transactions.create({
         data: {
           userId: parseInt(userId),
           userCreditId: userCreditId,

@@ -1,6 +1,7 @@
 import { GenerateQuestionService } from '../../../services/exercise/generateQuestionService.js'
 import { QuestionSerializer } from '../../../serializers/admin/v1/questionSerializer.js'
 import { CreateExerciseTopicService } from '../../../services/exercise/createExerciseTopicService.js'
+import { CreateExerciseTopicWithPDFService } from '../../../services/exercise/createExerciseTopicWithPDFService.js'
 import { ExerciseTopicSerializer } from '../../../serializers/admin/v1/exerciseTopicSerializer.js'
 import { GetExerciseTopicsService } from '../../../services/exercise/getExerciseTopicsService.js'
 import { GetExerciseTopicDetailService } from '../../../services/exercise/getExerciseTopicDetailService.js'
@@ -17,6 +18,39 @@ class ExerciseController {
     })
   }
 
+  /**
+   * Generate questions from uploaded PDF (preview mode)
+   * POST /admin/v1/exercises/generate-from-pdf
+   */
+  async generateQuestionsFromPDF(req, res) {
+    const { questionCount = 10 } = req.body
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'PDF file is required'
+      })
+    }
+
+    const questions = await GenerateQuestionService.call({
+      pdfFilePath: req.file.path,
+      type: 'pdf',
+      questionCount: parseInt(questionCount) || 10
+    })
+
+    return res.status(200).json({
+      success: true,
+      data: QuestionSerializer.serialize(questions)
+    })
+  }
+
+  /**
+   * Create exercise topic
+   * Handles both text-based and PDF-based topic creation
+   * Questions are already generated in preview, so we just save them
+   * POST /admin/v1/exercises/topics
+   */
   async create(req, res) {
     const {
       title,

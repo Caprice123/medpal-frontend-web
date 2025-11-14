@@ -15,15 +15,15 @@ export class GetUserSessionsService extends BaseService {
       prisma.exercise_sessions.findMany({
         where,
         include: {
-          user_learning_session: true,
-          exercise_topic: {
+          user_learning_sessions: true,
+          exercise_topics: {
             select: {
               id: true,
               title: true,
               description: true
             }
           },
-          answers: {
+          exercise_session_answers: {
             select: {
               id: true,
               is_correct: true,
@@ -42,7 +42,7 @@ export class GetUserSessionsService extends BaseService {
 
     // Transform sessions to include calculated fields
     const transformedSessions = sessions.map(session => {
-      const topicSnapshot = JSON.parse(session.topic_snapshot)
+      const topicSnapshot = session.topic_snapshot ? JSON.parse(session.topic_snapshot) : null
       const percentage = session.total_questions > 0
         ? Math.round((session.score / session.total_questions) * 100)
         : 0
@@ -51,8 +51,8 @@ export class GetUserSessionsService extends BaseService {
         id: session.id,
         user_learning_session_id: session.user_learning_session_id,
         exercise_topic_id: session.exercise_topic_id,
-        topic_title: topicSnapshot.title,
-        topic_description: topicSnapshot.description,
+        topic_title: topicSnapshot?.title || 'No topic selected',
+        topic_description: topicSnapshot?.description || '',
         credits_used: session.credits_used,
         started_at: session.started_at,
         completed_at: session.completed_at,
@@ -60,8 +60,8 @@ export class GetUserSessionsService extends BaseService {
         score: session.score,
         total_questions: session.total_questions,
         percentage,
-        total_answered: session.answers.length,
-        learning_session_status: session.user_learning_session.status
+        total_answered: session.exercise_session_answers.length,
+        learning_session_status: session.user_learning_sessions.status
       }
     })
 

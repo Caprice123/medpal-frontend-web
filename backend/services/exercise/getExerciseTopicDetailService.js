@@ -9,12 +9,12 @@ export class GetExerciseTopicDetailService extends BaseService {
         const topic = await prisma.exercise_topics.findUnique({
             where: { id: parseInt(topicId) },
             include: {
-                questions: {
+                exercise_questions: {
                     orderBy: { order: 'asc' }
                 },
-                tags: {
+                exercise_topic_tags: {
                     include: {
-                        tag: true
+                        tags: true
                     }
                 }
             }
@@ -27,10 +27,10 @@ export class GetExerciseTopicDetailService extends BaseService {
         // Transform tags to simpler format
         const transformedTopic = {
             ...topic,
-            tags: topic.tags.map(t => ({
-                id: t.tag.id,
-                name: t.tag.name,
-                type: t.tag.type
+            tags: topic.exercise_topic_tags.map(t => ({
+                id: t.tags.id,
+                name: t.tags.name,
+                type: t.tags.type
             }))
         }
 

@@ -119,6 +119,32 @@ export const generateQuestions = (content, type, questionCount = 10) => async (d
 }
 
 /**
+ * Generate questions from PDF using Gemini (admin only)
+ */
+export const generateQuestionsFromPDF = (pdfFile, questionCount = 10) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isGeneratingQuestions', value: true }))
+    dispatch(clearError())
+
+    // Create FormData for PDF upload
+    const formData = new FormData()
+    formData.append('pdf', pdfFile)
+    formData.append('questionCount', questionCount)
+
+    const response = await postWithToken(Endpoints.exercises.admin.generateFromPDF, formData)
+
+    const questions = response.data.data || response.data.questions || []
+    dispatch(setGeneratedQuestions(questions))
+    return questions
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isGeneratingQuestions', value: false }))
+  }
+}
+
+/**
  * Create new topic with questions (for regular users)
  */
 export const createUserExerciseTopic = (topicData) => async (dispatch) => {
@@ -141,6 +167,8 @@ export const createUserExerciseTopic = (topicData) => async (dispatch) => {
 
 /**
  * Create new topic with questions (admin only)
+ * Supports both JSON (text-based) and FormData (PDF-based)
+ * FormData is automatically detected and handled by postWithToken
  */
 export const createExerciseTopic = (topicData) => async (dispatch) => {
   try {
