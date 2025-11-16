@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { completeSession } from '@store/session/action'
 import { BackLink, BlankInput, Button, Container, ContentWrapper, HeaderNav, LoadingSpinner, NavigationButtons, Progress, ProgressBar, QuestionCard, QuestionDot, QuestionIndicators, QuestionNumber, QuestionStats, QuestionText, TopicTitle } from './ExercisePlayer.styles'
+import { fetchSessionAttempts } from '../../../../../../store/session/action'
 
 function ExercisePlayer({ attemptId, onComplete }) {
   const dispatch = useDispatch()
@@ -95,11 +96,11 @@ function ExercisePlayer({ attemptId, onComplete }) {
         timeTakenSeconds: data.timeTaken
       }))
 
-      await dispatch(completeSession(attemptId, formattedAnswers))
+      const attempt = await dispatch(completeSession(attemptId, formattedAnswers))
 
       // Call onComplete callback to refresh attempts and show results
       if (onComplete) {
-        await onComplete(attemptId)
+        await onComplete(attempt.attempt)
       }
     } catch (error) {
       alert('Gagal submit jawaban: ' + (error.message || 'Terjadi kesalahan'))

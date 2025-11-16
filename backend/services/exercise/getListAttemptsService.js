@@ -66,12 +66,13 @@ export class GetListAttemptsService extends BaseService {
     const attempts = attemptsToReturn.map(attempt => {
       return {
         id: attempt.id,
-        attempt_number: attempt.attempt_number,
+        attemptNumber: attempt.attempt_number,
         started_at: attempt.started_at,
         completed_at: attempt.completed_at,
         status: attempt.status,
         score: attempt.score, // score is already a percentage (0-100)
-        total_questions: exerciseSession.total_question,
+        correctQuestion: attempt.correct_question,
+        totalQuestion: exerciseSession.total_question,
         credits_used: exerciseSession.credits_used,
         percentage: attempt.score, // score is the percentage
         topic_id: exerciseSession.exercise_topic_id,

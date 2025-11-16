@@ -73,7 +73,8 @@ function ExerciseSessionSubpage({ sessionId }) {
 
     if (activeAttempt) {
       // If there's an active attempt, fetch its detail for the exercise player
-      dispatch(fetchSessionAttemptDetail(activeAttempt.id))
+      setSelectedAttempt(activeAttempt)
+    //   dispatch(fetchSessionAttemptDetail(activeAttempt.id))
     } else if (attempts.length === 1 && attempts[0].status === 'not_started') {
       // If there's only 1 not_started attempt, fetch topics and credit balance
       dispatch(fetchExerciseTopics())
@@ -82,24 +83,38 @@ function ExerciseSessionSubpage({ sessionId }) {
     // Otherwise (multiple attempts or completed), we don't need to fetch anything yet
   }, [dispatch, attempts])
 
-  // Fetch attempt detail when viewing specific attempt results
   useEffect(() => {
-    if (currentView === 'results' && selectedAttempt) {
-      dispatch(fetchSessionAttemptDetail(selectedAttempt.id))
-    }
-  }, [dispatch, currentView, selectedAttempt])
+    if (!selectedAttempt) return
+
+    dispatch(fetchSessionAttemptDetail(selectedAttempt.id))
+  }, [selectedAttempt, dispatch])
+
+  // Fetch attempt detail when viewing specific attempt results
+//   useEffect(() => {
+//     if (currentView === 'results' && selectedAttempt) {
+//       dispatch(fetchSessionAttemptDetail(selectedAttempt.id))
+//     }
+//   }, [dispatch, currentView, selectedAttempt])
 
   // Handle showing results after completing an attempt
+//   useEffect(() => {
+//     if (completedAttemptId && attempts && attempts.length > 0) {
+//       const completedAttempt = attempts.find(a => a.id === completedAttemptId)
+//       if (completedAttempt && completedAttempt.status === 'completed') {
+//         setSelectedAttempt(completedAttempt)
+//         setCurrentView('results')
+//         setCompletedAttemptId(null) // Clear the flag
+//       }
+//     }
+//   }, [completedAttemptId, attempts])
+
   useEffect(() => {
-    if (completedAttemptId && attempts && attempts.length > 0) {
-      const completedAttempt = attempts.find(a => a.id === completedAttemptId)
-      if (completedAttempt && completedAttempt.status === 'completed') {
-        setSelectedAttempt(completedAttempt)
+    if (!selectedAttempt) return
+
+    if (selectedAttempt.status == "completed") {
         setCurrentView('results')
-        setCompletedAttemptId(null) // Clear the flag
-      }
     }
-  }, [completedAttemptId, attempts])
+  }, [selectedAttempt, attempts])
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -128,10 +143,6 @@ function ExerciseSessionSubpage({ sessionId }) {
     }
   }
 
-  const handleBackToDashboard = () => {
-    navigate('/dashboard')
-  }
-
   // Get unique universities and semesters for filters
   const universities = [...new Set(
     topics.flatMap(t => t.tags?.filter(tag => tag.type === 'university').map(tag => tag.name) || [])
@@ -143,10 +154,8 @@ function ExerciseSessionSubpage({ sessionId }) {
 
   const handleTryAgain = async () => {
     try {
-      const newAttemptData = await dispatch(createNewAttempt(sessionId))
-      // Refresh attempts list with current pagination
-      const offset = (currentPage - 1) * itemsPerPage
-      await dispatch(fetchSessionAttempts(sessionDetail.id, itemsPerPage, offset))
+      const newAttempt = await dispatch(createNewAttempt(sessionId))
+      setSelectedAttempt(newAttempt.attempt)
     } catch (error) {
       alert('Gagal membuat attempt baru: ' + (error.message || 'Terjadi kesalahan'))
     }
@@ -214,10 +223,10 @@ function ExerciseSessionSubpage({ sessionId }) {
     )
   }
 
-  const activeAttempt = attempts.find(a => a.status === 'active')
+//   const activeAttempt = attempts.find(a => a.status === 'active')
 
   // If there's an active attempt, show ExercisePlayer immediately
-  if (activeAttempt) {
+  if (selectedAttempt) {
     if (!attemptDetail || !attemptDetail.questions?.length) {
       return (
         <LoadingContainer>
@@ -231,17 +240,18 @@ function ExerciseSessionSubpage({ sessionId }) {
 
     return (
       <ExercisePlayer
-        attemptId={activeAttempt.id}
-        onComplete={async (attemptId) => {
+        attemptId={selectedAttempt.id}
+        onComplete={async (attempt) => {
+            setSelectedAttempt(attempt)
           // Fetch the attempt detail for results
-          await dispatch(fetchSessionAttemptDetail(attemptId))
+        //   await dispatch(fetchSessionAttemptDetail(attemptId))
 
           // Refresh attempts to get updated status and metadata
           const offset = (currentPage - 1) * itemsPerPage
           await dispatch(fetchSessionAttempts(sessionDetail.id, itemsPerPage, offset))
 
           // Set flag to show results (useEffect will handle finding the attempt)
-          setCompletedAttemptId(attemptId)
+        //   setCompletedAttemptId(attemptId)
         }}
       />
     )
@@ -253,9 +263,6 @@ function ExerciseSessionSubpage({ sessionId }) {
       <Container>
         <Header>
           <div>
-            <BackButton onClick={handleBackToDashboard}>
-              ← Kembali ke Dashboard
-            </BackButton>
             <Title>Pilih Topik Latihan</Title>
             <Subtitle>
               Pilih topik latihan soal untuk meningkatkan pemahaman Anda

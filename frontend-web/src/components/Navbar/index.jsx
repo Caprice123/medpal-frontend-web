@@ -13,14 +13,24 @@ export const Navbar = () => {
     const navigate = useNavigate()
     const { balance } = useSelector(state => state.credit)
     const [user, setUser] = useState(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
 
     // Get user data
     useEffect(() => {
+        const fetchUserData = async () => {
+          try {
+            // Fetch credit balance
+            await dispatch(fetchCreditBalance())
+          } catch (error) {
+            console.error('Failed to fetch user data:', error)
+          }
+        }
+
         const userData = getUserData()
         setUser(userData)
-    }, [])
+        fetchUserData()
+    }, [dispatch])
+    
 
     // Handle logout
     

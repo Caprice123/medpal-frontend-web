@@ -49,13 +49,13 @@ function SessionResults({ attemptMetadata, attemptDetail, onViewHistory, onTryAg
 
   return (
     <Container>
-      <HeaderNav>
+      {/* <HeaderNav>
         <BackLink onClick={() => navigate('/dashboard')}>
           ← Kembali ke Dashboard
         </BackLink>
         <HeaderTitle>Hasil Latihan</HeaderTitle>
         <div></div>
-      </HeaderNav>
+      </HeaderNav> */}
 
       <ContentWrapper>
       <ResultCard>

@@ -354,9 +354,6 @@ function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      // Fetch credit balance
-      await dispatch(fetchCreditBalance())
-
       // Fetch sessions from actual session endpoint
       await dispatch(fetchSessions())
 
@@ -365,13 +362,6 @@ function Dashboard() {
     } catch (error) {
       console.error('Failed to fetch user data:', error)
     }
-  }
-
-  const handleLogout = () => {
-    const onSuccess = () => {
-      navigate('/sign-in')
-    }
-    dispatch(logout(onSuccess))
   }
 
   const handleUseFeature = async (feature) => {
@@ -398,7 +388,6 @@ function Dashboard() {
       hour: '2-digit',
       minute: '2-digit'
     }
-    console.log(date)
     return new Date(date).toLocaleDateString('id-ID', options)
   }
 
