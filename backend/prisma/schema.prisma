@@ -190,6 +190,7 @@ model tags {
   created_at          DateTime              @default(now())
   updated_at          DateTime              @default(now())
   exercise_topic_tags exercise_topic_tags[]
+  flashcard_deck_tags flashcard_deck_tags[]
 
   @@unique([name, type])
   @@index([is_active])
@@ -215,11 +216,131 @@ model user_learning_sessions {
   created_at        DateTime            @default(now())
   updated_at        DateTime            @default(now())
 
-  exercise_session exercise_sessions?
+  exercise_session  exercise_sessions?
+  flashcard_session flashcard_sessions?
 
   @@index([title])
   @@index([type])
   @@index([user_id])
+}
+
+model flashcard_decks {
+  id                      Int                       @id @default(autoincrement())
+  title                   String
+  description             String?
+  content_type            String
+  content                 String?
+  pdf_url                 String?
+  pdf_key                 String?
+  pdf_filename            String?
+  status                  String                    @default("draft")
+  is_active               Boolean                   @default(true)
+  created_by              Int
+  created_at              DateTime                  @default(now())
+  updated_at              DateTime                  @default(now())
+
+  flashcard_cards         flashcard_cards[]
+  flashcard_deck_tags     flashcard_deck_tags[]
+  flashcard_sessions      flashcard_sessions[]
+
+  @@index([created_by])
+  @@index([is_active])
+  @@index([status])
+}
+
+model flashcard_cards {
+  id              Int              @id @default(autoincrement())
+  deck_id         Int
+  front           String
+  back            String
+  order           Int              @default(0)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @default(now())
+
+  flashcard_decks flashcard_decks  @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+
+  @@index([deck_id])
+  @@index([order])
+}
+
+model flashcard_deck_tags {
+  id              Int              @id @default(autoincrement())
+  deck_id         Int
+  tag_id          Int
+  created_at      DateTime         @default(now())
+
+  flashcard_decks flashcard_decks  @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+  tags            tags             @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@unique([deck_id, tag_id])
+  @@index([deck_id])
+  @@index([tag_id])
+}
+
+model flashcard_sessions {
+  id                       Int                          @id @default(autoincrement())
+  user_learning_session_id Int                          @unique
+  flashcard_deck_id        Int?
+  total_cards              Int
+  credits_used             Int                          @default(0)
+  number_of_attempts       Int                          @default(0)
+  created_at               DateTime                     @default(now())
+  updated_at               DateTime                     @default(now())
+
+  user_learning_session        user_learning_sessions       @relation(fields: [user_learning_session_id], references: [id], onDelete: Cascade)
+  flashcard_deck               flashcard_decks?             @relation(fields: [flashcard_deck_id], references: [id])
+  flashcard_session_cards      flashcard_session_cards[]
+  flashcard_session_attempts   flashcard_session_attempts[]
+
+  @@index([user_learning_session_id])
+  @@index([flashcard_deck_id])
+}
+
+model flashcard_session_cards {
+  id                      Int                       @id @default(autoincrement())
+  flashcard_session_id    Int
+  front_text              String
+  back_text               String
+  order                   Int
+  created_at              DateTime                  @default(now())
+
+  flashcard_session           flashcard_sessions        @relation(fields: [flashcard_session_id], references: [id], onDelete: Cascade)
+  flashcard_session_answers   flashcard_session_answers[]
+
+  @@index([flashcard_session_id])
+  @@index([order])
+}
+
+model flashcard_session_attempts {
+  id                         Int                          @id @default(autoincrement())
+  flashcard_session_id       Int
+  attempt_number             Int                          @default(1)
+  started_at                 DateTime                     @default(now())
+  completed_at               DateTime?
+  created_at                 DateTime                     @default(now())
+  updated_at                 DateTime                     @default(now())
+
+  flashcard_session          flashcard_sessions           @relation(fields: [flashcard_session_id], references: [id], onDelete: Cascade)
+  flashcard_session_answers  flashcard_session_answers[]
+
+  @@index([flashcard_session_id])
+  @@index([started_at])
+}
+
+model flashcard_session_answers {
+  id                           Int                          @id @default(autoincrement())
+  flashcard_session_attempt_id Int
+  flashcard_session_card_id    Int
+  user_answer                  String
+  time_taken_seconds           Int?
+  answered_at                  DateTime                     @default(now())
+
+  flashcard_session_attempt    flashcard_session_attempts   @relation(fields: [flashcard_session_attempt_id], references: [id], onDelete: Cascade)
+  flashcard_session_card       flashcard_session_cards      @relation(fields: [flashcard_session_card_id], references: [id], onDelete: Cascade)
+
+  @@index([flashcard_session_attempt_id])
+  @@index([flashcard_session_card_id])
+  @@index([answered_at])
 }
 
 model user_sessions {

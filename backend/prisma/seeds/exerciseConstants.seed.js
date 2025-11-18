@@ -64,14 +64,16 @@ Pastikan output adalah valid JSON array.`
 }
 
 // Run if called directly
-seedExerciseConstants()
-  .then(() => {
-    console.log('Done!')
-    process.exit(0)
-  })
-  .catch((error) => {
-    console.error('Error seeding exercise constants:', error)
-    process.exit(1)
-  })
 if (import.meta.url === `file://${process.argv[1]}`) {
+  seedExerciseConstants()
+    .then(async () => {
+      console.log('Done!')
+      await prisma.$disconnect()
+      process.exit(0)
+    })
+    .catch(async (error) => {
+      console.error('Error seeding exercise constants:', error)
+      await prisma.$disconnect()
+      process.exit(1)
+    })
 }

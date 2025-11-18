@@ -369,8 +369,14 @@ function Dashboard() {
     setIsModalOpen(false)
 
     try {
+      // Determine session type based on feature
+      // Feature ID 8 = Flashcard Belajar
+      // All others default to 'exercise'
+      const sessionType = feature.sessionType
+
+    //   console.log(feature)
       // Create session and first attempt
-      const sessionData = await dispatch(createSession('exercise'))
+      const sessionData = await dispatch(createSession(sessionType))
 
       // Navigate to first attempt detail page
       navigate(`/session/${sessionData.id}`)

@@ -39,10 +39,6 @@ function FeaturesList({ features, onFeatureClick }) {
           </FeatureDescription>
 
           <CardFooter>
-            <CostBadge>
-              <span>💎</span>
-              {feature.cost} kredit
-            </CostBadge>
             <ConfigButton color={feature.color}>
               Konfigurasi
             </ConfigButton>

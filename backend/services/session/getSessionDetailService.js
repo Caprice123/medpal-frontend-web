@@ -7,7 +7,8 @@ export class GetSessionDetailService extends BaseService {
     const userLearningSession = await prisma.user_learning_sessions.findUnique({
       where: { id: parseInt(sessionId) },
       include: {
-        exercise_session: true
+        exercise_session: true,
+        flashcard_session: true
       }
     })
 
@@ -24,8 +25,10 @@ export class GetSessionDetailService extends BaseService {
       id: userLearningSession.id,
       title: userLearningSession.title,
       type: userLearningSession.type,
+      session_type: userLearningSession.type,
       created_at: userLearningSession.created_at,
-      exerciseSession: await this.populateExerciseQuestionData({ userLearningSession })
+      exerciseSession: await this.populateExerciseQuestionData({ userLearningSession }),
+      flashcardSession: await this.populateFlashcardData({ userLearningSession })
     }
   }
 
@@ -37,6 +40,16 @@ export class GetSessionDetailService extends BaseService {
 
     return {
         totalQuestion: userLearningSession.exercise_session.total_question,
+    }
+  }
+
+  static async populateFlashcardData({ userLearningSession }) {
+    if (userLearningSession.type != "flashcard") {
+        return
+    }
+
+    return {
+        totalCards: userLearningSession.flashcard_session.total_cards,
     }
   }
 }

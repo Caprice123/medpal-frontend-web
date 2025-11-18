@@ -4,6 +4,7 @@ import auth from "./auth";
 import common from "./common";
 import credit from "./credit";
 import exercise from "./exercise";
+import flashcard from "./flashcard";
 import tags from "./tags/reducer";
 import session from "./session/reducer";
 import feature from "./feature/reducer";
@@ -13,6 +14,7 @@ export const rootReducer = combineReducers({
     common,
     credit,
     exercise,
+    flashcard,
     tags,
     session,
     feature,

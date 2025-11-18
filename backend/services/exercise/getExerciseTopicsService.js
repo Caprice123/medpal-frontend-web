@@ -1,6 +1,7 @@
 import { ValidationError } from "../../errors/validationError.js"
 import prisma from "../../prisma/client.js"
 import { BaseService } from "../baseService.js"
+import { GetConstantsService } from "../constant/getConstantsService.js"
 
 export class GetExerciseTopicsService extends BaseService {
     static async call(filters = {}) {
@@ -55,6 +56,11 @@ export class GetExerciseTopicsService extends BaseService {
             }
         })
 
+        const exerciseConstant = await GetConstantsService.call([
+            "exercise_credit_cost",
+        ])
+        const cost = exerciseConstant.exercise_credit_cost
+
         // Transform the response to match frontend expectations
         const transformedTopics = topics.map(topic => ({
             id: topic.id,
@@ -63,6 +69,7 @@ export class GetExerciseTopicsService extends BaseService {
             content_type: topic.content_type,
             content: topic.content,
             pdf_url: topic.pdf_url,
+            cost: parseInt(cost),
             tags: topic.exercise_topic_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,

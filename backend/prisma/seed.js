@@ -1,4 +1,6 @@
 import { seedFeatures } from './seeds/features.seed.js'
+import { seedExerciseConstants } from './seeds/exerciseConstants.seed.js'
+import { seedFlashcardConstants } from './seeds/flashcardConstants.seed.js'
 
 async function main() {
   console.log('🚀 Starting database seeding...\n')
@@ -6,6 +8,12 @@ async function main() {
   try {
     // Run feature seeder
     await seedFeatures()
+
+    // Run exercise constants seeder
+    await seedExerciseConstants()
+
+    // Run flashcard constants seeder
+    await seedFlashcardConstants()
 
     console.log('\n✨ Database seeding completed successfully!')
   } catch (error) {

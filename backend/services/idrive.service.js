@@ -74,6 +74,20 @@ class IDriveService {
   }
 
   /**
+   * Upload PDF file for flashcard deck
+   * @param {string} filePath - Local PDF file path
+   * @param {string} deckName - Deck name for organizing files
+   * @returns {Promise<{key: string, url: string}>} Uploaded file info
+   */
+  async uploadFlashcardPDF(filePath, deckName) {
+    const sanitizedName = deckName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const timestamp = Date.now();
+    const fileName = `${sanitizedName}-${timestamp}.pdf`;
+
+    return this.uploadFile(filePath, 'flashcard-pdfs', fileName);
+  }
+
+  /**
    * Get a signed URL for temporary access to a private file
    * @param {string} key - File key in bucket
    * @param {number} expiresIn - URL expiration time in seconds (default: 3600)

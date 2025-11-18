@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSessionDetail } from '@store/session/action'
 import ExerciseSessionSubpage from './subpages/ExerciseSession'
+import FlashcardSessionSubpage from './subpages/FlashcardSession'
 import { LoadingContainer, LoadingSpinner } from './SessionDetail.styles'
 
 function SessionDetail() {
@@ -34,7 +35,13 @@ function SessionDetail() {
   }
 
   // Route to appropriate subpage based on session type
-  // For now, we only have exercise type
+  const sessionType = currentSession?.session_type || currentSession?.type || 'exercise'
+
+  if (sessionType === 'flashcard') {
+    return <FlashcardSessionSubpage sessionData={currentSession} />
+  }
+
+  // Default to exercise
   return <ExerciseSessionSubpage sessionId={sessionId} />
 }
 

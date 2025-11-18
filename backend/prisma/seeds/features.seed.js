@@ -1,4 +1,4 @@
-import prisma from '../../prisma/client.js'
+import prisma from '../client.js'
 
 export async function seedFeatures() {
   console.log('🌱 Seeding features...')
@@ -6,6 +6,7 @@ export async function seedFeatures() {
   const features = [
       'Asisten Diagnosis AI',
       'Latihan Soal',
+      'Flashcard Belajar',
       'Analisis Laporan Lab',
       'Pencarian Literatur Medis',
       'Penilaian Risiko Genetik',
@@ -27,5 +28,3 @@ export async function seedFeatures() {
 
   console.log('✅ Features seeded successfully')
 }
-
-seedFeatures()

@@ -311,3 +311,140 @@ export const createNewAttempt = (learningSessionId) => async (dispatch) => {
     dispatch(setLoading({ key: 'isCreatingAttempt', value: false }))
   }
 }
+
+// ============= Flashcard Session Actions =============
+
+/**
+ * Start flashcard with deck selection
+ */
+export const startFlashcardWithDeck = (userLearningSessionId, attemptId, deckId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isCreatingSession', value: true }))
+    dispatch(clearError())
+
+    const response = await putWithToken(Endpoints.sessions.flashcard.attempts.start(attemptId), {
+      userLearningSessionId,
+      deckId
+    })
+
+    const data = response.data.data
+
+    dispatch(setTopicSnapshot(data.deck_snapshot))
+    dispatch(setCurrentSession({
+      id: data.attempt.id,
+      attemptNumber: data.attempt.attempt_number,
+      creditsUsed: data.attempt.credits_used,
+      totalCards: data.deck_snapshot.cards.length
+    }))
+    dispatch(setCurrentQuestionIndex(0))
+
+    return data
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isCreatingSession', value: false }))
+  }
+}
+
+/**
+ * Complete flashcard session with answers
+ */
+export const completeFlashcardSession = (attemptId, answers = []) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isCompletingSession', value: true }))
+    dispatch(clearError())
+
+    const response = await putWithToken(
+      Endpoints.sessions.flashcard.attempts.complete(attemptId),
+      { answers }
+    )
+
+    const data = response.data.data
+
+    return data
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isCompletingSession', value: false }))
+  }
+}
+
+/**
+ * Fetch all flashcard attempts for a learning session
+ */
+export const fetchFlashcardAttempts = (learningSessionId, limit = 30, offset = 0) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isLoadingAttempts', value: true }))
+    dispatch(clearError())
+
+    const queryParams = { limit, offset }
+    const response = await getWithToken(Endpoints.sessions.flashcard.attempts.get(learningSessionId), queryParams)
+
+    const { data, pagination } = response.data
+
+    dispatch(setSessionAttempts(data || []))
+    dispatch(setPagination({
+      limit: pagination.limit,
+      offset: pagination.offset,
+      isLastPage: pagination.isLastPage
+    }))
+
+    return pagination
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isLoadingAttempts', value: false }))
+  }
+}
+
+/**
+ * Fetch flashcard attempt detail
+ */
+export const fetchFlashcardAttemptDetail = (attemptId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isLoadingAttemptDetail', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(Endpoints.sessions.flashcard.attempts.detail(attemptId))
+
+    const data = response.data.data
+
+    // Store attempt detail (cards and answers) for FlashcardPlayer
+    const attemptDetail = {
+      cards: data.cards || [],
+      answers: data.answers || []
+    }
+    dispatch(setAttemptDetail(attemptDetail))
+
+    return attemptDetail
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isLoadingAttemptDetail', value: false }))
+  }
+}
+
+/**
+ * Create a new flashcard attempt for a learning session
+ */
+export const createNewFlashcardAttempt = (learningSessionId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isCreatingAttempt', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(Endpoints.sessions.flashcard.attempts.create(learningSessionId), {})
+
+    const data = response.data.data
+
+    return data
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isCreatingAttempt', value: false }))
+  }
+}

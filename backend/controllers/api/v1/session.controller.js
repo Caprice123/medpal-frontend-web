@@ -34,7 +34,9 @@ class SessionController {
       success: true,
       data: {
         id: result.userLearningSession.id,
+        user_learning_session_id: result.userLearningSession.id,
         exercise_session_id: result.exerciseSession?.id,
+        flashcard_session_id: result.flashcardSession?.id,
         first_attempt_id: result.firstAttempt?.id,
         session_type: result.userLearningSession.type,
         status: result.firstAttempt?.status || 'not_started'

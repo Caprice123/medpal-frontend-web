@@ -9,7 +9,7 @@ export class CreateSessionService extends BaseService {
       throw new ValidationError('User ID and Session Type are required')
     }
 
-    const supportedSessionTypes = ["exercise"]
+    const supportedSessionTypes = ["exercise", "flashcard"]
     if (!supportedSessionTypes.includes(sessionType)) {
       throw new ValidationError("Tipe sesi tidak didukung")
     }
@@ -17,7 +17,13 @@ export class CreateSessionService extends BaseService {
     // Create session in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create parent learning session
-      const title = sessionType === 'exercise' ? 'Latihan Soal' : 'Learning Session'
+      let title = 'Learning Session'
+      if (sessionType === 'exercise') {
+        title = 'Latihan Soal'
+      } else if (sessionType === 'flashcard') {
+        title = 'Flashcard Belajar'
+      }
+
       const userLearningSession = await tx.user_learning_sessions.create({
         data: {
           user_id: parseInt(userId),
@@ -26,8 +32,9 @@ export class CreateSessionService extends BaseService {
         }
       })
 
-      // Create exercise session (container)
+      // Create session type-specific records
       let exerciseSession = null
+      let flashcardSession = null
       let firstAttempt = null
 
       if (sessionType === 'exercise') {
@@ -47,11 +54,28 @@ export class CreateSessionService extends BaseService {
             status: 'not_started'
           }
         })
+      } else if (sessionType === 'flashcard') {
+        flashcardSession = await tx.flashcard_sessions.create({
+          data: {
+            user_learning_session_id: userLearningSession.id,
+            number_of_attempts: 1,
+            total_cards: 0,
+          }
+        })
+
+        // Create first attempt
+        firstAttempt = await tx.flashcard_session_attempts.create({
+          data: {
+            flashcard_session_id: flashcardSession.id,
+            attempt_number: 1
+          }
+        })
       }
 
       return {
         userLearningSession,
         exerciseSession,
+        flashcardSession,
         firstAttempt
       }
     })

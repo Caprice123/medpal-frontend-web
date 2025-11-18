@@ -12,7 +12,10 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:create": "prisma migrate dev --create-only",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js",
+    "db:seed:exercise": "node prisma/seeds/exerciseConstants.seed.js",
+    "db:seed:flashcard": "node prisma/seeds/flashcardConstants.seed.js"
   },
 
   "keywords": [],
