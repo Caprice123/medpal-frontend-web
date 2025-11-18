@@ -2,7 +2,11 @@ import prisma from '../../prisma/client.js'
 import { BaseService } from '../baseService.js'
 
 export class GetUserSessionsService extends BaseService {
-  static async call({ userId, status = null, limit = 30, offset = 0 }) {
+  static async call({ userId, status = null, page = 1, perPage = 30 }) {
+    // Calculate limit and offset from page and perPage
+    const limit = parseInt(perPage)
+    const offset = (parseInt(page) - 1) * limit
+
     // Build where clause
     const where = {
         user_id: parseInt(userId)
@@ -18,8 +22,8 @@ export class GetUserSessionsService extends BaseService {
         orderBy: {
             id: 'desc'
         },
-        take: parseInt(limit) + 1,
-        skip: parseInt(offset)
+        take: limit + 1,
+        skip: offset
     })
 
     // Check if there are more results
@@ -32,8 +36,8 @@ export class GetUserSessionsService extends BaseService {
     return {
       data: sessionsToReturn,
       pagination: {
-        limit: parseInt(limit),
-        offset: parseInt(offset),
+        page: parseInt(page),
+        perPage: limit,
         isLastPage: isLastPage
       }
     }

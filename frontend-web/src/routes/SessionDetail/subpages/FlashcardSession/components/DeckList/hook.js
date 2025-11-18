@@ -34,7 +34,7 @@ export const useDeckList = () => {
       ))
 
       // Refresh attempts to get the updated attempt with deck_id
-      await dispatch(fetchFlashcardAttempts(sessionDetail.id, 30, 0))
+      await dispatch(fetchFlashcardAttempts(sessionDetail.id, 1, 30))
     } catch (error) {
       console.error('Error starting flashcard session:', error)
       alert('Gagal memulai sesi: ' + (error.message || 'Terjadi kesalahan'))

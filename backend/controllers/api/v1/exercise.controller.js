@@ -16,14 +16,14 @@ class ExerciseController {
 
   async attempts(req, res) {
     const { userLearningSessionId } = req.params
-    const { limit, offset } = req.query
+    const { page, perPage } = req.query
     const userId = req.user.id
 
     const result = await GetListAttemptsService.call({
         userLearningSessionId,
         userId,
-        limit,
-        offset
+        page: page ? parseInt(page) : 1,
+        perPage: perPage ? parseInt(perPage) : 30
     })
 
     return res.status(200).json({

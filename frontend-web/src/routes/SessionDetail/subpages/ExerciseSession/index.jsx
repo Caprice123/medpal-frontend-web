@@ -23,15 +23,14 @@ function ExerciseSessionSubpage({ sessionId }) {
   const [selectedAttempt, setSelectedAttempt] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 30
+  const perPage = 30
 
   // Step 1: Fetch attempts when we have the session detail or page changes
   useEffect(() => {
     if (sessionDetail?.id) {
-      const offset = (currentPage - 1) * itemsPerPage
-      dispatch(fetchSessionAttempts(sessionDetail.id, itemsPerPage, offset))
+      dispatch(fetchSessionAttempts(sessionDetail.id, currentPage, perPage))
     }
-  }, [dispatch, sessionDetail?.id, currentPage, itemsPerPage])
+  }, [dispatch, sessionDetail?.id, currentPage, perPage])
 
   // Step 2: Determine what data to fetch based on attempts
   useEffect(() => {
@@ -138,8 +137,7 @@ function ExerciseSessionSubpage({ sessionId }) {
         //   await dispatch(fetchSessionAttemptDetail(attemptId))
 
           // Refresh attempts to get updated status and metadata
-          const offset = (currentPage - 1) * itemsPerPage
-          await dispatch(fetchSessionAttempts(sessionDetail.id, itemsPerPage, offset))
+          await dispatch(fetchSessionAttempts(sessionDetail.id, currentPage, perPage))
 
           // Set flag to show results (useEffect will handle finding the attempt)
         //   setCompletedAttemptId(attemptId)

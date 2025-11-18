@@ -162,12 +162,12 @@ export const clearSession = () => (dispatch) => {
 /**
  * Fetch user's session history
  */
-export const fetchSessions = (status = null, limit = 30, offset = 0) => async (dispatch) => {
+export const fetchSessions = (status = null, page = 1, perPage = 30) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingSessions', value: true }))
     dispatch(clearError())
 
-    const queryParams = { limit, offset }
+    const queryParams = { page, perPage }
     if (status) queryParams.status = status
 
     const response = await getWithToken(Endpoints.sessions.list, queryParams)
@@ -176,8 +176,8 @@ export const fetchSessions = (status = null, limit = 30, offset = 0) => async (d
 
     dispatch(setSessions(data))
     dispatch(setPagination({
-      limit: pagination.limit,
-      offset: pagination.offset,
+      page: pagination.page,
+      perPage: pagination.perPage,
       isLastPage: pagination.isLastPage
     }))
 
@@ -240,12 +240,12 @@ export const fetchSessionDetail = (attemptId) => async (dispatch) => {
 /**
  * Fetch all attempts for a learning session with pagination
  */
-export const fetchSessionAttempts = (learningSessionId, limit = 30, offset = 0) => async (dispatch) => {
+export const fetchSessionAttempts = (learningSessionId, page = 1, perPage = 30) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingAttempts', value: true }))
     dispatch(clearError())
 
-    const queryParams = { limit, offset }
+    const queryParams = { page, perPage }
     const response = await getWithToken(Endpoints.sessions.exercise.attempts.get(learningSessionId), queryParams)
 
     const { data, pagination } = response.data
@@ -374,12 +374,12 @@ export const completeFlashcardSession = (attemptId, answers = []) => async (disp
 /**
  * Fetch all flashcard attempts for a learning session
  */
-export const fetchFlashcardAttempts = (learningSessionId, limit = 30, offset = 0) => async (dispatch) => {
+export const fetchFlashcardAttempts = (learningSessionId, page = 1, perPage = 30) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingAttempts', value: true }))
     dispatch(clearError())
 
-    const queryParams = { limit, offset }
+    const queryParams = { page, perPage }
     const response = await getWithToken(Endpoints.sessions.flashcard.attempts.get(learningSessionId), queryParams)
 
     const { data, pagination } = response.data

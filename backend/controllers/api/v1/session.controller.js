@@ -7,13 +7,13 @@ class SessionController {
   // Get user's session history
   async index(req, res) {
     const userId = req.user.id
-    const { status, limit, offset } = req.query
+    const { status, page, perPage } = req.query
 
     const result = await GetUserSessionsService.call({
       userId,
       status,
-      limit: limit ? parseInt(limit) : 30,
-      offset: offset ? parseInt(offset) : 0
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 30
     })
 
     return res.status(200).json({

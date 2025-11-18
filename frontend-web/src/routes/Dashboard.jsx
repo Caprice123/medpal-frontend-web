@@ -9,6 +9,7 @@ import { createSession, fetchSessions } from '@store/session/action'
 import { fetchFeatures } from '@store/feature/action'
 import { getUserData } from '@utils/authToken'
 import CreditPurchase from '@components/CreditPurchase'
+import Pagination from '@components/Pagination'
 
 const DashboardContainer = styled.div`
   min-height: 100vh;
@@ -245,59 +246,106 @@ const CreateSessionButton = styled.button`
 `
 
 const SessionsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `
 
 const SessionCard = styled.div`
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 1rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  min-height: 180px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0891b2, #14b8a6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
     border-color: #0891b2;
-    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.1);
-    transform: translateY(-2px);
-  }
+    box-shadow: 0 8px 24px rgba(8, 145, 178, 0.15), 0 4px 12px rgba(8, 145, 178, 0.1);
+    transform: translateY(-4px);
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
+    &::before {
+      opacity: 1;
+    }
   }
 `
 
 const SessionIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  background: rgba(8, 145, 178, 0.1);
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(20, 184, 166, 0.15));
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   flex-shrink: 0;
+  border: 1px solid rgba(8, 145, 178, 0.2);
+  transition: all 0.3s ease;
+
+  ${SessionCard}:hover & {
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.25), rgba(20, 184, 166, 0.25));
+    transform: scale(1.05);
+  }
 `
 
 const SessionInfo = styled.div`
-  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 `
 
 const SessionName = styled.div`
-  font-weight: 600;
-  color: #0891b2;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0e7490;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+
+  ${SessionCard}:hover & {
+    color: #0891b2;
+  }
 `
 
 const SessionDate = styled.div`
   font-size: 0.875rem;
   color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+
+  &::before {
+    content: '📅';
+    font-size: 0.75rem;
+  }
 `
 
 const SessionCredit = styled.div`
@@ -341,6 +389,10 @@ function Dashboard() {
   const [user, setUser] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const perPage = 30
+
+  const { pagination } = useSelector(state => state.session)
 
   console.log(sessions)
   useEffect(() => {
@@ -350,12 +402,12 @@ function Dashboard() {
 
     // Fetch user credit balance, sessions, and features
     fetchUserData()
-  }, [dispatch])
+  }, [dispatch, currentPage])
 
   const fetchUserData = async () => {
     try {
       // Fetch sessions from actual session endpoint
-      await dispatch(fetchSessions())
+      await dispatch(fetchSessions(null, currentPage, perPage))
 
       // Fetch features
       await dispatch(fetchFeatures())
@@ -419,21 +471,30 @@ function Dashboard() {
               <EmptyStateText>Memuat riwayat sesi...</EmptyStateText>
             </EmptyState>
           ) : sessions.length > 0 ? (
-            <SessionsList>
-              {sessions.map((session) => (
-                <SessionCard
-                  key={session.id}
-                  onClick={() => navigate(`/session/${session.id}`)}
-                >
-                  <SessionIcon>📚</SessionIcon>
-                  <SessionInfo>
-                    <SessionName>{session.title || 'Untitled'}</SessionName>
-                    <SessionDate>{formatDate(session.createdAt)}</SessionDate>
-                  </SessionInfo>
-                  {/* <SessionCredit>-{session.credits_used} kredit</SessionCredit> */}
-                </SessionCard>
-              ))}
-            </SessionsList>
+            <>
+              <SessionsList>
+                {sessions.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    onClick={() => navigate(`/session/${session.id}`)}
+                  >
+                    <SessionIcon>📚</SessionIcon>
+                    <SessionInfo>
+                      <SessionName>{session.title || 'Untitled'}</SessionName>
+                      <SessionDate>{formatDate(session.createdAt)}</SessionDate>
+                    </SessionInfo>
+                    {/* <SessionCredit>-{session.credits_used} kredit</SessionCredit> */}
+                  </SessionCard>
+                ))}
+              </SessionsList>
+
+              <Pagination
+                currentPage={currentPage}
+                isLastPage={pagination?.isLastPage ?? true}
+                onPageChange={setCurrentPage}
+                isLoading={isLoadingSessions}
+              />
+            </>
           ) : (
             <EmptyState>
               <EmptyStateIcon>📋</EmptyStateIcon>

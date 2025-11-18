@@ -23,7 +23,7 @@ function FlashcardSession({ sessionData }) {
   const [selectedAttempt, setSelectedAttempt] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 30
+  const perPage = 30
 
   // Use sessionData as sessionDetail if available
   const effectiveSessionDetail = sessionDetail || sessionData
@@ -31,10 +31,9 @@ function FlashcardSession({ sessionData }) {
   // Step 1: Fetch attempts when we have the session detail or page changes
   useEffect(() => {
     if (effectiveSessionDetail?.id) {
-      const offset = (currentPage - 1) * itemsPerPage
-      dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, itemsPerPage, offset))
+      dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, currentPage, perPage))
     }
-  }, [dispatch, effectiveSessionDetail?.id, currentPage, itemsPerPage])
+  }, [dispatch, effectiveSessionDetail?.id, currentPage, perPage])
 
   // Step 2: Determine what data to fetch based on attempts
   useEffect(() => {
@@ -81,8 +80,7 @@ function FlashcardSession({ sessionData }) {
       const newAttempt = await dispatch(createNewFlashcardAttempt(effectiveSessionDetail.id))
 
       // Refresh attempts list to include the new attempt
-      const offset = (currentPage - 1) * itemsPerPage
-      await dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, itemsPerPage, offset))
+      await dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, currentPage, perPage))
 
       // Fetch decks for selection
       await dispatch(fetchFlashcardDecks())
@@ -160,8 +158,7 @@ function FlashcardSession({ sessionData }) {
             await dispatch(completeFlashcardSession(selectedAttempt.id, answers))
 
             // Refresh attempts to get updated status and metadata
-            const offset = (currentPage - 1) * itemsPerPage
-            await dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, itemsPerPage, offset))
+            await dispatch(fetchFlashcardAttempts(effectiveSessionDetail.id, currentPage, perPage))
 
             // The useEffect will detect the completed attempt and switch to results view
           } catch (error) {

@@ -8,15 +8,14 @@ export const useFlashcardAttemptHistory = (setSelectedAttempt) => {
   const dispatch = useDispatch()
   const { sessionDetail } = useSelector(state => state.session)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 30
+  const perPage = 30
 
   const handleTryAgain = async () => {
     try {
       const newAttempt = await dispatch(createNewFlashcardAttempt(sessionDetail.id))
 
       // Refresh attempts list to include the new attempt
-      const offset = (currentPage - 1) * itemsPerPage
-      await dispatch(fetchFlashcardAttempts(sessionDetail.id, itemsPerPage, offset))
+      await dispatch(fetchFlashcardAttempts(sessionDetail.id, currentPage, perPage))
 
       // Fetch decks for selection
       await dispatch(fetchFlashcardDecks())

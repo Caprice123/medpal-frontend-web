@@ -3,11 +3,15 @@ import { BaseService } from '../../baseService.js'
 import { ValidationError } from '../../../errors/validationError.js'
 
 export class GetListAttemptsService extends BaseService {
-  static async call({ userLearningSessionId, userId, limit = 30, offset = 0 }) {
+  static async call({ userLearningSessionId, userId, page = 1, perPage = 30 }) {
     // Validate inputs
     if (!userLearningSessionId) {
       throw new ValidationError('User learning session ID is required')
     }
+
+    // Calculate limit and offset from page and perPage
+    const limit = parseInt(perPage)
+    const offset = (parseInt(page) - 1) * limit
 
     // Get the learning session with exercise session and paginated attempts
     const userLearningSession = await prisma.user_learning_sessions.findUnique({
@@ -35,8 +39,8 @@ export class GetListAttemptsService extends BaseService {
               orderBy: {
                 id: 'desc'
               },
-              take: parseInt(limit) + 1, // Fetch one extra to check if there's more
-              skip: parseInt(offset)
+              take: limit + 1, // Fetch one extra to check if there's more
+              skip: offset
             },
           }
         }
@@ -84,8 +88,8 @@ export class GetListAttemptsService extends BaseService {
     return {
       data: attempts,
       pagination: {
-        limit: parseInt(limit),
-        offset: parseInt(offset),
+        page: parseInt(page),
+        perPage: limit,
         isLastPage: isLastPage
       }
     }
