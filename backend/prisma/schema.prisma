@@ -315,7 +315,8 @@ model flashcard_session_attempts {
   id                         Int                          @id @default(autoincrement())
   flashcard_session_id       Int
   attempt_number             Int                          @default(1)
-  started_at                 DateTime                     @default(now())
+  status                     String                       @default("not_started")
+  started_at                 DateTime?
   completed_at               DateTime?
   created_at                 DateTime                     @default(now())
   updated_at                 DateTime                     @default(now())
@@ -325,6 +326,7 @@ model flashcard_session_attempts {
 
   @@index([flashcard_session_id])
   @@index([started_at])
+  @@index([status])
 }
 
 model flashcard_session_answers {

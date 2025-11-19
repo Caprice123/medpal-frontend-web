@@ -412,8 +412,19 @@ export const fetchFlashcardAttemptDetail = (attemptId) => async (dispatch) => {
 
     const data = response.data.data
 
-    // Store attempt detail (cards and answers) for FlashcardPlayer
+    // Store attempt detail (cards, answers, and metadata) for FlashcardPlayer
     const attemptDetail = {
+      id: data.id,
+      attempt_number: data.attempt_number,
+      flashcard_session_id: data.flashcard_session_id,
+      user_learning_session_id: data.user_learning_session_id,
+      deck_id: data.deck_id,
+      deck_title: data.deck_title,
+      deck_description: data.deck_description,
+      started_at: data.started_at,
+      completed_at: data.completed_at,
+      total_cards: data.total_cards,
+      credits_used: data.credits_used,
       cards: data.cards || [],
       answers: data.answers || []
     }

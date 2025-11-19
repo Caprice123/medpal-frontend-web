@@ -71,11 +71,12 @@ export class CompleteFlashcardAttemptService extends BaseService {
         }
       }
 
-      // Update attempt with completed time
+      // Update attempt with completed time and status
       const updatedAttempt = await tx.flashcard_session_attempts.update({
         where: { id: parseInt(attemptId) },
         data: {
-          completed_at: new Date()
+          completed_at: new Date(),
+          status: 'completed'
         }
       })
 

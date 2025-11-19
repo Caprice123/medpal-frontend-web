@@ -34,6 +34,7 @@ export class CreateNewAttemptService extends BaseService {
         data: {
           exercise_session_id: exerciseSession.id,
           attempt_number: exerciseSession.number_of_attempts + 1,
+          started_at: new Date(),
           status: 'active'
         }
       })

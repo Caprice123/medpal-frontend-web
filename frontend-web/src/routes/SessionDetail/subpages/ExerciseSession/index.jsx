@@ -64,7 +64,6 @@ function ExerciseSessionSubpage({ sessionId }) {
     }
   }, [selectedAttempt, attempts])
 
-
   const handleTryAgain = async () => {
     try {
       const newAttempt = await dispatch(createNewAttempt(sessionId))

@@ -38,7 +38,7 @@ function SessionDetail() {
   const sessionType = currentSession?.session_type || currentSession?.type || 'exercise'
 
   if (sessionType === 'flashcard') {
-    return <FlashcardSessionSubpage sessionData={currentSession} />
+    return <FlashcardSessionSubpage sessionId={sessionId} />
   }
 
   // Default to exercise

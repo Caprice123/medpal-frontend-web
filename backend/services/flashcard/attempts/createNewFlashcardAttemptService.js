@@ -29,11 +29,13 @@ export class CreateNewFlashcardAttemptService extends BaseService {
         throw new ValidationError('No flashcard session found')
       }
 
-      // Create new attempt
+      // Create new attempt with not_started status (user needs to select deck first)
       const newAttempt = await tx.flashcard_session_attempts.create({
         data: {
           flashcard_session_id: flashcardSession.id,
-          attempt_number: flashcardSession.number_of_attempts + 1
+          attempt_number: flashcardSession.number_of_attempts + 1,
+          started_at: new Date(),
+          status: 'active'
         }
       })
 

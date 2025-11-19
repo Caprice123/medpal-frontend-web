@@ -1,5 +1,5 @@
 import { useFlashcardAttemptHistory } from './hook'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Container,
   Header,
@@ -17,11 +17,15 @@ import {
   CostBadge,
   StartButton
 } from './FlashcardAttemptHistory.styles'
+import { fetchFlashcardAttemptDetail } from '../../../../../../store/session/action'
+import Pagination from '../../../../../../components/Pagination'
 
-const FlashcardAttemptHistory = ({ setSelectedAttempt, setCurrentView }) => {
-  const { handleTryAgain } = useFlashcardAttemptHistory(setSelectedAttempt)
+const FlashcardAttemptHistory = ({ currentPage, setCurrentPage, setCurrentView }) => {
+  const { handleTryAgain } = useFlashcardAttemptHistory(setCurrentView)
 
-  const { sessionAttempts: attempts } = useSelector(state => state.session)
+  const dispatch = useDispatch()
+  const { sessionAttempts: attempts, pagination, loading } = useSelector(state => state.session)
+  const { isLoadingAttempts } = loading || {}
 
   return (
     <Container>
@@ -49,9 +53,9 @@ const FlashcardAttemptHistory = ({ setSelectedAttempt, setCurrentView }) => {
             <DeckCard
               key={attempt.id}
               onClick={() => {
-                if (attempt.completed_at) {
-                  setSelectedAttempt(attempt)
-                  setCurrentView("results")
+                if (attempt.status == "completed") {
+                    dispatch(fetchFlashcardAttemptDetail(attempt.id))
+                    setCurrentView("attempt_results")
                 }
               }}
               style={{ cursor: attempt.completed_at ? 'pointer' : 'default' }}
@@ -81,12 +85,12 @@ const FlashcardAttemptHistory = ({ setSelectedAttempt, setCurrentView }) => {
                     {new Date(attempt.started_at).toLocaleDateString()}
                   </CostBadge>
                 </div>
-                {attempt.completed_at && (
+                {attempt.status == "completed" && (
                   <StartButton
                     onClick={(e) => {
                       e.stopPropagation()
-                      setSelectedAttempt(attempt)
-                      setCurrentView("results")
+                      dispatch(fetchFlashcardAttemptDetail(attempt.id))
+                      setCurrentView("attempt_results")
                     }}
                   >
                     Lihat Hasil
@@ -96,6 +100,13 @@ const FlashcardAttemptHistory = ({ setSelectedAttempt, setCurrentView }) => {
             </DeckCard>
           ))}
         </DeckGrid>
+
+        <Pagination
+          currentPage={currentPage}
+          isLastPage={pagination?.isLastPage ?? true}
+          onPageChange={setCurrentPage}
+          isLoading={isLoadingAttempts}
+        />
       </DeckSelectionContainer>
     </Container>
   )

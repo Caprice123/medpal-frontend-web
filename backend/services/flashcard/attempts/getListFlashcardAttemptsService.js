@@ -30,6 +30,7 @@ export class GetListFlashcardAttemptsService extends BaseService {
               select: {
                 id: true,
                 attempt_number: true,
+                status: true,
                 started_at: true,
                 completed_at: true
               },
@@ -70,6 +71,7 @@ export class GetListFlashcardAttemptsService extends BaseService {
         attemptNumber: attempt.attempt_number,
         started_at: attempt.started_at,
         completed_at: attempt.completed_at,
+        status: attempt.status,
         total_cards: flashcardSession.total_cards,
         credits_used: flashcardSession.credits_used,
         deck_id: flashcardSession.flashcard_deck_id,

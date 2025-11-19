@@ -112,11 +112,12 @@ export class StartFlashcardWithDeckService extends BaseService {
         }
       })
 
-      // Update attempt started_at
+      // Update attempt started_at and status
       const updatedAttempt = await tx.flashcard_session_attempts.update({
         where: { id: attempt.id },
         data: {
-          started_at: new Date()
+          started_at: new Date(),
+          status: 'active'
         }
       })
 

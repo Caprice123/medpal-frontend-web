@@ -1,7 +1,31 @@
-import React, { useState, useEffect } from 'react'
-import './FlashcardPlayer.css'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { completeFlashcardSession, fetchFlashcardAttemptDetail } from '../../../../../../store/session/action'
+import {
+  PlayerContainer,
+  ProgressBar,
+  ProgressText,
+  ProgressBarBg,
+  ProgressBarFill,
+  CardContainer,
+  Flashcard,
+  CardFront,
+  CardBack,
+  CardLabel,
+  CardContent,
+  AnswerSection,
+  AnswerLabel,
+  AnswerInput,
+  ShowAnswerSection,
+  ShowAnswerButton,
+  NavigationButtons,
+  PrimaryButton,
+  SecondaryButton,
+  CardDots,
+  Dot
+} from './FlashcardPlayer.styles'
 
-const FlashcardPlayer = ({ deckSnapshot, onComplete, attemptId }) => {
+const FlashcardPlayer = ({ setCurrentView }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -9,7 +33,10 @@ const FlashcardPlayer = ({ deckSnapshot, onComplete, attemptId }) => {
   const [currentAnswer, setCurrentAnswer] = useState('')
   const [startTime, setStartTime] = useState(Date.now())
 
-  const cards = deckSnapshot?.cards || []
+  const { attemptDetail } = useSelector(state => state.session)
+  const dispatch = useDispatch()
+
+  const cards = attemptDetail?.cards || []
   const currentCard = cards[currentCardIndex]
   const isLastCard = currentCardIndex === cards.length - 1
 
@@ -59,10 +86,14 @@ const FlashcardPlayer = ({ deckSnapshot, onComplete, attemptId }) => {
       }
     }
   }
+  console.log(attemptDetail)
 
-  const handleSubmit = (allAnswers) => {
+  const handleSubmit = async (allAnswers) => {
     if (window.confirm('Submit all your answers? This will complete the session.')) {
-      onComplete(allAnswers)
+        // Complete the flashcard session with answers
+        await dispatch(completeFlashcardSession(attemptDetail.id, allAnswers))
+        dispatch(fetchFlashcardAttemptDetail(attemptDetail.id))
+        setCurrentView('attempt_results')
     }
   }
 
@@ -71,105 +102,98 @@ const FlashcardPlayer = ({ deckSnapshot, onComplete, attemptId }) => {
   }
 
   return (
-    <div className="flashcard-player-container">
+    <PlayerContainer>
       {/* Progress Bar */}
-      <div className="progress-bar">
-        <div className="progress-text">
+      <ProgressBar>
+        <ProgressText>
           Card {currentCardIndex + 1} / {cards.length}
-        </div>
-        <div className="progress-bar-bg">
-          <div
-            className="progress-bar-fill"
-            style={{ width: `${((currentCardIndex + 1) / cards.length) * 100}%` }}
+        </ProgressText>
+        <ProgressBarBg>
+          <ProgressBarFill
+            progress={((currentCardIndex + 1) / cards.length) * 100}
           />
-        </div>
-      </div>
+        </ProgressBarBg>
+      </ProgressBar>
 
       {/* Card Container */}
-      <div className="card-container">
-        <div className={`flashcard ${isFlipped ? 'flipped' : ''}`}>
+      <CardContainer>
+        <Flashcard flipped={isFlipped}>
           {/* Card Front */}
-          <div className="card-face card-front">
-            <div className="card-label">Question</div>
-            <div className="card-content">
+          <CardFront>
+            <CardLabel>Question</CardLabel>
+            <CardContent>
               <p>{currentCard.front_text || currentCard.front}</p>
-            </div>
-          </div>
+            </CardContent>
+          </CardFront>
 
           {/* Card Back */}
-          <div className="card-face card-back">
-            <div className="card-label">Correct Answer</div>
-            <div className="card-content">
+          <CardBack>
+            <CardLabel>Correct Answer</CardLabel>
+            <CardContent>
               <p>{currentCard.back_text || currentCard.back}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            </CardContent>
+          </CardBack>
+        </Flashcard>
+      </CardContainer>
 
       {/* Your Answer Input */}
-      <div className="answer-section">
-        <label className="answer-label">Your Answer:</label>
-        <textarea
+      <AnswerSection>
+        <AnswerLabel>Your Answer:</AnswerLabel>
+        <AnswerInput
           value={currentAnswer}
           onChange={(e) => setCurrentAnswer(e.target.value)}
           placeholder="Type your answer here..."
-          className="answer-input"
           rows="3"
         />
-      </div>
+      </AnswerSection>
 
       {/* Show Answer Button */}
       {!showAnswer && (
-        <div className="show-answer-section">
-          <button
-            onClick={handleShowAnswer}
-            className="btn btn-show-answer"
-          >
+        <ShowAnswerSection>
+          <ShowAnswerButton onClick={handleShowAnswer}>
             Show Answer
-          </button>
-        </div>
+          </ShowAnswerButton>
+        </ShowAnswerSection>
       )}
 
       {/* Navigation Buttons */}
-      <div className="navigation-buttons">
-        <button
+      <NavigationButtons>
+        <SecondaryButton
           onClick={handlePrevious}
           disabled={currentCardIndex === 0}
-          className="btn btn-secondary"
         >
           ← Previous
-        </button>
+        </SecondaryButton>
 
         {isLastCard ? (
-          <button
+          <PrimaryButton
             onClick={() => handleNext()}
-            className="btn btn-primary"
             disabled={!showAnswer}
           >
             Submit All
-          </button>
+          </PrimaryButton>
         ) : (
-          <button
+          <PrimaryButton
             onClick={handleNext}
-            className="btn btn-primary"
             disabled={!showAnswer}
           >
             Next →
-          </button>
+          </PrimaryButton>
         )}
-      </div>
+      </NavigationButtons>
 
       {/* Card Navigation Dots */}
-      <div className="card-dots">
+      <CardDots>
         {cards.map((_, index) => (
-          <div
+          <Dot
             key={index}
-            className={`dot ${index === currentCardIndex ? 'active' : ''} ${index < currentCardIndex ? 'completed' : ''}`}
+            active={index === currentCardIndex}
+            completed={index < currentCardIndex}
             onClick={() => setCurrentCardIndex(index)}
           />
         ))}
-      </div>
-    </div>
+      </CardDots>
+    </PlayerContainer>
   )
 }
 

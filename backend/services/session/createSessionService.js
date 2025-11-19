@@ -63,11 +63,12 @@ export class CreateSessionService extends BaseService {
           }
         })
 
-        // Create first attempt
+        // Create first attempt with not_started status (user needs to select deck first)
         firstAttempt = await tx.flashcard_session_attempts.create({
           data: {
             flashcard_session_id: flashcardSession.id,
-            attempt_number: 1
+            attempt_number: 1,
+            status: 'not_started'
           }
         })
       }
