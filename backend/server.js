@@ -14,6 +14,7 @@ import summaryNoteRoutes from './routes/api/v1/summaryNote.routes.js';
 import tagRoutes from './routes/api/v1/tag.routes.js';
 import sessionRoutes from './routes/api/v1/session.routes.js';
 import featureRoutes from './routes/api/v1/feature.routes.js';
+import statisticRoutes from './routes/api/v1/statistic.routes.js';
 import adminCreditPlanRoutes from './routes/admin/v1/creditPlan.routes.js';
 import adminExerciseRoutes from './routes/admin/v1/exercise.routes.js';
 import adminFlashcardRoutes from './routes/admin/v1/flashcard.routes.js';
@@ -53,6 +54,7 @@ app.use('/api/v1/summary-notes', summaryNoteRoutes);
 app.use('/api/v1/tags', tagRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/features', featureRoutes);
+app.use('/api/v1/statistics', statisticRoutes);
 
 // Admin Routes
 app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);
