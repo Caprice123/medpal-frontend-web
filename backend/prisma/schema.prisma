@@ -461,3 +461,83 @@ model statistics {
 
   @@index([key])
 }
+
+// ============= Pricing Plans (Unified Bundles) =============
+
+model pricing_plans {
+  id                  Int                  @id @default(autoincrement())
+  code                String?              @unique
+  name                String
+  description         String?
+  price               Decimal              @db.Decimal(10, 2)
+  bundle_type         String               @default("credits")  // credits, subscription, hybrid
+  duration_days       Int?                 // for subscription/hybrid bundles
+  credits_included    Int                  @default(0)
+  is_active           Boolean              @default(true)
+  is_popular          Boolean              @default(false)
+  discount            Int                  @default(0)
+  order               Int                  @default(0)
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @default(now())
+
+  user_purchases      user_purchases[]
+
+  @@index([is_active])
+  @@index([bundle_type])
+  @@index([order])
+  @@index([name])
+  @@index([code])
+  @@index([is_active, bundle_type, order])
+}
+
+model user_purchases {
+  id                    Int                @id @default(autoincrement())
+  user_id               Int
+  pricing_plan_id       Int
+  bundle_type           String             // credits, subscription, hybrid
+  purchase_date         DateTime           @default(now())
+
+  // Subscription fields (for subscription/hybrid bundles)
+  subscription_start    DateTime?
+  subscription_end      DateTime?
+  subscription_status   String?            // active, expired, cancelled
+
+  // Credits fields
+  credits_granted       Int                @default(0)
+
+  // Payment fields
+  payment_status        String             @default("completed")
+  payment_method        String?
+  payment_reference     String?
+  amount_paid           Decimal            @db.Decimal(10, 2)
+
+  created_at            DateTime           @default(now())
+  updated_at            DateTime           @default(now())
+
+  pricing_plan          pricing_plans      @relation(fields: [pricing_plan_id], references: [id])
+
+  @@index([user_id])
+  @@index([pricing_plan_id])
+  @@index([bundle_type])
+  @@index([subscription_status])
+  @@index([subscription_end])
+}
+
+// ============= Features Configuration =============
+
+model features {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
+  icon         String?
+  access_type  String   @default("free")  // free, subscription, credits, subscription_and_credits
+  credit_cost  Int      @default(0)
+  is_active    Boolean  @default(true)
+  order        Int      @default(0)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+
+  @@index([is_active])
+  @@index([access_type])
+  @@index([order])
+}

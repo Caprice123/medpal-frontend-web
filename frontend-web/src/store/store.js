@@ -9,6 +9,7 @@ import tags from "./tags/reducer";
 import session from "./session/reducer";
 import feature from "./feature/reducer";
 import statistic from "./statistic/reducer";
+import pricing from "./pricing/reducer";
 import summaryNotes from "./summaryNotes";
 
 export const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ export const rootReducer = combineReducers({
     session,
     feature,
     statistic,
+    pricing,
     summaryNotes,
 })
 

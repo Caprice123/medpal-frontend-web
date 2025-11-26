@@ -70,6 +70,19 @@ export default {
     statistics: {
         list: `${API_BASE_URL}/api/v1/statistics`,
     },
+    pricing: {
+        plans: `${API_BASE_URL}/api/v1/pricing/plans`,
+        status: `${API_BASE_URL}/api/v1/pricing/status`,
+        history: `${API_BASE_URL}/api/v1/pricing/history`,
+        purchase: `${API_BASE_URL}/api/v1/pricing/purchase`,
+        admin: {
+            list: `${API_BASE_URL}/admin/v1/pricing`,
+            detail: (id) => `${API_BASE_URL}/admin/v1/pricing/${id}`,
+            create: `${API_BASE_URL}/admin/v1/pricing`,
+            update: (id) => `${API_BASE_URL}/admin/v1/pricing/${id}`,
+            toggle: (id) => `${API_BASE_URL}/admin/v1/pricing/${id}/toggle`,
+        }
+    },
     summaryNotes: {
         // User endpoints
         list: `${API_BASE_URL}/api/v1/summary-notes`,

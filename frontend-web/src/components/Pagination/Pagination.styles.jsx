@@ -6,33 +6,53 @@ export const PaginationContainer = styled.div`
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
-  padding: 1rem;
 `
 
 export const PaginationButton = styled.button`
   padding: 0.5rem 1rem;
-  background-color: ${props => props.disabled ? '#e5e7eb' : '#0891b2'};
-  color: ${props => props.disabled ? '#9ca3af' : 'white'};
-  border: none;
-  border-radius: 0.375rem;
+  border-radius: ${props => props.$variant === 'admin' ? '6px' : '0.375rem'};
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 
-  &:hover:not(:disabled) {
-    background-color: #0e7490;
-  }
+  /* Default variant (cyan background) */
+  ${props => props.$variant !== 'admin' && `
+    background-color: ${props.disabled ? '#e5e7eb' : '#0891b2'};
+    color: ${props.disabled ? '#9ca3af' : 'white'};
+    border: none;
 
-  &:active:not(:disabled) {
-    transform: scale(0.98);
-  }
+    &:hover:not(:disabled) {
+      background-color: #0e7490;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+  `}
+
+  /* Admin variant (white background with cyan border) */
+  ${props => props.$variant === 'admin' && `
+    background: white;
+    color: #6BB9E8;
+    border: 1px solid #6BB9E8;
+
+    &:hover:not(:disabled) {
+      background: #6BB9E8;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `}
 `
 
 export const PageInfo = styled.div`
-  color: #374151;
+  color: #6b7280;
   font-weight: 500;
   font-size: 0.875rem;
-  min-width: 80px;
+  min-width: 100px;
   text-align: center;
 `

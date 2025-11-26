@@ -1,0 +1,108 @@
+import { GetActivePricingPlansService } from '../../../services/pricing/getActivePricingPlansService.js'
+import { PurchasePricingPlanService } from '../../../services/pricing/purchasePricingPlanService.js'
+import { GetUserStatusService, HasActiveSubscriptionService, GetUserCreditBalanceService } from '../../../services/pricing/getUserStatusService.js'
+import { GetUserPurchaseHistoryService } from '../../../services/pricing/getUserPurchaseHistoryService.js'
+
+class PricingController {
+  /**
+   * Get all active pricing plans (public)
+   * Optionally filter by bundle_type: credits, subscription, hybrid
+   */
+  async getPlans(req, res) {
+    const { bundle_type } = req.query
+
+    const plans = await GetActivePricingPlansService.call(bundle_type || null)
+
+    res.status(200).json({
+      data: plans.map(plan => ({
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        price: plan.price,
+        bundleType: plan.bundle_type,
+        durationDays: plan.duration_days,
+        creditsIncluded: plan.credits_included,
+        isPopular: plan.is_popular,
+        discount: plan.discount,
+        order: plan.order
+      }))
+    })
+  }
+
+  /**
+   * Get user's comprehensive status (subscription + credits)
+   */
+  async getUserStatus(req, res) {
+    const userId = req.user.id
+
+    const status = await GetUserStatusService.call(userId)
+
+    res.status(200).json({
+      data: status
+    })
+  }
+
+  /**
+   * Get user's purchase history (all payments)
+   */
+  async getPurchaseHistory(req, res) {
+    const userId = req.user.id
+
+    const purchases = await GetUserPurchaseHistoryService.call(userId)
+
+    res.status(200).json({
+      data: purchases
+    })
+  }
+
+  /**
+   * Purchase a pricing plan
+   */
+  async purchase(req, res) {
+    const userId = req.user.id
+    const { pricingPlanId, paymentMethod } = req.body
+
+    if (!pricingPlanId) {
+      return res.status(400).json({
+        error: 'Pricing plan ID is required'
+      })
+    }
+
+    // Check if user already has active subscription (only for subscription/hybrid plans)
+    const plan = await GetActivePricingPlansService.call()
+    const selectedPlan = plan.find(p => p.id === pricingPlanId)
+
+    if (selectedPlan && (selectedPlan.bundle_type === 'subscription' || selectedPlan.bundle_type === 'hybrid')) {
+      const hasActive = await HasActiveSubscriptionService.call(userId)
+      if (hasActive) {
+        return res.status(400).json({
+          error: 'You already have an active subscription'
+        })
+      }
+    }
+
+    const purchase = await PurchasePricingPlanService.call(
+      userId,
+      pricingPlanId,
+      paymentMethod || 'manual'
+    )
+
+    res.status(201).json({
+      data: {
+        id: purchase.id,
+        planName: purchase.pricing_plan.name,
+        bundleType: purchase.bundle_type,
+        creditsGranted: purchase.credits_granted,
+        amountPaid: purchase.amount_paid,
+        subscription: purchase.subscription_status ? {
+          startDate: purchase.subscription_start,
+          endDate: purchase.subscription_end,
+          status: purchase.subscription_status
+        } : null
+      },
+      message: 'Purchase completed successfully'
+    })
+  }
+}
+
+export default new PricingController()

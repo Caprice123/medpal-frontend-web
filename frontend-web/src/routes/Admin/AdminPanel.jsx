@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUserData } from '@utils/authToken'
 import styled from 'styled-components'
-import CreditPlans from './CreditPlans/index'
+import PricingPlans from './PricingPlans/index'
 import Transactions from './Transactions'
 import Features from './Features/index'
 
@@ -27,13 +27,16 @@ const Logo = styled.div`
   gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0891b2;
+  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `
 
 const BackButton = styled.button`
   background: transparent;
-  color: #0891b2;
-  border: 2px solid #0891b2;
+  color: #6BB9E8;
+  border: 2px solid #6BB9E8;
   padding: 0.5rem 1.25rem;
   border-radius: 8px;
   font-weight: 600;
@@ -41,8 +44,9 @@ const BackButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background: #0891b2;
+    background: linear-gradient(135deg, #6BB9E8, #8DC63F);
     color: white;
+    border-color: transparent;
     transform: translateY(-2px);
   }
 `
@@ -56,7 +60,10 @@ const MainContent = styled.main`
 const PageTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
-  color: #0891b2;
+  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.5rem;
 `
 
@@ -78,14 +85,19 @@ const Tab = styled.button`
   border: none;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  color: ${props => props.active ? '#0891b2' : '#6b7280'};
-  border-bottom: 3px solid ${props => props.active ? '#0891b2' : 'transparent'};
+  color: ${props => props.active ? '#6BB9E8' : '#6b7280'};
+  border-bottom: 3px solid ${props => props.active ? '#6BB9E8' : 'transparent'};
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: -2px;
+  position: relative;
+
+  ${props => props.active && `
+    background: linear-gradient(180deg, rgba(107, 185, 232, 0.05), transparent);
+  `}
 
   &:hover {
-    color: #0891b2;
+    color: #6BB9E8;
   }
 `
 
@@ -135,10 +147,10 @@ function AdminPanel() {
             Kelola Fitur
           </Tab>
           <Tab
-            active={activeTab === 'creditPlans'}
-            onClick={() => setActiveTab('creditPlans')}
+            active={activeTab === 'pricingPlans'}
+            onClick={() => setActiveTab('pricingPlans')}
           >
-            Paket Kredit
+            Paket Harga
           </Tab>
           <Tab
             active={activeTab === 'transactions'}
@@ -157,7 +169,7 @@ function AdminPanel() {
         <ContentArea>
           {activeTab === 'features' && <Features />}
 
-          {activeTab === 'creditPlans' && <CreditPlans />}
+          {activeTab === 'pricingPlans' && <PricingPlans />}
 
           {activeTab === 'transactions' && <Transactions />}
 

@@ -1,0 +1,57 @@
+import { GetListPricingPlansService } from '../../../services/pricing/admin/getListPricingPlansService.js'
+import { GetDetailPricingPlanService } from '../../../services/pricing/admin/getDetailPricingPlanService.js'
+import { CreatePricingPlanService } from '../../../services/pricing/admin/createPricingPlanService.js'
+import { UpdatePricingPlanService } from '../../../services/pricing/admin/updatePricingPlanService.js'
+import { TogglePricingPlanService } from '../../../services/pricing/admin/togglePricingPlanService.js'
+
+class PricingPlanController {
+  async index(req, res) {
+    const result = await GetListPricingPlansService.call(req)
+
+    res.status(200).json({
+      success: true,
+      data: result.data,
+      pagination: result.pagination
+    })
+  }
+
+  async show(req, res) {
+    const { id } = req.params
+    const plan = await GetDetailPricingPlanService.call(id)
+
+    res.status(200).json({
+      data: plan
+    })
+  }
+
+  async create(req, res) {
+    const plan = await CreatePricingPlanService.call(req)
+
+    res.status(201).json({
+      data: plan,
+      message: 'Pricing plan created successfully'
+    })
+  }
+
+  async update(req, res) {
+    const { id } = req.params
+    const plan = await UpdatePricingPlanService.call(id, req)
+
+    res.status(200).json({
+      data: plan,
+      message: 'Pricing plan updated successfully'
+    })
+  }
+
+  async toggle(req, res) {
+    const { id } = req.params
+    const plan = await TogglePricingPlanService.call(id, req)
+
+    res.status(200).json({
+      data: plan,
+      message: `Pricing plan ${plan.is_active ? 'activated' : 'deactivated'} successfully`
+    })
+  }
+}
+
+export default new PricingPlanController()

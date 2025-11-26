@@ -1,0 +1,37 @@
+import prisma from '../../../prisma/client.js'
+import { BaseService } from '../../baseService.js'
+
+export class CreatePricingPlanService extends BaseService {
+  static async call(req) {
+    const {
+      name,
+      code,
+      description,
+      price,
+      bundle_type,
+      duration_days,
+      credits_included,
+      is_popular,
+      discount,
+      order
+    } = req.body
+
+    const plan = await prisma.pricing_plans.create({
+      data: {
+        name,
+        code: code || null,
+        description,
+        price: Number(price),
+        bundle_type: bundle_type || 'credits',
+        duration_days: bundle_type === 'subscription' || bundle_type === 'hybrid' ? Number(duration_days) : null,
+        credits_included: Number(credits_included) || 0,
+        is_active: true,
+        is_popular: is_popular || false,
+        discount: Number(discount) || 0,
+        order: Number(order) || 0
+      }
+    })
+
+    return plan
+  }
+}

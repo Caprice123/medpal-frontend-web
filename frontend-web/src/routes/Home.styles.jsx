@@ -930,12 +930,42 @@ export const PricingSection = styled.section`
   }
 `;
 
+export const PricingFilterContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+`;
+
+export const FilterButton = styled.button`
+  background: ${props => props.$active ? `linear-gradient(135deg, ${colors.gradient.start}, ${colors.gradient.end})` : 'white'};
+  color: ${props => props.$active ? 'white' : colors.primary.dark};
+  border: 2px solid ${props => props.$active ? 'transparent' : colors.primary.main};
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(107, 185, 232, 0.3);
+    ${props => !props.$active && `
+      background: ${colors.primary.main};
+      color: white;
+    `}
+  }
+`;
+
 export const PricingGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 350px));
   gap: 2rem;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
+  justify-content: center;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -951,6 +981,9 @@ export const PricingCard = styled.div`
   position: relative;
   transition: all 0.3s ease;
   box-shadow: ${props => props.$isPopular ? '0 10px 40px rgba(107, 185, 232, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)'};
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
 
   ${props => props.$isPopular && `
     transform: scale(1.05);
@@ -1003,6 +1036,7 @@ export const PricingCredits = styled.div`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.3;
 `;
 
 export const PricingPrice = styled.div`
@@ -1035,6 +1069,8 @@ export const PricingButton = styled(Link)`
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-align: center;
+  display: block;
 
   ${props => props.$isPopular ? `
     background: linear-gradient(135deg, ${colors.gradient.start} 0%, ${colors.gradient.end} 100%);

@@ -65,6 +65,8 @@ import {
   FooterLink,
   FooterBottom,
   PricingSection,
+  PricingFilterContainer,
+  FilterButton,
   PricingGrid,
   PricingCard,
   PopularBadge,
@@ -82,15 +84,21 @@ import CountUp from 'react-countup'
 import { useAppDispatch, useAppSelector } from '@store/store'
 import { fetchFeatures } from '@store/feature/action'
 import { fetchStatistics } from '@store/statistic/action'
-import { fetchActiveCreditPlans } from '@store/credit/action'
+import { fetchPricingPlans } from '@store/pricing/action'
 
 function Home() {
   const dispatch = useAppDispatch()
+  const [pricingFilter, setPricingFilter] = useState('all')
 
   // Get data from Redux store
   const features = useAppSelector((state) => state.feature.features)
   const statistics = useAppSelector((state) => state.statistic.statistics)
-  const creditPlans = useAppSelector((state) => state.credit.plans)
+  const pricingPlans = useAppSelector((state) => state.pricing.plans)
+
+  // Filter pricing plans based on selected type
+  const filteredPricingPlans = pricingFilter === 'all'
+    ? pricingPlans
+    : pricingPlans.filter(plan => plan.bundleType === pricingFilter)
 
   // Intersection observer for stats section
   const { ref: statsRef, inView: statsInView } = useInView({
@@ -102,7 +110,7 @@ function Home() {
     // Dispatch Redux actions to fetch data
     dispatch(fetchFeatures())
     dispatch(fetchStatistics())
-    dispatch(fetchActiveCreditPlans())
+    dispatch(fetchPricingPlans()) // Fetch all pricing plans (credits + subscriptions)
 
     // Refresh statistics every 30 seconds
     const statsInterval = setInterval(() => {
@@ -390,14 +398,53 @@ function Home() {
             </SectionSubtitle>
           </SectionHeader>
 
+          <PricingFilterContainer>
+            <FilterButton
+              $active={pricingFilter === 'all'}
+              onClick={() => setPricingFilter('all')}
+            >
+              Semua Paket
+            </FilterButton>
+            <FilterButton
+              $active={pricingFilter === 'credits'}
+              onClick={() => setPricingFilter('credits')}
+            >
+              Kredit
+            </FilterButton>
+            <FilterButton
+              $active={pricingFilter === 'subscription'}
+              onClick={() => setPricingFilter('subscription')}
+            >
+              Berlangganan
+            </FilterButton>
+            <FilterButton
+              $active={pricingFilter === 'hybrid'}
+              onClick={() => setPricingFilter('hybrid')}
+            >
+              Paket Hybrid
+            </FilterButton>
+          </PricingFilterContainer>
+
           <Parallax speed={-1}>
             <PricingGrid>
-              {creditPlans.length > 0 ? (
-                creditPlans.map((plan) => (
+              {filteredPricingPlans.length > 0 ? (
+                filteredPricingPlans.map((plan) => (
                   <PricingCard key={plan.id} $isPopular={plan.isPopular}>
                     {plan.isPopular && <PopularBadge>Paling Populer</PopularBadge>}
                     <PricingName>{plan.name}</PricingName>
-                    <PricingCredits>{plan.credits.toLocaleString()} Kredit</PricingCredits>
+                    <PricingCredits>
+                      {plan.bundleType === 'subscription' ? (
+                        `${plan.durationDays} Hari Akses`
+                      ) : plan.bundleType === 'hybrid' ? (
+                        <>
+                          {plan.creditsIncluded.toLocaleString()} Kredit
+                          <br />
+                          {plan.durationDays} Hari
+                        </>
+                      ) : (
+                        `${plan.creditsIncluded.toLocaleString()} Kredit`
+                      )}
+                    </PricingCredits>
                     <PricingPrice>
                       Rp {Number(plan.price).toLocaleString('id-ID')}
                       {plan.discount > 0 && (
