@@ -18,6 +18,7 @@ export default {
     //     create: `${API_BASE_URL}/api/v1/tag-groups`,
     // },
     tagGroups: "/admin/v1/tag-groups",
+    users: "/admin/v1/users",
     exercises: {
         // User endpoints
         topics: `${API_BASE_URL}/api/v1/exercises/topics`,

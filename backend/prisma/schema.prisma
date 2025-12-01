@@ -190,7 +190,7 @@ model tags {
   created_at          DateTime              @default(now())
   updated_at          DateTime              @default(now())
 
-  tag_group           tag_groups            @relation(fields: [tag_group_id], references: [id], onDelete: Cascade)
+  tag_group           tag_groups?            @relation(fields: [tag_group_id], references: [id], onDelete: Cascade)
 
   exercise_topic_tags   exercise_topic_tags[]
   flashcard_deck_tags   flashcard_deck_tags[]
@@ -212,16 +212,6 @@ model tag_groups {
     @@unique([name])
 }
 
-model user_credits {
-  id                  Int                   @id @default(autoincrement())
-  userId              Int                   @unique
-  balance             Int                   @default(0)
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @default(now())
-  credit_transactions credit_transactions[]
-
-  @@index([userId])
-}
 
 model user_learning_sessions {
   id                   Int                    @id @default(autoincrement())
@@ -384,6 +374,35 @@ model users {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  user_credit user_credits?
+  user_subscription user_subscriptions[]
+}
+
+model user_subscriptions {
+    id              Int @id @default(autoincrement())
+    user_id         Int
+    start_date      DateTime
+    end_date        DateTime
+    created_at      DateTime @default(now())
+    updated_at      DateTime @default(now())
+
+    user            users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+    @@index([user_id, start_date, end_date])
+}
+
+model user_credits {
+  id                  Int                   @id @default(autoincrement())
+  userId              Int                   @unique
+  balance             Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now())
+
+  user                users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credit_transactions credit_transactions[]
+
+  @@index([userId])
 }
 
 // ============= Summary Notes Feature =============

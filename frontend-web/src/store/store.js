@@ -13,6 +13,7 @@ import feature from "./feature/reducer";
 import statistic from "./statistic/reducer";
 import pricing from "./pricing/reducer";
 import summaryNotes from "./summaryNotes";
+import user from "./user";
 
 export const rootReducer = combineReducers({
     auth,
@@ -28,6 +29,7 @@ export const rootReducer = combineReducers({
     statistic,
     pricing,
     summaryNotes,
+    user,
 })
 
 export const store = configureStore({

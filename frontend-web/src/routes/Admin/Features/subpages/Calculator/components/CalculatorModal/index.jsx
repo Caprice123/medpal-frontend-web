@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCalculatorModal } from './useCalculatorModal'
+import Dropdown from '@components/common/Dropdown'
 import {
   Overlay,
   Modal,
@@ -12,7 +13,6 @@ import {
   FormInput,
   FormTextarea,
   FormRow,
-  Select,
   HelpText,
   ErrorMessage,
   FieldsSection,
@@ -24,7 +24,6 @@ import {
   FieldInputWrapper,
   SmallLabel,
   SmallInput,
-  SmallSelect,
   RemoveButton,
   AddButton,
   OptionsList,
@@ -64,7 +63,6 @@ import {
   Tag,
   RemoveTagButton,
   SelectTagContainer,
-  SelectTag,
   AddTagButton,
   EmptyTagsMessage
 } from './CalculatorModal.styles'
@@ -190,17 +188,18 @@ function CalculatorModal({ isOpen, onClose, calculator, onSuccess }) {
                   </EmptyTagsMessage>
                 )}
                 <SelectTagContainer>
-                  <SelectTag
-                    value={selectedTagId}
-                    onChange={(e) => setSelectedTagId(e.target.value)}
-                  >
-                    <option value="">-- Pilih Kategori --</option>
-                    {unselectedCategoryTags?.map(tag => (
-                      <option key={tag.id} value={tag.id}>
-                        {tag.name}
-                      </option>
-                    ))}
-                  </SelectTag>
+                  <Dropdown
+                    options={unselectedCategoryTags?.map(tag => ({
+                      value: tag.id.toString(),
+                      label: tag.name
+                    })) || []}
+                    value={selectedTagId ? {
+                      value: selectedTagId,
+                      label: unselectedCategoryTags?.find(t => t.id.toString() === selectedTagId)?.name || ''
+                    } : null}
+                    onChange={(option) => setSelectedTagId(option.value)}
+                    placeholder="-- Pilih Kategori --"
+                  />
                   <AddTagButton
                     type="button"
                     onClick={handleAddTag}
@@ -273,15 +272,16 @@ function CalculatorModal({ isOpen, onClose, calculator, onSuccess }) {
 
                         <FieldInputWrapper>
                           <SmallLabel>Type *</SmallLabel>
-                          <SmallSelect
-                            value={field.type}
-                            onChange={(e) => handleFieldItemChange(index, 'type', e.target.value)}
-                          >
-                            <option value="number">Number</option>
-                            <option value="text">Text</option>
-                            <option value="dropdown">Dropdown</option>
-                            <option value="radio">Radio Button</option>
-                          </SmallSelect>
+                          <Dropdown
+                            options={[
+                              { value: 'number', label: 'Number' },
+                              { value: 'text', label: 'Text' },
+                              { value: 'dropdown', label: 'Dropdown' },
+                              { value: 'radio', label: 'Radio Button' }
+                            ]}
+                            value={{ value: field.type, label: field.type.charAt(0).toUpperCase() + field.type.slice(1) }}
+                            onChange={(option) => handleFieldItemChange(index, 'type', option.value)}
+                          />
                         </FieldInputWrapper>
 
                         <FieldInputWrapper fullWidth>
@@ -517,17 +517,18 @@ function CalculatorModal({ isOpen, onClose, calculator, onSuccess }) {
                                             placeholder="result"
                                             title="Key yang dicek (result/field key)"
                                           />
-                                          <SmallSelect
-                                            value={condition.operator}
-                                            onChange={(e) => handleConditionChange(classIndex, optIndex, condIndex, 'operator', e.target.value)}
-                                          >
-                                            <option value=">">{'>'}</option>
-                                            <option value="<">{'<'}</option>
-                                            <option value=">=">{'>='}</option>
-                                            <option value="<=">{'<='}</option>
-                                            <option value="==">{'=='}</option>
-                                            <option value="!=">{'!='}</option>
-                                          </SmallSelect>
+                                          <Dropdown
+                                            options={[
+                                              { value: '>', label: '>' },
+                                              { value: '<', label: '<' },
+                                              { value: '>=', label: '>=' },
+                                              { value: '<=', label: '<=' },
+                                              { value: '==', label: '==' },
+                                              { value: '!=', label: '!=' }
+                                            ]}
+                                            value={{ value: condition.operator, label: condition.operator }}
+                                            onChange={(option) => handleConditionChange(classIndex, optIndex, condIndex, 'operator', option.value)}
+                                          />
                                           <SmallInput
                                             type="number"
                                             value={condition.value}
@@ -536,14 +537,17 @@ function CalculatorModal({ isOpen, onClose, calculator, onSuccess }) {
                                             step="0.01"
                                           />
                                           {!isLastCondition && (
-                                            <SmallSelect
-                                              value={condition.logical_operator || 'AND'}
-                                              onChange={(e) => handleConditionChange(classIndex, optIndex, condIndex, 'logical_operator', e.target.value)}
-                                              title="Operator untuk rule berikutnya"
-                                            >
-                                              <option value="AND">AND</option>
-                                              <option value="OR">OR</option>
-                                            </SmallSelect>
+                                            <Dropdown
+                                              options={[
+                                                { value: 'AND', label: 'AND' },
+                                                { value: 'OR', label: 'OR' }
+                                              ]}
+                                              value={{
+                                                value: condition.logical_operator || 'AND',
+                                                label: condition.logical_operator || 'AND'
+                                              }}
+                                              onChange={(option) => handleConditionChange(classIndex, optIndex, condIndex, 'logical_operator', option.value)}
+                                            />
                                           )}
                                           {isLastCondition && (
                                             <div style={{
@@ -622,14 +626,17 @@ function CalculatorModal({ isOpen, onClose, calculator, onSuccess }) {
               <FormRow>
                 <FormGroup>
                   <FormLabel>Status</FormLabel>
-                  <Select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleFieldChange}
-                  >
-                    <option value="draft">Draft (belum dipublikasi)</option>
-                    <option value="published">Published (dapat digunakan user)</option>
-                  </Select>
+                  <Dropdown
+                    options={[
+                      { value: 'draft', label: 'Draft (belum dipublikasi)' },
+                      { value: 'published', label: 'Published (dapat digunakan user)' }
+                    ]}
+                    value={{
+                      value: formData.status,
+                      label: formData.status === 'draft' ? 'Draft (belum dipublikasi)' : 'Published (dapat digunakan user)'
+                    }}
+                    onChange={(option) => handleFieldChange({ target: { name: 'status', value: option.value } })}
+                  />
                   <HelpText>Draft: hanya admin yang bisa lihat. Published: tersedia untuk semua user.</HelpText>
                 </FormGroup>
               </FormRow>

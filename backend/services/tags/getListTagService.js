@@ -35,7 +35,6 @@ export class GetListTagService extends BaseService {
                 }
             }
         })
-        console.log(tags)
 
         return tags
     }

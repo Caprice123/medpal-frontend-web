@@ -13,7 +13,7 @@ export const fetchTags = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetListTagsLoading', value: true }))
 
-    const { tagGroupNames } = getState().tags
+    const { tagGroupNames } = getState().tags.filter
     const queryParams = {}
     if (tagGroupNames) queryParams.tagGroupNames = tagGroupNames.join(",")
 

@@ -1,6 +1,5 @@
 import { useSelector } from 'react-redux'
-import Dropdown from 'react-dropdown'
-import 'react-dropdown/style.css'
+import Dropdown from '@components/common/Dropdown'
 import {
   Overlay,
   Modal,
@@ -18,7 +17,6 @@ import {
   ModalFooter,
   Button,
   LoadingSpinner,
-  DropdownWrapper,
   EmptyState
 } from './TagModal.styles'
 
@@ -70,18 +68,17 @@ function TagModal({ isOpen, mode, isLoading, formik, onClose, onSubmit }) {
                       Tidak ada grup tag tersedia
                     </EmptyState>
                   ) : (
-                    <DropdownWrapper hasError={!!tagGroupError}>
-                      <Dropdown
-                        options={tagGroupOptions}
-                        value={formik.values.tagGroup}
-                        onChange={(option) => {
-                          formik.setFieldValue('tagGroup', option)
-                          formik.setFieldTouched('tagGroup', true)
-                        }}
-                        placeholder="Pilih grup tag"
-                        disabled={true}
-                      />
-                    </DropdownWrapper>
+                    <Dropdown
+                      options={tagGroupOptions}
+                      value={formik.values.tagGroup}
+                      onChange={(option) => {
+                        formik.setFieldValue('tagGroup', option)
+                        formik.setFieldTouched('tagGroup', true)
+                      }}
+                      placeholder="Pilih grup tag"
+                      disabled={true}
+                      hasError={!!tagGroupError}
+                    />
                   )}
                 </>
               ) : (

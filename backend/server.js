@@ -11,6 +11,7 @@ import exerciseAttemptRoutes from './routes/api/v1/exercises/attempts.routes.js'
 import flashcardRoutes from './routes/api/v1/flashcard.routes.js';
 import summaryNoteRoutes from './routes/api/v1/summaryNote.routes.js';
 import tagRoutes from './routes/api/v1/tag.routes.js';
+import tagGroupRoutes from './routes/api/v1/tagGroup.routes.js';
 import sessionRoutes from './routes/api/v1/session.routes.js';
 import featureRoutes from './routes/api/v1/feature.routes.js';
 import statisticRoutes from './routes/api/v1/statistic.routes.js';
@@ -23,6 +24,9 @@ import adminSummaryNoteRoutes from './routes/admin/v1/summaryNote.routes.js';
 import adminConstantRoutes from './routes/admin/v1/constant.routes.js';
 import calculatorRoutes from './routes/api/v1/calculator.routes.js';
 import adminCalculatorRoutes from './routes/admin/v1/calculator.routes.js';
+import adminTagsRoutes from './routes/admin/v1/tag.routes.js';
+import adminTagGroupsRoutes from './routes/admin/v1/tagGroup.routes.js';
+import adminUsersRoutes from './routes/admin/v1/users.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
@@ -54,6 +58,7 @@ app.use('/api/v1/exercises/attempts', exerciseAttemptRoutes);
 app.use('/api/v1/flashcards', flashcardRoutes);
 app.use('/api/v1/summary-notes', summaryNoteRoutes);
 app.use('/api/v1/tags', tagRoutes);
+app.use('/api/v1/tag-groups', tagGroupRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/features', featureRoutes);
 app.use('/api/v1/statistics', statisticRoutes);
@@ -68,6 +73,9 @@ app.use('/admin/v1/flashcards', adminFlashcardRoutes);
 app.use('/admin/v1/summary-notes', adminSummaryNoteRoutes);
 app.use('/admin/v1/constants', adminConstantRoutes);
 app.use('/admin/v1/calculators', adminCalculatorRoutes);
+app.use('/admin/v1/tags', adminTagsRoutes);
+app.use('/admin/v1/tag-groups', adminTagGroupsRoutes);
+app.use('/admin/v1/users', adminUsersRoutes);
 
 
 // Error handling middleware (must be last)

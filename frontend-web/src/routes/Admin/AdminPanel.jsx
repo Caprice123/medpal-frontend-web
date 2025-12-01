@@ -6,6 +6,7 @@ import PricingPlans from './PricingPlans/index'
 import Transactions from './Transactions'
 import Features from './Features/index'
 import Tags from './Tags'
+import Users from './Users'
 
 const AdminContainer = styled.div`
   min-height: 100vh;
@@ -77,7 +78,6 @@ const PageSubtitle = styled.p`
 const TabContainer = styled.div`
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
   border-bottom: 2px solid #e5e7eb;
 `
 
@@ -182,15 +182,7 @@ function AdminPanel() {
 
           {activeTab === 'transactions' && <Transactions />}
 
-          {activeTab === 'users' && (
-            <EmptyState>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
-              <div>Manajemen User</div>
-              <div style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                Fitur ini akan segera hadir
-              </div>
-            </EmptyState>
-          )}
+          {activeTab === 'users' && <Users />}
         </ContentArea>
       </MainContent>
     </AdminContainer>

@@ -14,10 +14,8 @@ class TagsController {
             "groupName",
         ]
     })
-    console.log("first")
     const tagGroup = await GetListTagService.call(req.query)
 
-    console.log(tagGroup)
     res.status(200).json({
       data: TagGroupSerializer.serialize(tagGroup),
     })

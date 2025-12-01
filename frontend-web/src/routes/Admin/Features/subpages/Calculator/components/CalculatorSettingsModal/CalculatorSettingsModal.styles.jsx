@@ -69,7 +69,11 @@ export const ModalBody = styled.div`
 `
 
 export const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `
 
 export const Label = styled.label`
@@ -128,10 +132,9 @@ export const Select = styled.select`
 `
 
 export const HintText = styled.div`
-  margin-top: 0.5rem;
+  margin-top: 0.375rem;
   font-size: 0.75rem;
   color: #6b7280;
-  font-style: italic;
 `
 
 export const ToggleSwitch = styled.label`

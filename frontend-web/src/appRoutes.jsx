@@ -6,12 +6,14 @@ import SessionDetail from '@routes/SessionDetail';
 import FlashcardPage from '@routes/Flashcard';
 import ExercisePage from '@routes/Exercise';
 import CalculatorPage from '@routes/Calculator';
+import UITest from '@routes/UITest';
 import PrivateRoute from '@middleware/PrivateRoute';
 import { AuthRoute } from './routes/Auth/routes';
 
 const appRoutes = [
     { path: '/', element: <Home /> },
     { path: AuthRoute.signInRoute, element: <Login /> },
+    { path: '/ui-test', element: <UITest /> },
     {
         path: '/dashboard',
         element: (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { fetchCalculatorConstants, updateCalculatorConstants } from '@store/calculator/action'
+import Dropdown from '@components/common/Dropdown'
 import {
   Overlay,
   Modal,
@@ -11,7 +12,6 @@ import {
   FormGroup,
   Label,
   Input,
-  Select,
   HintText,
   ToggleSwitch,
   ToggleSlider,
@@ -128,12 +128,7 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
           ) : (
             <>
               <FormGroup>
-                <Label>
-                  Status Fitur
-                  <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '400' }}>
-                    {settings.calculator_is_active ? '(Aktif)' : '(Nonaktif)'}
-                  </span>
-                </Label>
+                <Label>Status Fitur</Label>
                 <ToggleSwitch>
                   <input
                     type="checkbox"
@@ -142,14 +137,14 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
                   />
                   <ToggleSlider />
                 </ToggleSwitch>
-                <HintText>Aktifkan atau nonaktifkan fitur kalkulator untuk pengguna</HintText>
+                <HintText>Aktifkan atau nonaktifkan fitur kalkulator</HintText>
               </FormGroup>
 
               <FormGroup>
-                <Label>Judul Fitur *</Label>
+                <Label>Judul Fitur</Label>
                 <Input
                   type="text"
-                  placeholder="Contoh: Kalkulator Medis"
+                  placeholder="Kalkulator Medis"
                   value={settings.calculator_feature_title}
                   onChange={(e) => handleChange('calculator_feature_title', e.target.value)}
                 />
@@ -159,29 +154,35 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
                 <Label>Deskripsi Fitur</Label>
                 <Input
                   type="text"
-                  placeholder="Deskripsi singkat tentang fitur kalkulator..."
+                  placeholder="Deskripsi singkat"
                   value={settings.calculator_feature_description}
                   onChange={(e) => handleChange('calculator_feature_description', e.target.value)}
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label>Tipe Akses *</Label>
-                <Select
-                  value={settings.calculator_access_type}
-                  onChange={(e) => handleChange('calculator_access_type', e.target.value)}
-                >
-                  <option value="free">Gratis</option>
-                  <option value="credits">Credits</option>
-                  <option value="subscription">Subscription</option>
-                  <option value="subscription_and_credits">Subscription & Credits</option>
-                </Select>
-                <HintText>Tentukan cara pengguna mengakses fitur ini</HintText>
+                <Label>Tipe Akses</Label>
+                <Dropdown
+                  options={[
+                    { value: 'free', label: 'Gratis' },
+                    { value: 'credits', label: 'Credits' },
+                    { value: 'subscription', label: 'Subscription' },
+                    { value: 'subscription_and_credits', label: 'Subscription & Credits' }
+                  ]}
+                  value={{
+                    value: settings.calculator_access_type,
+                    label: settings.calculator_access_type === 'free' ? 'Gratis' :
+                           settings.calculator_access_type === 'credits' ? 'Credits' :
+                           settings.calculator_access_type === 'subscription' ? 'Subscription' :
+                           'Subscription & Credits'
+                  }}
+                  onChange={(option) => handleChange('calculator_access_type', option.value)}
+                />
               </FormGroup>
 
               {(settings.calculator_access_type === 'credits' || settings.calculator_access_type === 'subscription_and_credits') && (
                 <FormGroup>
-                  <Label>Jumlah Kredit per Kalkulasi *</Label>
+                  <Label>Kredit per Kalkulasi</Label>
                   <Input
                     type="number"
                     min="0"
@@ -189,7 +190,6 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
                     value={settings.calculator_credit_cost}
                     onChange={(e) => handleChange('calculator_credit_cost', e.target.value)}
                   />
-                  <HintText>Kredit yang akan dikurangi setiap kali user menggunakan kalkulator</HintText>
                 </FormGroup>
               )}
             </>
@@ -201,7 +201,7 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
             Batal
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={loading || saving}>
-            {saving ? <LoadingSpinner /> : '💾 Simpan Pengaturan'}
+            {saving ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </ModalFooter>
       </Modal>
