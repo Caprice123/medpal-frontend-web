@@ -2,6 +2,11 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   topics: [],
+  filter: {
+    name: undefined,
+    tagName: undefined
+  },
+  detail: undefined,
   selectedTopic: null,
   loading: {
     isTopicsLoading: false,
@@ -18,6 +23,9 @@ const { reducer, actions } = createSlice({
   reducers: {
     setLoading: (state, { payload: { key, value } }) => {
       state.loading[key] = value
+    },
+    setDetail: (state, { payload }) => {
+      state.detail = payload
     },
     setTopics: (state, { payload }) => {
       state.topics = payload
@@ -42,6 +50,9 @@ const { reducer, actions } = createSlice({
     },
     removeTopic: (state, { payload }) => {
       state.topics = state.topics.filter(t => t.id !== payload)
+    },
+    updateFilter: (state, { payload: { key, value } }) => {
+      state.filter[key] = value
     }
   }
 })

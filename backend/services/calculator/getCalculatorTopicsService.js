@@ -2,8 +2,34 @@ import prisma from "../../prisma/client.js"
 import { BaseService } from "../baseService.js"
 
 export class GetCalculatorTopicsService extends BaseService {
-    static async call() {
+    static async call(filters = {}) {
+        const { name, tagName } = filters
+        const where = {}
+
+        // Filter by calculator name (title)
+        if (name) {
+            where.title = {
+                contains: name,
+                mode: 'insensitive'
+            }
+        }
+
+        // Filter by tag name
+        if (tagName) {
+            where.calculator_topic_tags = {
+                some: {
+                    tags: {
+                        name: {
+                            contains: tagName,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            }
+        }
+
         const topics = await prisma.calculator_topics.findMany({
+            where,
             include: {
                 calculator_fields: {
                     orderBy: {
@@ -13,6 +39,15 @@ export class GetCalculatorTopicsService extends BaseService {
                         field_options: {
                             orderBy: {
                                 order: 'asc'
+                            }
+                        }
+                    }
+                },
+                calculator_topic_tags: {
+                    include: {
+                        tags: {
+                            include: {
+                                tag_group: true
                             }
                         }
                     }
@@ -35,6 +70,12 @@ export class GetCalculatorTopicsService extends BaseService {
             is_active: topic.is_active,
             fields_count: topic.calculator_fields.length,
             fields: topic.calculator_fields,
+            tags: topic.calculator_topic_tags.map(tt => ({
+                id: tt.tags.id,
+                name: tt.tags.name,
+                tag_group_id: tt.tags.tag_group_id,
+                tag_group_name: tt.tags.tag_group?.name || null
+            })),
             created_by: topic.created_by,
             created_at: topic.created_at,
             updated_at: topic.updated_at

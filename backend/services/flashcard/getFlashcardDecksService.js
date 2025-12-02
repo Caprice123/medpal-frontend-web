@@ -69,7 +69,7 @@ export class GetFlashcardDecksService extends BaseService {
             tags: deck.flashcard_deck_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,
-                type: t.tags.type
+                tagGroupId: t.tags.tag_group_id
             })),
             cardCount: deck.flashcard_cards.length,
             createdAt: deck.created_at,

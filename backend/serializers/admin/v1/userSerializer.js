@@ -17,8 +17,8 @@ export class UserSerializer {
             id: user.id,
             name: user.name,
             email: user.email,
-            isActive: user.is_active,
-            userSubscriptions: UserSubscriptionSerializer.serialize(user.user_subscriptions),
+            isActive: user.isActive,
+            userSubscriptions: UserSubscriptionSerializer.serialize(user.user_subscription),
             userCredits: UserCreditSerializer.serialize(user.user_credit),
         }
     }

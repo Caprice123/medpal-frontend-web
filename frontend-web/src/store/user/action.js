@@ -13,10 +13,12 @@ export const fetchUsers = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetUsersLoading', value: true }))
 
-    const { email } = getState().user.filter
+    const { email, name, status } = getState().user.filter
     const { page, perPage } = getState().user.pagination
     const queryParams = {
         email,
+        name,
+        status: status?.value,
         page: page || 1,
         perPage: perPage || 50,
     }
@@ -67,6 +69,6 @@ export const adjustSubscription = (form, onSuccess) => async (dispatch) => {
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isUpdateTagLoading', value: false }))
+    dispatch(setLoading({ key: 'isAdjustSubscriptionLoading', value: false }))
   }
 }

@@ -73,7 +73,7 @@ export class GetExerciseTopicsService extends BaseService {
             tags: topic.exercise_topic_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,
-                type: t.tags.type
+                tagGroupId: t.tags.tag_group_id
             })),
             questionCount: topic.exercise_questions.length,
             createdAt: topic.created_at,

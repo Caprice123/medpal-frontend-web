@@ -21,8 +21,10 @@ import {
   EmptyState,
   DeckDescription
 } from './DeckList.styles'
+import { useSelector } from 'react-redux'
 
 const DeckList = ({ decks, onSelectDeck }) => {
+    const { tags } = useSelector(state => state.tags)
   const [filters, setFilters] = useState({
     university: '',
     semester: ''
@@ -36,24 +38,24 @@ const DeckList = ({ decks, onSelectDeck }) => {
   }
 
   // Get unique universities and semesters for filters
-  const universities = [...new Set(
-    decks.flatMap(d => d.tags?.filter(tag => tag.type === 'university').map(tag => tag.name) || [])
-  )]
+  
+  const universities = tags.find((tag) => tag.name == "university")?.tags || []
+  const universityGroupId = tags.find((tag) => tag.name == "university")?.id
 
-  const semesters = [...new Set(
-    decks.flatMap(d => d.tags?.filter(tag => tag.type === 'semester').map(tag => tag.name) || [])
-  )].sort()
+  const semesterGroupId = tags.find((tag) => tag.name == "semester")?.id
+  const semesters = tags.find((tag) => tag.name == "semester")?.tags || []
 
   // Filter decks based on selected filters
   const filteredDecks = decks.filter(deck => {
     const universityMatch = !filters.university ||
-      deck.tags?.some(tag => tag.type === 'university' && tag.name === filters.university)
+      deck.tags?.some(tag => tag.tagGroupId === universityGroupId && tag.name === filters.university)
 
     const semesterMatch = !filters.semester ||
-      deck.tags?.some(tag => tag.type === 'semester' && tag.name === filters.semester)
+      deck.tags?.some(tag => tag.tagGroupId === semesterGroupId && tag.name === filters.semester)
 
     return universityMatch && semesterMatch
   })
+  console.log(decks)
 
   return (
     <Container>
@@ -75,8 +77,8 @@ const DeckList = ({ decks, onSelectDeck }) => {
               onChange={(e) => handleFilterChange('university', e.target.value)}
             >
               <option value="">Semua Universitas</option>
-              {universities.map(uni => (
-                <option key={uni} value={uni}>{uni}</option>
+              {universities.map(tag => (
+                <option key={tag.name} value={tag.name}>{tag.name}</option>
               ))}
             </Select>
           </FilterGroup>
@@ -88,8 +90,8 @@ const DeckList = ({ decks, onSelectDeck }) => {
               onChange={(e) => handleFilterChange('semester', e.target.value)}
             >
               <option value="">Semua Semester</option>
-              {semesters.map(sem => (
-                <option key={sem} value={sem}>{sem}</option>
+              {semesters.map(tag => (
+                <option key={tag.name} value={tag.name}>{tag.name}</option>
               ))}
             </Select>
           </FilterGroup>

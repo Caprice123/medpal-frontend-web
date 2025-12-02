@@ -1,5 +1,6 @@
 import prisma from '../../prisma/client.js'
 import { BaseService } from '../baseService.js'
+import moment from 'moment-timezone'
 
 /**
  * Get comprehensive user status including subscription and credits
@@ -52,13 +53,14 @@ export class GetUserStatusService extends BaseService {
  */
 export class HasActiveSubscriptionService extends BaseService {
   static async call(userId) {
-    const subscription = await prisma.user_purchases.findFirst({
+    const subscription = await prisma.user_subscriptions.findFirst({
       where: {
         user_id: userId,
-        bundle_type: { in: ['subscription', 'hybrid'] },
-        subscription_status: 'active',
-        subscription_end: {
-          gte: new Date()
+        start_date: {
+            lte: moment(new Date()).toDate()
+        },
+        end_date: {
+            gte: moment(new Date()).toDate()
         }
       }
     })

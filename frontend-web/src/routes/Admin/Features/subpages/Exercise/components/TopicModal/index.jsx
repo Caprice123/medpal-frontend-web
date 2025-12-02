@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { generateQuestions, generateQuestionsFromPDF, createExerciseTopic } from '@store/exercise/action'
 import TagSelector from '../TagSelector'
 import {
@@ -675,6 +675,7 @@ function TopicModal({ isOpen, onClose, onSuccess, topicToEdit = null }) {
   const [isSaving, setIsSaving] = useState(false)
   const [editingQuestionId, setEditingQuestionId] = useState(null)
   const [editingQuestionData, setEditingQuestionData] = useState(null)
+  const { tags } = useSelector(state => state.tags)
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -785,8 +786,11 @@ function TopicModal({ isOpen, onClose, onSuccess, topicToEdit = null }) {
       return
     }
 
-    const hasUniversity = formData.tags.some(tag => tag.type === 'university')
-    const hasSemester = formData.tags.some(tag => tag.type === 'semester')
+    const universityTagGroup = tags.find(tag => tag.name == "university").id
+    const semesterTagGroup = tags.find(tag => tag.name == "semester").id
+
+    const hasUniversity = formData.tags.some(tag => tag.tagGroupId === universityTagGroup)
+    const hasSemester = formData.tags.some(tag => tag.tagGroupId === semesterTagGroup)
 
     if (!hasUniversity) {
       alert('Minimal satu universitas harus dipilih')

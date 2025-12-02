@@ -10,6 +10,8 @@ import {
   LoadingContainer,
   LoadingSpinner
 } from './Flashcard.styles'
+import { fetchTags } from '@store/tags/action'
+import { actions as tagActions } from '@store/tags/reducer'
 
 function FlashcardPage() {
   const dispatch = useDispatch()
@@ -23,6 +25,8 @@ function FlashcardPage() {
   useEffect(() => {
     dispatch(fetchFlashcardDecks())
     dispatch(fetchCreditBalance())
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
+    dispatch(fetchTags())
   }, [dispatch])
 
   const handleStartDeck = async (deck) => {

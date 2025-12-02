@@ -144,7 +144,6 @@ export const CalculatorTitle = styled.h2`
   gap: 0.5rem;
 
   &::before {
-    content: '🧮';
     font-size: 1.75rem;
   }
 `
@@ -289,13 +288,13 @@ export const InputsGrid = styled.div`
 export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
 `
 
 export const FormLabel = styled.label`
   font-size: 14px;
   font-weight: 600;
   color: #334155;
-  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -305,7 +304,6 @@ export const LabelWithDescription = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 10px;
 `
 
 export const FieldDescription = styled.p`
@@ -527,22 +525,9 @@ export const DetailValue = styled.span`
 `
 
 export const ErrorMessage = styled.div`
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  border: 2px solid #ef4444;
-  border-radius: 12px;
-  padding: 16px 20px;
-  color: #991b1b;
-  font-size: 14px;
-  margin: 20px 0;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  &::before {
-    content: '⚠️';
-    font-size: 20px;
-  }
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 `
 
 export const LoadingSpinner = styled.div`

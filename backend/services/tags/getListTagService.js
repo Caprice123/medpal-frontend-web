@@ -8,8 +8,8 @@ export class GetListTagService extends BaseService {
 
         // Filter by type if provided
         if (filters.tagGroupNames) {
-            where.groupName = {
-                in: filters.tagGroupNames
+            where.name = {
+                in: filters.tagGroupNames.split(",")
             }
         }
 

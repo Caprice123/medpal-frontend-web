@@ -4,6 +4,8 @@ const initialState = {
   users: [],
   filter: {
     email: undefined,
+    name: undefined,
+    status: undefined,
   },
   pagination: {
     page: 1,
@@ -25,8 +27,8 @@ const usersSlice = createSlice({
       const { key, value } = action.payload
       state.loading[key] = value
     },
-    setCurrentPage: (state, { payload }) => {
-        state.pagination.currentPage = payload
+    setPage: (state, { payload }) => {
+        state.pagination.page = payload
     },
     setPagination: (state, action) => {
       const { page, perPage, isLastPage } = action.payload

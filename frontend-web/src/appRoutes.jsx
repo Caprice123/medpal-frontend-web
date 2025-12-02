@@ -5,63 +5,50 @@ import AdminPanel from '@routes/Admin/AdminPanel';
 import SessionDetail from '@routes/SessionDetail';
 import FlashcardPage from '@routes/Flashcard';
 import ExercisePage from '@routes/Exercise';
-import CalculatorPage from '@routes/Calculator';
 import UITest from '@routes/UITest';
 import PrivateRoute from '@middleware/PrivateRoute';
 import { AuthRoute } from './routes/Auth/routes';
+import { calculatorRoutes } from './routes/Calculator/routes';
 
 const appRoutes = [
     { path: '/', element: <Home /> },
     { path: AuthRoute.signInRoute, element: <Login /> },
     { path: '/ui-test', element: <UITest /> },
     {
-        path: '/dashboard',
-        element: (
-            <PrivateRoute>
-                <Dashboard />
-            </PrivateRoute>
-        )
-    },
-    {
-        path: '/flashcards',
-        element: (
-            <PrivateRoute>
-                <FlashcardPage />
-            </PrivateRoute>
-        )
-    },
-    {
-        path: '/exercises',
-        element: (
-            <PrivateRoute>
-                <ExercisePage />
-            </PrivateRoute>
-        )
-    },
-    {
-        path: '/calculators',
-        element: (
-            <PrivateRoute>
-                <CalculatorPage />
-            </PrivateRoute>
-        )
-    },
-    {
-        path: '/admin',
-        element: (
-            <PrivateRoute>
-                <AdminPanel />
-            </PrivateRoute>
-        )
-    },
-    {
-        path: '/session/:sessionId',
-        element: (
-            <PrivateRoute>
-                <SessionDetail />
-            </PrivateRoute>
-        )
-    },
+        path: "/",
+        element: <PrivateRoute />,
+        children: [
+            {
+                path: '/dashboard',
+                element: (
+                        <Dashboard />
+                    
+                )
+            },
+            {
+                path: '/flashcards',
+                element: (
+                        <FlashcardPage />
+                    
+                )
+            },
+            {
+                path: '/exercises',
+                element: (
+                        <ExercisePage />
+                    
+                )
+            },
+            ...calculatorRoutes,
+            {
+                path: '/admin',
+                element: (
+                        <AdminPanel />
+                    
+                )
+            },
+        ]
+    }
 ];
 
 export default appRoutes;

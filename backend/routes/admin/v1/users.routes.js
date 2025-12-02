@@ -8,8 +8,11 @@ const router = express.Router()
 // All routes require authentication
 // router.use(authenticateToken, requireAdmin)
 
-// Get all tag groups (available for all authenticated users)
+// Get all users
 router.get('/', asyncHandler(usersController.index.bind(usersController)))
+// Adjust user credits
 router.put('/credits', asyncHandler(usersController.addCredit.bind(usersController)))
+// Adjust user subscriptions
+router.put('/subscriptions', asyncHandler(usersController.addSubscription.bind(usersController)))
 
 export default router

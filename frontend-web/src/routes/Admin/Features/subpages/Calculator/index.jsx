@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import CalculatorModal from './components/CalculatorModal/index'
 import CalculatorSettingsModal from './components/CalculatorSettingsModal'
+import { Filter } from './components/Filter'
 import { useCalculatorSection } from './hooks/useCalculatorSection'
+import Button from '@components/common/Button'
 import {
   Container,
   Header,
@@ -62,6 +64,8 @@ function Calculator({ onBack }) {
         </HeaderContent>
       </Header>
 
+      <Filter />
+
       {loading.isTopicsLoading ? (
         <EmptyState>
           <h3>Loading...</h3>
@@ -73,47 +77,49 @@ function Calculator({ onBack }) {
           <p>Klik "Tambah Kalkulator" untuk membuat kalkulator pertama Anda</p>
         </EmptyState>
       ) : (
-        <TopicsGrid>
-          {topics.map(calculator => (
-            <TopicCard key={calculator.id}>
-              <TopicHeader>
-                <TopicTitle>{calculator.title}</TopicTitle>
-                <StatusBadge published={calculator.status === 'published'}>
-                  {calculator.status === 'published' ? 'Published' : 'Draft'}
-                </StatusBadge>
-              </TopicHeader>
+        <>
+          <TopicsGrid>
+            {topics.map(calculator => (
+              <TopicCard key={calculator.id}>
+                <TopicHeader>
+                  <TopicTitle>{calculator.title}</TopicTitle>
+                  <StatusBadge published={calculator.status === 'published'}>
+                    {calculator.status === 'published' ? 'Published' : 'Draft'}
+                  </StatusBadge>
+                </TopicHeader>
 
-              <TopicDescription>
-                {calculator.description || 'Tidak ada deskripsi'}
-              </TopicDescription>
+                <TopicDescription>
+                  {calculator.description || 'Tidak ada deskripsi'}
+                </TopicDescription>
 
-              <TopicStats>
-                <StatItem>
-                  <StatLabel>Formula</StatLabel>
-                  <StatValue style={{ fontSize: '12px', color: '#6b7280', fontFamily: 'monospace' }}>
-                    {calculator.formula?.substring(0, 30)}...
-                  </StatValue>
-                </StatItem>
-                <StatItem>
-                  <StatLabel>Fields</StatLabel>
-                  <StatValue>{calculator.fields_count || 0}</StatValue>
-                </StatItem>
-              </TopicStats>
+                <TopicStats>
+                  <StatItem>
+                    <StatLabel>Formula</StatLabel>
+                    <StatValue style={{ fontSize: '12px', color: '#6b7280', fontFamily: 'monospace' }}>
+                      {calculator.formula?.substring(0, 30)}...
+                    </StatValue>
+                  </StatItem>
+                  <StatItem>
+                    <StatLabel>Fields</StatLabel>
+                    <StatValue>{calculator.fields_count || 0}</StatValue>
+                  </StatItem>
+                </TopicStats>
 
-              <CardActions>
-                <ActionButton onClick={() => handleCalculatorClick(calculator)}>
-                  Edit
-                </ActionButton>
-                <ActionButton
-                  danger
-                  onClick={(e) => handleDelete(e, calculator.id)}
-                >
-                  Delete
-                </ActionButton>
-              </CardActions>
-            </TopicCard>
-          ))}
-        </TopicsGrid>
+                <CardActions>
+                  <ActionButton onClick={() => handleCalculatorClick(calculator)}>
+                    Edit
+                  </ActionButton>
+                  <ActionButton
+                    danger
+                    onClick={(e) => handleDelete(e, calculator.id)}
+                  >
+                    Delete
+                  </ActionButton>
+                </CardActions>
+              </TopicCard>
+            ))}
+          </TopicsGrid>
+        </>
       )}
 
       <CalculatorModal

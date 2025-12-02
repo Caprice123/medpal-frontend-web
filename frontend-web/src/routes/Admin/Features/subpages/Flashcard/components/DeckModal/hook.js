@@ -33,6 +33,7 @@ export const useDeckModal = ({ isOpen, onClose, onSuccess, deckToEdit }) => {
   const [contentInput, setContentInput] = useState('')
   const [pdfFile, setPdfFile] = useState(null)
   const [cardCount, setCardCount] = useState(10)
+  const { tags } = useSelector(state => state.tags)
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -168,8 +169,11 @@ export const useDeckModal = ({ isOpen, onClose, onSuccess, deckToEdit }) => {
       return
     }
 
-    const hasUniversity = formData.tags.some(tag => tag.type === 'university')
-    const hasSemester = formData.tags.some(tag => tag.type === 'semester')
+    const universityTagGroup = tags.find(tag => tag.name == "university").id
+    const semesterTagGroup = tags.find(tag => tag.name == "semester").id
+
+    const hasUniversity = formData.tags.some(tag => tag.tagGroupId === universityTagGroup)
+    const hasSemester = formData.tags.some(tag => tag.tagGroupId === semesterTagGroup)
 
     if (!hasUniversity) {
       alert('Minimal satu universitas harus dipilih')

@@ -5,6 +5,8 @@ import {
   fetchAdminCalculatorTopic,
   deleteCalculatorTopic
 } from '@store/calculator/action'
+import { fetchTags } from '../../../../../../store/tags/action'
+import { actions } from "@store/tags/reducer"
 
 export const useCalculatorSection = () => {
   const dispatch = useDispatch()
@@ -25,6 +27,8 @@ export const useCalculatorSection = () => {
   // Fetch calculators on mount
   useEffect(() => {
     dispatch(fetchAdminCalculatorTopics())
+    dispatch(actions.updateFilter({ key: "tagGroupNames", value: ["kategori"]}))
+    dispatch(fetchTags())
   }, [dispatch])
 
   const handleOpenCreateModal = () => {

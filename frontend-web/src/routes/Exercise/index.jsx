@@ -8,6 +8,8 @@ import {
   LoadingContainer,
   LoadingSpinner
 } from './Exercise.styles'
+import { fetchTags } from '@store/tags/action'
+import { actions as tagActions } from '@store/tags/reducer'
 
 function ExercisePage() {
   const dispatch = useDispatch()
@@ -20,6 +22,8 @@ function ExercisePage() {
   // Fetch topics when component mounts
   useEffect(() => {
     dispatch(fetchExerciseTopics())
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
+    dispatch(fetchTags())
   }, [dispatch])
 
   const handleStartTopic = async (topic) => {

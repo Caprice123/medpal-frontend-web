@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState = {
   tags: [],
   filter: {
-    tagGroup: undefined,
+    tagGroupNames: undefined,
   },
   loading: {
     isGetListTagsLoading: false,
@@ -22,6 +22,10 @@ const tagsSlice = createSlice({
     },
     setTags: (state, action) => {
       state.tags = action.payload
+    },
+    updateFilter: (state, action) => {
+      const { key, value } = action.payload
+      state.filter[key] = value
     },
   }
 })

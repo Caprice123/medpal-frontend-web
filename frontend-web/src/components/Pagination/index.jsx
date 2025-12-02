@@ -17,7 +17,6 @@ import {
  */
 function Pagination({
   currentPage,
-  totalPages,
   isLastPage,
   onPageChange,
   isLoading,
@@ -31,8 +30,7 @@ function Pagination({
   }
 
   const handleNext = () => {
-    const isDisabled = totalPages ? currentPage >= totalPages : isLastPage
-    if (!isDisabled && !isLoading) {
+    if (!isLastPage && !isLoading) {
       onPageChange(currentPage + 1)
     }
   }

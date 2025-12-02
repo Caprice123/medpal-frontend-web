@@ -17,8 +17,25 @@ export default {
     //     list: `${API_BASE_URL}/api/v1/tag-groups`,
     //     create: `${API_BASE_URL}/api/v1/tag-groups`,
     // },
+    admin: {
+
+    },
+    api: {
+        calculators: "/api/v1/calculators"
+    },
     tagGroups: "/admin/v1/tag-groups",
     users: "/admin/v1/users",
+    calculators: {
+        api: "/api/v1/calculators",
+        admin: {
+            list: `${API_BASE_URL}/admin/v1/calculators`,
+            detail: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
+            create: `${API_BASE_URL}/admin/v1/calculators`,
+            update: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
+            delete: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
+            constants: `${API_BASE_URL}/admin/v1/calculators/constants`,
+        }
+    },
     exercises: {
         // User endpoints
         topics: `${API_BASE_URL}/api/v1/exercises/topics`,
@@ -99,21 +116,6 @@ export default {
             list: `${API_BASE_URL}/admin/v1/summary-notes`,
             detail: (id) => `${API_BASE_URL}/admin/v1/summary-notes/${id}`,
             generate: `${API_BASE_URL}/admin/v1/summary-notes/generate`,
-        }
-    },
-    calculators: {
-        // User endpoints
-        topics: `${API_BASE_URL}/api/v1/calculators/topics`,
-        calculate: (topicId) => `${API_BASE_URL}/api/v1/calculators/${topicId}/calculate`,
-
-        // Admin endpoints
-        admin: {
-            list: `${API_BASE_URL}/admin/v1/calculators`,
-            detail: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            create: `${API_BASE_URL}/admin/v1/calculators`,
-            update: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            delete: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/calculators/constants`,
         }
     },
 }

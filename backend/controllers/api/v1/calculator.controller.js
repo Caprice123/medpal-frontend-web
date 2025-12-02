@@ -5,10 +5,12 @@ import prisma from '../../../prisma/client.js'
 class CalculatorController {
   /**
    * Get all available calculator topics for users
-   * GET /api/v1/calculators/topics
+   * GET /api/v1/calculators/topics?name=xxx&tagName=xxx
    */
   async getTopics(req, res) {
-    const topics = await GetCalculatorTopicsService.call()
+    const { name, tagName } = req.query
+
+    const topics = await GetCalculatorTopicsService.call({ name, tagName })
 
     // Only return published and active calculators to users
     const publicTopics = topics.filter(topic =>
@@ -19,13 +21,63 @@ class CalculatorController {
       description: topic.description,
       result_label: topic.result_label,
       result_unit: topic.result_unit,
-      fields: topic.fields
+      fields: topic.fields,
+      tags: topic.tags,
+      clinical_references: topic.clinical_references
     }))
 
     return res.status(200).json({
       success: true,
       data: publicTopics,
       message: 'Calculator topics retrieved successfully'
+    })
+  }
+
+  /**
+   * Get calculator topic detail
+   * GET /api/v1/calculators/topics/:topicId
+   */
+  async getTopicDetail(req, res) {
+    const { topicId } = req.params
+
+    const topic = await prisma.calculator_topics.findUnique({
+      where: { id: Number(topicId) },
+      include: {
+                calculator_fields: {
+                    orderBy: {
+                        order: 'asc'
+                    },
+                    include: {
+                        field_options: {
+                            orderBy: {
+                                order: 'asc'
+                            }
+                        }
+                    }
+                },
+                calculator_topic_tags: {
+                    include: {
+                        tags: {
+                            include: {
+                                tag_group: true
+                            }
+                        }
+                    }
+                }
+            },
+    })
+
+    if (!topic || topic.status !== 'published' || !topic.is_active) {
+      return res.status(404).json({
+        success: false,
+        message: 'Calculator topic not found or not available'
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: topic,
+      message: 'Calculator topic detail retrieved successfully'
     })
   }
 

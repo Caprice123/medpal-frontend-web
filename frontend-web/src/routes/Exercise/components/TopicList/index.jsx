@@ -21,8 +21,10 @@ import {
   EmptyState,
   TopicDescription
 } from './TopicList.styles'
+import { useSelector } from 'react-redux'
 
 const TopicList = ({ topics, onSelectTopic }) => {
+    const { tags } = useSelector(state => state.tags)
   const [filters, setFilters] = useState({
     university: '',
     semester: ''
@@ -36,21 +38,19 @@ const TopicList = ({ topics, onSelectTopic }) => {
   }
 
   // Get unique universities and semesters for filters
-  const universities = [...new Set(
-    topics.flatMap(t => t.tags?.filter(tag => tag.type === 'university').map(tag => tag.name) || [])
-  )]
+  const universities = tags.find((tag) => tag.name == "university")?.tags || []
+  const universityGroupId = tags.find((tag) => tag.name == "university")?.id
 
-  const semesters = [...new Set(
-    topics.flatMap(t => t.tags?.filter(tag => tag.type === 'semester').map(tag => tag.name) || [])
-  )].sort()
+  const semesterGroupId = tags.find((tag) => tag.name == "semester")?.id
+  const semesters = tags.find((tag) => tag.name == "semester")?.tags || []
 
   // Filter topics based on selected filters
   const filteredTopics = topics.filter(topic => {
     const universityMatch = !filters.university ||
-      topic.tags?.some(tag => tag.type === 'university' && tag.name === filters.university)
+      topic.tags?.some(tag => tag.tagGroupId === universityGroupId && tag.name === filters.university)
 
     const semesterMatch = !filters.semester ||
-      topic.tags?.some(tag => tag.type === 'semester' && tag.name === filters.semester)
+      topic.tags?.some(tag => tag.tagGroupId === semesterGroupId && tag.name === filters.semester)
 
     return universityMatch && semesterMatch
   })
@@ -75,8 +75,8 @@ const TopicList = ({ topics, onSelectTopic }) => {
               onChange={(e) => handleFilterChange('university', e.target.value)}
             >
               <option value="">Semua Universitas</option>
-              {universities.map(uni => (
-                <option key={uni} value={uni}>{uni}</option>
+              {universities.map(tag => (
+                <option key={tag.name} value={tag.name}>{tag.name}</option>
               ))}
             </Select>
           </FilterGroup>
@@ -88,8 +88,8 @@ const TopicList = ({ topics, onSelectTopic }) => {
               onChange={(e) => handleFilterChange('semester', e.target.value)}
             >
               <option value="">Semua Semester</option>
-              {semesters.map(sem => (
-                <option key={sem} value={sem}>{sem}</option>
+              {semesters.map(tag => (
+                <option key={tag.name} value={tag.name}>{tag.name}</option>
               ))}
             </Select>
           </FilterGroup>

@@ -39,6 +39,7 @@ import {
   StatItem,
   EmptyState
 } from './Exercise.styles'
+import { actions as tagActions } from '@store/tags/reducer'
 
 function LatihanSoal({ onBack }) {
   const dispatch = useDispatch()
@@ -61,8 +62,9 @@ function LatihanSoal({ onBack }) {
   // Fetch topics and tags on mount
   useEffect(() => {
     dispatch(fetchAdminExerciseTopics(filters))
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
     dispatch(fetchTags())
-  }, [])
+  }, [dispatch])
 
   const handleOpenCreateModal = () => {
     setTopicToEdit(null)
@@ -105,8 +107,8 @@ function LatihanSoal({ onBack }) {
   }
 
   // Get tags by type from Redux
-  const universityTags = tags.filter(tag => tag.type === 'university')
-  const semesterTags = tags.filter(tag => tag.type === 'semester')
+  const universityTags = tags.find(tag => tag.name === 'university')?.tags || []
+  const semesterTags = tags.find(tag => tag.name === 'semester')?.tags || []
 
   return (
     <Container>

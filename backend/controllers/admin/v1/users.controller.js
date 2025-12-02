@@ -1,6 +1,7 @@
 import { ValidationUtils } from "../../../utils/validationUtils.js";
 import { GetListUsersService } from "../../../services/users/getListUsersService.js";
 import { AddCreditService } from "../../../services/users/addCreditService.js";
+import { AddSubscriptionService } from "../../../services/users/addSubscriptionService.js";
 import { UserSerializer } from "../../../serializers/admin/v1/userSerializer.js";
 
 class UsersController {
@@ -29,6 +30,25 @@ class UsersController {
       optionalFields: [],
     });
     await AddCreditService.call(req.body.userId, req.body.credit);
+
+    res.status(200).json({
+      data: {
+        success: true,
+      },
+    });
+  }
+
+  async addSubscription(req, res) {
+    ValidationUtils.validate_fields({
+      request: req,
+      requiredFields: ["userId", "startDate", "endDate"],
+      optionalFields: [],
+    });
+    await AddSubscriptionService.call(
+      req.body.userId,
+      req.body.startDate,
+      req.body.endDate
+    );
 
     res.status(200).json({
       data: {

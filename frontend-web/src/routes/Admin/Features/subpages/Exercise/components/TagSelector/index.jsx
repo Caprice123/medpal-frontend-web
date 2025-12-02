@@ -124,9 +124,10 @@ function TagSelector({ selectedTags, onChange, type, label, required }) {
 
   // Get tags from Redux
   const allTags = useSelector(state => state.tags.tags)
+  const tagGroupId = allTags.find((tag) => tag.name === type)?.id
 
-  const availableTagsForType = allTags.filter(tag => tag.type === type)
-  const currentSelectedTags = selectedTags.filter(tag => tag.type === type)
+  const availableTagsForType = allTags.find(tag => tag.name === type)?.tags || []
+  const currentSelectedTags = selectedTags.filter(tag => tag.tagGroupId === tagGroupId)
   const unselectedTags = availableTagsForType.filter(
     tag => !selectedTags.find(st => st.id === tag.id)
   )
@@ -134,7 +135,7 @@ function TagSelector({ selectedTags, onChange, type, label, required }) {
   const handleAddTag = () => {
     if (!selectedTagId) return
 
-    const tagToAdd = allTags.find(tag => tag.id === parseInt(selectedTagId))
+    const tagToAdd = availableTagsForType.find(tag => tag.id === parseInt(selectedTagId))
     if (tagToAdd && !selectedTags.find(t => t.id === tagToAdd.id)) {
       onChange([...selectedTags, tagToAdd])
       setSelectedTagId('')

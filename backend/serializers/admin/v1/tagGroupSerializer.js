@@ -7,6 +7,7 @@ export class TagGroupSerializer {
         }
 
         return tagGroups.map((tag_group, index) => ({
+            id: tag_group.id,
             name: tag_group.name,
             tags: TagSerializer.serialize(tag_group.tags)
         }))

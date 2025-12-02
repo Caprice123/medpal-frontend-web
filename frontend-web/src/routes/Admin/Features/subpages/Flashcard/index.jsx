@@ -37,6 +37,7 @@ import {
   StatItem,
   EmptyState
 } from './Flashcard.styles'
+import { actions as tagActions } from '@store/tags/reducer'
 
 function FlashcardAdminPage({ onBack }) {
   const dispatch = useDispatch()
@@ -54,6 +55,7 @@ function FlashcardAdminPage({ onBack }) {
   // Fetch decks and tags on mount
   useEffect(() => {
     dispatch(fetchAdminFlashcardDecks(filters))
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
     dispatch(fetchTags())
   }, [])
 
@@ -96,8 +98,8 @@ function FlashcardAdminPage({ onBack }) {
   }
 
   // Get tags by type from Redux
-  const universityTags = tags.filter(tag => tag.type === 'university')
-  const semesterTags = tags.filter(tag => tag.type === 'semester')
+  const universityTags = tags.find(tag => tag.name === 'university')?.tags || []
+  const semesterTags = tags.find(tag => tag.name === 'semester')?.tags || []
 
   return (
     <Container>

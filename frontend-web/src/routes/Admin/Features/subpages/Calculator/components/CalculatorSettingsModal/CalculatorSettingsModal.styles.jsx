@@ -12,6 +12,7 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  overflow: visible;
 `
 
 export const Modal = styled.div`
@@ -23,6 +24,8 @@ export const Modal = styled.div`
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: visible;
 `
 
 export const ModalHeader = styled.div`
@@ -65,11 +68,33 @@ export const CloseButton = styled.button`
 export const ModalBody = styled.div`
   padding: 1rem 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  position: relative;
+
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `
 
 export const FormGroup = styled.div`
   margin-bottom: 1.25rem;
+  position: relative;
 
   &:last-child {
     margin-bottom: 0;

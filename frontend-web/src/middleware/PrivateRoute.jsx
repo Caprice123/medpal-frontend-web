@@ -1,8 +1,8 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { getToken } from '@utils/authToken'
 import { Navbar } from '../components/Navbar'
 
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = () => {
   const token = getToken()
 
   // Redirect to sign-in if not authenticated
@@ -14,7 +14,7 @@ const PrivateRoute = ({ children }) => {
   return (
     <>
       <Navbar />
-      {children}
+      <Outlet />
     </>
 
   )
