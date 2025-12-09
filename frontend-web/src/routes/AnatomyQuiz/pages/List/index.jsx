@@ -24,11 +24,14 @@ import { actions as tagActions } from '@store/tags/reducer'
 import { generatePath, useNavigate } from 'react-router-dom'
 import { AnatomyQuizRoute } from '../../routes'
 import { Filter } from './components/Filter'
+import { actions } from "@store/anatomy/reducer"
+import { fetchAdminAnatomyQuizzes } from '@store/anatomy/action'
+import QuizList from './components/QuizList'
+import Pagination from '@components/Pagination'
 
 function AnatomyQuizPage() {
   const dispatch = useDispatch()
-  const { quizzes, loading } = useSelector(state => state.anatomy)
-  const navigate = useNavigate()
+  const { loading, pagination } = useSelector(state => state.anatomy)
 
   // Fetch quizzes on mount
   useEffect(() => {
@@ -37,8 +40,10 @@ function AnatomyQuizPage() {
     dispatch(fetchTags())
   }, [dispatch])
 
-  const handleSelectQuiz = (quiz) => {
-    navigate(generatePath(AnatomyQuizRoute.detailRoute, { id: quiz.id }))
+  
+  const handlePageChange = (page) => {
+    dispatch(actions.setPage(page))
+    dispatch(fetchAdminAnatomyQuizzes())
   }
 
 
@@ -47,56 +52,18 @@ function AnatomyQuizPage() {
         <Content>
           <Filter />
 
-          {loading.isQuizzesLoading ? (
-            <EmptyState>
-              <LoadingSpinner style={{ margin: '0 auto' }} />
-              <p>Memuat quiz...</p>
-            </EmptyState>
-          ) : quizzes.length === 0 ? (
-            <EmptyState>
-              <EmptyIcon>🫀</EmptyIcon>
-              <EmptyText>
-                Tidak ada quiz anatomi yang tersedia saat ini
-              </EmptyText>
-            </EmptyState>
-          ) : (
-            <>
-              <QuizzesList>
-                {quizzes.map(quiz => (
-                  <QuizCard
-                    key={quiz.id}
-                    onClick={() => handleSelectQuiz(quiz)}
-                  >
-                    <QuizImageContainer>
-                      {quiz.image_url ? (
-                        <QuizImage src={quiz.image_url} alt={quiz.title} />
-                      ) : (
-                        <span style={{ color: '#9ca3af' }}>No Image</span>
-                      )}
-                    </QuizImageContainer>
-                    <QuizCardContent>
-                      <QuizTitle>{quiz.title}</QuizTitle>
-                      <QuizDescription>
-                        {quiz.description || 'Quiz anatomi untuk membantu Anda belajar'}
-                      </QuizDescription>
-                      {quiz.tags && quiz.tags.length > 0 && (
-                        <TagContainer>
-                          {quiz.tags.map((qt, index) => (
-                            <Tag key={index}>
-                              {qt.tag?.name}
-                            </Tag>
-                          ))}
-                        </TagContainer>
-                      )}
-                      <QuestionCount>
-                        {quiz.questionCount || 0} pertanyaan
-                      </QuestionCount>
-                    </QuizCardContent>
-                  </QuizCard>
-                ))}
-              </QuizzesList>
-            </>
-          )}
+          <QuizList />
+
+          
+        <Pagination
+            currentPage={pagination.page}
+            isLastPage={pagination.isLastPage}
+            onPageChange={handlePageChange}
+            isLoading={loading.isQuizzesLoading}
+            variant="admin"
+            language="id"
+        />
+
         </Content>
       </Container>
     )

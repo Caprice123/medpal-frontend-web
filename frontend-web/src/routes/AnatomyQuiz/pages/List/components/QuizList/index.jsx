@@ -22,9 +22,12 @@ import {
   TagList,
   Tag
 } from './QuizList.styles'
+import { generatePath, useNavigate } from 'react-router-dom'
+import { AnatomyQuizRoute } from '../../../../routes'
 
-function QuizList({ onEdit, onDelete, onCreateFirst }) { 
+function QuizList() { 
   const { quizzes, loading } = useSelector((state) => state.anatomy)
+  const navigate = useNavigate()
 
   // Loading state
   if (loading?.isQuizzesLoading) {
@@ -37,11 +40,6 @@ function QuizList({ onEdit, onDelete, onCreateFirst }) {
       <EmptyState>
         <EmptyStateIcon>📋</EmptyStateIcon>
         <EmptyStateText>No quizzes found</EmptyStateText>
-        {onCreateFirst && (
-          <ActionButton onClick={onCreateFirst}>
-            Create Your First Quiz
-          </ActionButton>
-        )}
       </EmptyState>
     )
   }
@@ -53,18 +51,7 @@ function QuizList({ onEdit, onDelete, onCreateFirst }) {
         <QuizCard key={quiz.id}>
           <QuizCardHeader>
             <QuizCardTitle>{quiz.title}</QuizCardTitle>
-            <StatusBadge published={quiz.status === 'published'}>
-              {quiz.status === 'published' ? 'Published' : 'Draft'}
-            </StatusBadge>
           </QuizCardHeader>
-
-          {/* <QuizImageContainer>
-            {quiz.image_url ? (
-              <QuizImage src={quiz.image_url} alt={quiz.title} />
-            ) : (
-              <span style={{ color: '#9ca3af' }}>No Image</span>
-            )}
-          </QuizImageContainer> */}
 
           <QuizDescription>
             {quiz.description || 'Tidak ada deskripsi'}
@@ -93,30 +80,22 @@ function QuizList({ onEdit, onDelete, onCreateFirst }) {
           )}
 
           <div style={{flex: "1"}}></div>
-
           <QuizStats>
             <StatItem>
               <StatLabel>Questions</StatLabel>
               <StatValue>{quiz.questionCount || 0}</StatValue>
             </StatItem>
             <StatItem>
-              <StatLabel>Created</StatLabel>
+              <StatLabel>Terakhir Diperbaharui</StatLabel>
               <StatValue>
-                {new Date(quiz.createdAt).toLocaleDateString("id-ID")}
+                {new Date(quiz.updatedAt).toLocaleDateString("id-ID")}
               </StatValue>
             </StatItem>
           </QuizStats>
 
           <CardActions>
-            <CardActionButton onClick={() => onEdit(quiz)}>
-              Edit
-            </CardActionButton>
-            <CardActionButton
-              danger
-              onClick={() => onDelete(quiz.id)}
-              disabled={loading?.isDeletingQuiz}
-            >
-              Delete
+            <CardActionButton onClick={() => navigate(generatePath(AnatomyQuizRoute.detailRoute, { id: quiz.id }))}>
+              Select
             </CardActionButton>
           </CardActions>
         </QuizCard>

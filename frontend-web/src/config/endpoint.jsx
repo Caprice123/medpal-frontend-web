@@ -123,6 +123,7 @@ export default {
         quizzes: `${API_BASE_URL}/api/v1/anatomy/quizzes`,
         quiz: (id) => `${API_BASE_URL}/api/v1/anatomy/quizzes/${id}`,
         submit: (id) => `${API_BASE_URL}/api/v1/anatomy/quizzes/${id}/submit`,
+        constants: `${API_BASE_URL}/api/v1/anatomy/constants`,
 
         // Admin endpoints
         admin: {

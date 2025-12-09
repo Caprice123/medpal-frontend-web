@@ -1,6 +1,5 @@
 import express from 'express'
 import anatomyController from '../../../controllers/admin/v1/anatomy.controller.js'
-import constantRoutes from './constant.routes.js'
 import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
 import { asyncHandler } from '../../../utils/asyncHandler.js'
 import { uploadImage } from '../../../middlewares/uploadImage.js'
@@ -12,7 +11,8 @@ router.use(authenticateToken)
 router.use(requireAdmin)
 
 // Constants configuration for anatomy feature
-router.use('/constants', constantRoutes)
+router.get('/constants', asyncHandler(anatomyController.getConstants.bind(anatomyController)))
+router.put('/constants', asyncHandler(anatomyController.updateConstants.bind(anatomyController)))
 
 // Upload anatomy image only (no AI generation)
 router.post(

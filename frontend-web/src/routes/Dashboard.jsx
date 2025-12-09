@@ -233,7 +233,7 @@ function Dashboard() {
           <CatalogGrid>
             {features.map((feature) => {
               // Check if feature is subscription-based (flashcard or exercise)
-              const isSubscriptionBased = ['calculator', 'flashcard', 'exercise'].includes(feature.sessionType)
+              const isSubscriptionBased = ['calculator', 'flashcard', 'exercise', 'anatomy'].includes(feature.sessionType)
 
               return (
                 <CatalogCard key={feature.id}>

@@ -7,7 +7,7 @@ const Container = styled.div`
 `
 
 const ResultContainer = styled.div`
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   background: white;
   border-radius: 16px;
@@ -57,11 +57,31 @@ const ScoreSubtext = styled.p`
   font-size: 1.1rem;
 `
 
+const ContentLayout = styled.div`
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+const ImageSection = styled.div`
+  position: sticky;
+  top: 2rem;
+  align-self: start;
+`
+
+const ResultsSection = styled.div`
+  flex: 1;
+`
+
 const ResultsList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 `
 
 const ResultCard = styled.div`
@@ -112,17 +132,6 @@ const AnswerLabel = styled.div`
 const AnswerValue = styled.div`
   color: ${props => (props.isCorrect ? '#059669' : '#dc2626')};
   font-weight: ${props => (props.isCorrect ? 600 : 400)};
-`
-
-const Explanation = styled.div`
-  margin-top: 1rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 6px;
-  color: #475569;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  border: 1px solid #e2e8f0;
 `
 
 const SimilarityBadge = styled.span`
@@ -180,15 +189,27 @@ const Button = styled.button`
 `
 
 const ImagePreview = styled.div`
-  margin-bottom: 2rem;
-  text-align: center;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: #f8fafc;
 `
 
 const PreviewImage = styled.img`
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  height: auto;
+  display: block;
+`
+
+const ImageLabel = styled.div`
+  padding: 1rem;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.875rem;
 `
 
 function QuizResult({ result, onBack }) {
@@ -215,53 +236,56 @@ function QuizResult({ result, onBack }) {
           </ScoreSubtext>
         </Header>
 
-        {result.image_url && (
-          <ImagePreview>
-            <PreviewImage src={result.image_url} alt="Quiz image" />
-          </ImagePreview>
-        )}
+        <ContentLayout>
+          {/* Left side - Image */}
+          <ImageSection>
+            {result.image_url && (
+              <ImagePreview>
+                <PreviewImage src={result.image_url} alt="Quiz image" />
+                <ImageLabel>Reference Image</ImageLabel>
+              </ImagePreview>
+            )}
+          </ImageSection>
 
-        <ResultsList>
-          {result.answers?.map((answer, index) => (
-            <ResultCard key={index} isCorrect={answer.isCorrect}>
-              <ResultHeader>
-                <ResultIcon>{answer.isCorrect ? '✅' : '❌'}</ResultIcon>
-                <ResultTitle>
-                  Question {index + 1}
-                  {answer.similarityScore !== undefined && (
-                    <SimilarityBadge>
-                      {Math.round(answer.similarityScore * 100)}% match
-                    </SimilarityBadge>
+          {/* Right side - Results */}
+          <ResultsSection>
+            <ResultsList>
+              {result.answers?.map((answer, index) => (
+                <ResultCard key={index} isCorrect={answer.isCorrect}>
+                  <ResultHeader>
+                    <ResultIcon>{answer.isCorrect ? '✅' : '❌'}</ResultIcon>
+                    <ResultTitle>
+                      Question {index + 1}
+                      {answer.similarityScore !== undefined && (
+                        <SimilarityBadge>
+                          {Math.round(answer.similarityScore * 100)}% match
+                        </SimilarityBadge>
+                      )}
+                    </ResultTitle>
+                  </ResultHeader>
+
+                  <QuestionText>{answer.question || 'Question'}</QuestionText>
+
+                  <AnswerRow>
+                    <AnswerLabel>Your answer:</AnswerLabel>
+                    <AnswerValue isCorrect={answer.isCorrect}>
+                      {answer.userAnswer}
+                    </AnswerValue>
+                  </AnswerRow>
+
+                  {!answer.isCorrect && (
+                    <AnswerRow>
+                      <AnswerLabel>Correct answer:</AnswerLabel>
+                      <AnswerValue isCorrect={true}>
+                        {answer.correctAnswer}
+                      </AnswerValue>
+                    </AnswerRow>
                   )}
-                </ResultTitle>
-              </ResultHeader>
-
-              <QuestionText>{answer.label || 'Question'}</QuestionText>
-
-              <AnswerRow>
-                <AnswerLabel>Your answer:</AnswerLabel>
-                <AnswerValue isCorrect={answer.isCorrect}>
-                  {answer.userAnswer}
-                </AnswerValue>
-              </AnswerRow>
-
-              {!answer.isCorrect && (
-                <AnswerRow>
-                  <AnswerLabel>Correct answer:</AnswerLabel>
-                  <AnswerValue isCorrect={true}>
-                    {answer.correctAnswer}
-                  </AnswerValue>
-                </AnswerRow>
-              )}
-
-              {answer.explanation && (
-                <Explanation>
-                  <strong>Explanation:</strong> {answer.explanation}
-                </Explanation>
-              )}
-            </ResultCard>
-          ))}
-        </ResultsList>
+                </ResultCard>
+              ))}
+            </ResultsList>
+          </ResultsSection>
+        </ContentLayout>
 
         <ButtonGroup>
           <Button onClick={onBack}>

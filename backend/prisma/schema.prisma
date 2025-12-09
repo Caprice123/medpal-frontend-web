@@ -61,7 +61,6 @@ model exercise_questions {
   topic_id        Int
   question        String
   answer          String
-  explanation     String
   order           Int             @default(0)
   created_at      DateTime        @default(now())
   updated_at      DateTime        @default(now())

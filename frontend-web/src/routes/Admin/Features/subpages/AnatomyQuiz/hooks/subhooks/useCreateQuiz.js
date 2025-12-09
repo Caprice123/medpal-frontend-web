@@ -34,7 +34,7 @@ export const useCreateQuiz = (closeCallback) => {
 
       const onSuccess = () => {
         resetForm()
-        onClose()
+        closeCallback()
       }
 
       dispatch(createAnatomyQuiz(quizData, onSuccess))

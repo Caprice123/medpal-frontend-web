@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
   min-height: calc(100vh - 63px);
-  background: #f0f9ff;
+  background: #f0fdfa;
   padding: 3rem 1.5rem;
   position: relative;
 

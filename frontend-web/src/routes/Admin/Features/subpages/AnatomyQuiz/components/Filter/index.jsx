@@ -13,8 +13,6 @@ export const Filter = () => {
     const { tags } = useSelector(state => state.tags)
 
     const onSearch = () => {
-        // Reset to page 1 when searching
-        dispatch(actions.setPage(1))
         dispatch(fetchAdminAnatomyQuizzes())
     }
 

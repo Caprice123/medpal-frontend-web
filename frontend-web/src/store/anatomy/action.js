@@ -10,7 +10,6 @@ const {
   setSelectedQuiz,
   setQuestions,
   setCurrentQuiz,
-  setQuizResult,
   setUploadedImage,
   setFilter,
   clearFilter,
@@ -34,11 +33,11 @@ const {
 /**
  * Fetch all published anatomy quizzes (user endpoint)
  */
-export const fetchAnatomyQuizzes = (filter = {}) => async (dispatch, getState) => {
+export const fetchAnatomyQuizzes = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isQuizzesLoading', value: true }))
 
-    const { pagination } = getState().anatomy
+    const { filter, pagination } = getState().anatomy
 
     const queryParams = {}
     if (filter.university) queryParams.university = filter.university
@@ -90,7 +89,7 @@ export const submitAnatomyQuizAnswers = (quizId, answers) => async (dispatch) =>
     const response = await postWithToken(Endpoints.anatomy.submit(quizId), { answers })
 
     const result = response.data.data
-    dispatch(setQuizResult(result))
+    // Don't store in Redux, let the component handle it locally
     return result
   } catch (err) {
     handleApiError(err, dispatch)
@@ -210,16 +209,14 @@ export const createAnatomyQuiz = (quizData) => async (dispatch) => {
 /**
  * Update anatomy quiz (admin only)
  */
-export const updateAnatomyQuiz = (quizId, quizData) => async (dispatch) => {
+export const updateAnatomyQuiz = (quizId, quizData, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdatingQuiz', value: true }))
 
-    const response = await putWithToken(Endpoints.anatomy.admin.quiz(quizId), quizData)
+    await putWithToken(Endpoints.anatomy.admin.quiz(quizId), quizData)
 
-    const quiz = response.data.data || response.data.quiz
     // Refresh the list to show updated quiz
-    dispatch(fetchAdminAnatomyQuizzes())
-    return quiz
+    if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
     throw err
@@ -281,6 +278,28 @@ export const clearAnatomyCurrentQuiz = () => (dispatch) => {
 // ============= Constants Actions =============
 
 /**
+ * Fetch anatomy constants (user side)
+ */
+export const fetchAnatomyConstantsForUser = (keys = null) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
+
+    const queryParams = {}
+    if (keys && Array.isArray(keys)) {
+      queryParams.keys = keys.join(',')
+    }
+
+    const response = await getWithToken(Endpoints.anatomy.constants, queryParams)
+
+    return response.data.data || {}
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
+  }
+}
+
+/**
  * Fetch anatomy constants (admin only)
  */
 export const fetchAnatomyConstants = (keys = null) => async (dispatch) => {
@@ -305,13 +324,13 @@ export const fetchAnatomyConstants = (keys = null) => async (dispatch) => {
 /**
  * Update anatomy constants (admin only)
  */
-export const updateAnatomyConstants = (constants) => async (dispatch) => {
+export const updateAnatomyConstants = (constants, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdatingConstants', value: true }))
 
-    const response = await putWithToken(Endpoints.anatomy.admin.constants, constants)
+    await putWithToken(Endpoints.anatomy.admin.constants, constants)
 
-    return response.data.data || {}
+    if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {

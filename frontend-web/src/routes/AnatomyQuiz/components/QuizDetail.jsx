@@ -213,7 +213,7 @@ function QuizDetail() {
             {currentQuiz.anatomy_questions?.map((question, index) => (
               <QuestionCard key={question.id} hasError={errors[question.id]}>
                 <QuestionNumber>Question {index + 1}</QuestionNumber>
-                <QuestionLabel>{question.label}</QuestionLabel>
+                <QuestionLabel>{question.question}</QuestionLabel>
                 <AnswerInput
                   type="text"
                   value={answers[question.id] || ''}

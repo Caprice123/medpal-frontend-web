@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
+import 'react-photo-view/dist/react-photo-view.css'
 import {
   Container,
   Content,
@@ -16,7 +18,6 @@ import {
   QuestionCard,
   QuestionLabel,
   QuestionInput,
-  ResultSection,
   ResultHeader,
   ScoreDisplay,
   ScoreLabel,
@@ -27,77 +28,25 @@ import {
   AnswerItem,
   AnswerItemLabel,
   AnswerItemValue,
-  Explanation,
-  ExplanationLabel,
-  ExplanationText,
-  ErrorMessage,
-  LoadingSpinner
+  ErrorText,
+  LoadingSpinner,
+  ResultScoreSection
 } from './Detail.styles'
 import Button from '@components/common/Button'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchAnatomyQuizForUser, submitAnatomyQuizAnswers } from '@store/anatomy/action'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useAnatomyQuizDetail } from './useAnatomyQuizDetail'
 
 const AnatomyQuizDetail = () => {
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
-
-    const { id } = useParams()
-    const { currentQuiz, quizResult, loading } = useSelector(state => state.anatomy)
-    const [answers, setAnswers] = useState({})
-    const [formErrors, setFormErrors] = useState({})
-
-    useEffect(() => {
-        dispatch(fetchAnatomyQuizForUser(id))
-    }, [dispatch, id])
-
-    const handleInputChange = (questionId, value) => {
-        setAnswers(prev => ({
-          ...prev,
-          [questionId]: value
-        }))
-
-        // Clear error for this field when user starts typing
-        if (formErrors[questionId]) {
-          setFormErrors(prev => ({
-            ...prev,
-            [questionId]: ''
-          }))
-        }
-      }
-
-      const validateInputs = () => {
-        const errors = {}
-
-        if (!currentQuiz?.anatomy_questions) return false
-
-        currentQuiz.anatomy_questions.forEach(question => {
-          const value = answers[question.id]
-
-          if (!value || value.trim() === '') {
-            errors[question.id] = `Jawaban untuk pertanyaan ini wajib diisi`
-          }
-        })
-
-        setFormErrors(errors)
-        return Object.keys(errors).length === 0
-      }
-
-      const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        if (!validateInputs()) {
-          return
-        }
-
-        // Format answers for submission
-        const formattedAnswers = Object.keys(answers).map(questionId => ({
-          question_id: parseInt(questionId),
-          answer: answers[questionId]
-        }))
-
-        await dispatch(submitAnatomyQuizAnswers(id, formattedAnswers))
-      }
+    const {
+        currentQuiz,
+        quizResult,
+        loading,
+        answers,
+        formErrors,
+        sectionTitle,
+        handleInputChange,
+        handleSubmit,
+        handleBack
+    } = useAnatomyQuizDetail()
 
       if (!currentQuiz) {
         return (
@@ -119,7 +68,7 @@ const AnatomyQuizDetail = () => {
                 <FormHeader>
                 <Button
                     variant="outline"
-                    onClick={() => navigate(-1)}
+                    onClick={handleBack}
                     style={{ minWidth: '44px', padding: '0.5rem 1rem' }}
                 >
                     ← Back
@@ -133,23 +82,26 @@ const AnatomyQuizDetail = () => {
                 </FormHeader>
 
                 {!quizResult ? (
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                    <QuizMainContent>
-                      {/* Quiz Image - Left Side */}
-                      {currentQuiz.image_url && (
-                        <QuizImageSection>
-                          <QuizImage src={currentQuiz.image_url} alt={currentQuiz.title} />
-                        </QuizImageSection>
-                      )}
+                  <PhotoProvider>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                      <QuizMainContent>
+                        {/* Quiz Image - Left Side */}
+                        {currentQuiz.image_url && (
+                          <QuizImageSection>
+                            <PhotoView src={currentQuiz.image_url}>
+                              <QuizImage src={currentQuiz.image_url} alt={currentQuiz.title} />
+                            </PhotoView>
+                          </QuizImageSection>
+                        )}
 
                       {/* Questions - Right Side (Scrollable) */}
                       <QuestionsContainer>
-                        <SectionTitle>Identifikasi Bagian Anatomi</SectionTitle>
+                        <SectionTitle>{sectionTitle}</SectionTitle>
                         <QuestionsSection>
                           {currentQuiz.anatomy_questions?.map((question) => (
                             <QuestionCard key={question.id}>
                               <QuestionLabel>
-                                {question.label}
+                                {question.question}
                                 <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>
                               </QuestionLabel>
                               <QuestionInput
@@ -159,9 +111,7 @@ const AnatomyQuizDetail = () => {
                                 placeholder="Masukkan jawaban Anda..."
                               />
                               {formErrors[question.id] && (
-                                <ErrorMessage>
-                                  {formErrors[question.id]}
-                                </ErrorMessage>
+                                <ErrorText>{formErrors[question.id]}</ErrorText>
                               )}
                             </QuestionCard>
                           ))}
@@ -185,64 +135,78 @@ const AnatomyQuizDetail = () => {
                       </QuestionsContainer>
                     </QuizMainContent>
                   </form>
+                  </PhotoProvider>
                 ) : (
-                  <ResultSection>
+                  <PhotoProvider>
+                  <>
                     <ResultHeader>
-                      <ScoreDisplay>
-                        {quizResult.score}%
-                      </ScoreDisplay>
-                      <ScoreLabel>
-                        {quizResult.correctAnswers} dari {quizResult.totalQuestions} jawaban benar
-                      </ScoreLabel>
+                      <ResultScoreSection>
+                        <ScoreDisplay>
+                          {quizResult.score}%
+                        </ScoreDisplay>
+                        <ScoreLabel>
+                          {quizResult.correct_questions} dari {quizResult.total_questions} jawaban benar
+                        </ScoreLabel>
+                      </ResultScoreSection>
+                      <Button
+                        variant="primary"
+                        onClick={handleBack}
+                        style={{
+                          maxWidth: '300px',
+                          margin: '0 auto',
+                          padding: '0.875rem 2rem',
+                          fontSize: '0.9375rem',
+                          fontWeight: 600,
+                          border: 'none',
+                          color: 'white'
+                        }}
+                      >
+                        ← Kembali ke Daftar Quiz
+                      </Button>
                     </ResultHeader>
 
-                    <AnswersReview>
-                      {quizResult.answers?.map((answer, index) => (
-                        <AnswerCard key={index} isCorrect={answer.isCorrect}>
-                          <AnswerQuestion>
-                            {index + 1}. {answer.question}
-                          </AnswerQuestion>
-                          <AnswerRow>
-                            <AnswerItem>
-                              <AnswerItemLabel>Jawaban Anda:</AnswerItemLabel>
-                              <AnswerItemValue type={answer.isCorrect ? 'correct' : 'wrong'}>
-                                {answer.userAnswer || '-'}
-                                {answer.isCorrect ? ' ✓' : ' ✗'}
-                              </AnswerItemValue>
-                            </AnswerItem>
-                            {!answer.isCorrect && (
-                              <AnswerItem>
-                                <AnswerItemLabel>Jawaban Benar:</AnswerItemLabel>
-                                <AnswerItemValue type="correct">
-                                  {answer.correctAnswer}
-                                </AnswerItemValue>
-                              </AnswerItem>
-                            )}
-                          </AnswerRow>
-                          {answer.explanation && (
-                            <Explanation>
-                              <ExplanationLabel>Penjelasan</ExplanationLabel>
-                              <ExplanationText>{answer.explanation}</ExplanationText>
-                            </Explanation>
-                          )}
-                        </AnswerCard>
-                      ))}
-                    </AnswersReview>
+                    <QuizMainContent>
+                      {/* Quiz Image - Left Side */}
+                      {currentQuiz.image_url && (
+                        <QuizImageSection>
+                          <PhotoView src={currentQuiz.image_url}>
+                            <QuizImage src={currentQuiz.image_url} alt={currentQuiz.title} />
+                          </PhotoView>
+                        </QuizImageSection>
+                      )}
 
-                    <Button
-                      variant="primary"
-                      onClick={() => navigate(-1)}
-                      style={{
-                        width: '100%',
-                        marginTop: '2rem',
-                        padding: '1rem',
-                        fontSize: '1rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      Kembali ke Daftar Quiz
-                    </Button>
-                  </ResultSection>
+                      {/* Results - Right Side (Scrollable) */}
+                      <QuestionsContainer>
+                        <AnswersReview>
+                          {quizResult.answers?.map((answer, index) => (
+                            <AnswerCard key={index} isCorrect={answer.isCorrect}>
+                              <AnswerQuestion>
+                                {answer.question || 'Pertanyaan tidak tersedia'}
+                              </AnswerQuestion>
+                              <AnswerRow>
+                                <AnswerItem>
+                                  <AnswerItemLabel>Jawaban Anda:</AnswerItemLabel>
+                                  <AnswerItemValue type={answer.isCorrect ? 'correct' : 'wrong'}>
+                                    {answer.userAnswer || '-'}
+                                    {answer.isCorrect ? ' ✓' : ' ✗'}
+                                  </AnswerItemValue>
+                                </AnswerItem>
+                                {!answer.isCorrect && (
+                                  <AnswerItem>
+                                    <AnswerItemLabel>Jawaban Benar:</AnswerItemLabel>
+                                    <AnswerItemValue type="correct">
+                                      {answer.correctAnswer}
+                                    </AnswerItemValue>
+                                  </AnswerItem>
+                                )}
+                              </AnswerRow>
+                            </AnswerCard>
+                          ))}
+                        </AnswersReview>
+                      </QuestionsContainer>
+                    </QuizMainContent>
+                  </>
+                  </PhotoProvider>
                 )}
             </QuizForm>
             </Content>

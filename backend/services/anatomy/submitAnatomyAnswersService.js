@@ -115,9 +115,9 @@ export class SubmitAnatomyAnswersService extends BaseService {
 
         answerResults.push({
           questionId: answer.questionId,
+          question: question.question,
           userAnswer: answer.userAnswer,
           correctAnswer: question.answer,
-          explanation: question.explanation,
           isCorrect,
           similarityScore
         })

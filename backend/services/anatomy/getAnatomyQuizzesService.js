@@ -67,7 +67,7 @@ export class GetAnatomyQuizzesService extends BaseService {
       ]
     }
 
-    // Optimized query with _count instead of loading all question IDs
+    // Optimized query with _count instead of loading all question ID
     const quizzes = await prisma.anatomy_quizzes.findMany({
       where,
       take,

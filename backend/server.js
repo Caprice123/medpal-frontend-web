@@ -23,10 +23,12 @@ import adminFlashcardRoutes from './routes/admin/v1/flashcard.routes.js';
 import adminSummaryNoteRoutes from './routes/admin/v1/summaryNote.routes.js';
 import adminConstantRoutes from './routes/admin/v1/constant.routes.js';
 import calculatorRoutes from './routes/api/v1/calculator.routes.js';
+import anatomyRoutes from './routes/api/v1/anatomy.routes.js';
 import adminCalculatorRoutes from './routes/admin/v1/calculator.routes.js';
 import adminTagsRoutes from './routes/admin/v1/tag.routes.js';
 import adminTagGroupsRoutes from './routes/admin/v1/tagGroup.routes.js';
 import adminUsersRoutes from './routes/admin/v1/users.routes.js';
+import adminAnatomyRoutes from './routes/admin/v1/anatomy.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
@@ -64,6 +66,7 @@ app.use('/api/v1/features', featureRoutes);
 app.use('/api/v1/statistics', statisticRoutes);
 app.use('/api/v1/pricing', pricingRoutes);
 app.use('/api/v1/calculators', calculatorRoutes);
+app.use('/api/v1/anatomy', anatomyRoutes);
 
 // Admin Routes
 app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);
@@ -76,6 +79,7 @@ app.use('/admin/v1/calculators', adminCalculatorRoutes);
 app.use('/admin/v1/tags', adminTagsRoutes);
 app.use('/admin/v1/tag-groups', adminTagGroupsRoutes);
 app.use('/admin/v1/users', adminUsersRoutes);
+app.use('/admin/v1/anatomy', adminAnatomyRoutes);
 
 
 // Error handling middleware (must be last)

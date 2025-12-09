@@ -2,6 +2,7 @@ import { GetAnatomyQuizzesService } from '../../../services/anatomy/getAnatomyQu
 import { GetAnatomyQuizDetailService } from '../../../services/anatomy/admin/getAnatomyQuizDetailService.js'
 import { StartAnatomyQuizService } from '../../../services/anatomy/startAnatomyQuizService.js'
 import { SubmitAnatomyAnswersService } from '../../../services/anatomy/submitAnatomyAnswersService.js'
+import { GetAnatomyConstantsService } from '../../../services/anatomy/admin/getAnatomyConstantsService.js'
 import prisma from '../../../prisma/client.js'
 
 class AnatomyController {
@@ -12,11 +13,12 @@ class AnatomyController {
   async getQuizzes(req, res) {
     const { university, semester } = req.query
 
-    const quizzes = await GetAnatomyQuizzesService.call({ university, semester })
+    const result = await GetAnatomyQuizzesService.call({ university, semester })
 
     return res.status(200).json({
       success: true,
-      data: quizzes
+      data: result.data,
+      pagination: result.pagination
     })
   }
 
@@ -58,7 +60,7 @@ class AnatomyController {
     const userId = req.user.id
 
     // Fetch quiz with questions
-    const quiz = await prisma.anatomy_quiz.findUnique({
+    const quiz = await prisma.anatomy_quizzes.findUnique({
       where: { id: parseInt(id) },
       include: {
         anatomy_questions: true
@@ -87,11 +89,10 @@ class AnatomyController {
       if (isCorrect) correctAnswers++
 
       results.push({
-        question: question.label,
+        question: question.question,
         userAnswer: answer.answer,
         correctAnswer: question.answer,
-        isCorrect,
-        explanation: question.explanation
+        isCorrect
       })
     }
 
@@ -150,6 +151,23 @@ class AnatomyController {
       success: true,
       data: result,
       message: 'Answers submitted successfully'
+    })
+  }
+
+  /**
+   * Get anatomy constants
+   * GET /api/v1/anatomy/constants
+   */
+  async getConstants(req, res) {
+    const { keys } = req.query
+    const keysArray = keys ? keys.split(',') : null
+
+    const constants = await GetAnatomyConstantsService.call({ keys: keysArray })
+
+    return res.status(200).json({
+      success: true,
+      data: constants,
+      message: 'Constants retrieved successfully'
     })
   }
 }

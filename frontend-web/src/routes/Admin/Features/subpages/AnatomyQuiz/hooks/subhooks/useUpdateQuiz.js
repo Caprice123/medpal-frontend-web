@@ -5,6 +5,7 @@ import {
   updateAnatomyQuiz,
 } from '@store/anatomy/action'
 import { useUploadAttachment } from './useUploadAttachment'
+import { fetchAdminAnatomyQuizzes } from '../../../../../../../store/anatomy/action'
 
 export const useUpdateQuiz = (closeCallback) => {
   const dispatch = useDispatch()
@@ -51,7 +52,7 @@ export const useUpdateQuiz = (closeCallback) => {
       questions: selectedQuiz?.questions || [],
       status: selectedQuiz?.status || 'draft'
     },
-    onSubmit: (values) => {
+    onSubmit: (values, { resetForm }) => {
       // Merge university and semester tags into single tags array
       const quizData = {
         ...values,
@@ -67,7 +68,13 @@ export const useUpdateQuiz = (closeCallback) => {
       delete quizData.universityTags
       delete quizData.semesterTags
 
-      dispatch(updateAnatomyQuiz(selectedQuiz.id, quizData))
+      const onSuccess = () => {
+        resetForm()
+        closeCallback()
+        dispatch(fetchAdminAnatomyQuizzes())
+      }
+
+      dispatch(updateAnatomyQuiz(selectedQuiz.id, quizData, onSuccess))
     }
   })
 

@@ -26,6 +26,8 @@
     "react-dropdown": "^1.11.0",
     "react-intersection-observer": "^10.0.0",
     "react-markdown": "^10.1.0",
+    "react-medium-image-zoom": "^5.4.0",
+    "react-photo-view": "^1.2.7",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.5",
     "react-scan": "^0.4.3",

@@ -4,6 +4,8 @@ import { GetAnatomyQuizzesService } from '../../../services/anatomy/admin/getAna
 import { GetAnatomyQuizDetailService } from '../../../services/anatomy/admin/getAnatomyQuizDetailService.js'
 import { UpdateAnatomyQuizService } from '../../../services/anatomy/admin/updateAnatomyQuizService.js'
 import { DeleteAnatomyQuizService } from '../../../services/anatomy/admin/deleteAnatomyQuizService.js'
+import { GetAnatomyConstantsService } from '../../../services/anatomy/admin/getAnatomyConstantsService.js'
+import { UpdateAnatomyConstantsService } from '../../../services/anatomy/admin/updateAnatomyConstantsService.js'
 import { AnatomyQuizSerializer } from '../../../serializers/admin/v1/anatomyQuizSerializer.js'
 import { AnatomyQuestionSerializer } from '../../../serializers/admin/v1/anatomyQuestionSerializer.js'
 import idriveService from '../../../services/idrive.service.js'
@@ -199,6 +201,37 @@ class AnatomyController {
     return res.status(200).json({
       success: true,
       message: `Anatomy quiz ${result.deleted === 'permanently' ? 'permanently deleted' : 'deactivated'} successfully`
+    })
+  }
+
+  /**
+   * Get anatomy constants
+   * GET /admin/v1/anatomy/constants
+   */
+  async getConstants(req, res) {
+    const { keys } = req.query
+    const keysArray = keys ? keys.split(',') : null
+
+    const constants = await GetAnatomyConstantsService.call({ keys: keysArray })
+
+    return res.status(200).json({
+      success: true,
+      data: constants,
+      message: 'Constants retrieved successfully'
+    })
+  }
+
+  /**
+   * Update anatomy constants
+   * PUT /admin/v1/anatomy/constants
+   */
+  async updateConstants(req, res) {
+    const updated = await UpdateAnatomyConstantsService.call(req.body)
+
+    return res.status(200).json({
+      success: true,
+      data: updated,
+      message: 'Constants updated successfully'
     })
   }
 }

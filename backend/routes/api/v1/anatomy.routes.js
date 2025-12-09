@@ -8,6 +8,9 @@ const router = express.Router()
 // All routes require authentication
 router.use(authenticateToken)
 
+// Get anatomy constants
+router.get('/constants', asyncHandler(anatomyController.getConstants.bind(anatomyController)))
+
 // Get all published anatomy quizzes
 router.get('/quizzes', asyncHandler(anatomyController.getQuizzes.bind(anatomyController)))
 

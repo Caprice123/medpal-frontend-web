@@ -4,19 +4,25 @@ import Dropdown from '@components/common/Dropdown'
 import Button from '@components/common/Button'
 import { useDispatch, useSelector } from 'react-redux'
 import { actions } from "@store/anatomy/reducer"
-import { fetchAnatomyQuizzes } from '../../../../../../store/anatomy/action'
+import { useMemo } from 'react'
+import { fetchAnatomyQuizzes } from '@store/anatomy/action'
 
 export const Filter = () => {
     const dispatch = useDispatch()
     const { filter } = useSelector(state => state.anatomy)
     const { tags } = useSelector(state => state.tags)
 
-    const universityTags = tags.find(t => t?.name === 'university')?.tags || []
-    const semesterTags = tags.find(t => t?.name === 'semester')?.tags || []
-
     const onSearch = () => {
-        dispatch(fetchAnatomyQuizzes(filter))
+        dispatch(fetchAnatomyQuizzes())
     }
+
+    const universityTags = useMemo(() => {
+        return tags?.find(tag => tag.name == "university")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
+    }, [tags])
+
+    const semesterTags = useMemo(() => {
+        return tags?.find(tag => tag.name == "semester")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
+    }, [tags])
 
     return (
         <div style={{
@@ -32,7 +38,7 @@ export const Filter = () => {
             }}>
                 <FilterComponent>
                     <FilterComponent.Group>
-                        <FilterComponent.Label>Nama Quiz</FilterComponent.Label>
+                        <FilterComponent.Label>Nama quiz</FilterComponent.Label>
                         <TextInput
                             placeholder="Cari quiz berdasarkan nama..."
                             value={filter.name || ''}
@@ -49,11 +55,8 @@ export const Filter = () => {
                     <FilterComponent.Group>
                         <FilterComponent.Label>Universitas</FilterComponent.Label>
                         <Dropdown
-                            options={universityTags?.map((tag) => ({ label: tag.name, value: tag.id })) || []}
-                            value={filter.university ? {
-                                label: universityTags.find(t => t.id == filter.university)?.name,
-                                value: filter.university
-                            } : null}
+                            options={universityTags}
+                            value={filter.university ? universityTags.find(t => t.value === filter.university) : null}
                             onChange={(option) => dispatch(actions.updateFilter({ key: "university", value: option?.value || "" }))}
                             placeholder="Filter berdasarkan universitas..."
                         />
@@ -62,11 +65,8 @@ export const Filter = () => {
                     <FilterComponent.Group>
                         <FilterComponent.Label>Semester</FilterComponent.Label>
                         <Dropdown
-                            options={semesterTags?.map((tag) => ({ label: tag.name, value: tag.id })) || []}
-                            value={filter.semester ? {
-                                label: semesterTags.find(t => t.id == filter.semester)?.name,
-                                value: filter.semester
-                            } : null}
+                            options={semesterTags}
+                            value={filter.semester ? semesterTags.find(t => t.value === filter.semester) : null}
                             onChange={(option) => dispatch(actions.updateFilter({ key: "semester", value: option?.value || "" }))}
                             placeholder="Filter berdasarkan semester..."
                         />

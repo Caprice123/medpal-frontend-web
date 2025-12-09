@@ -21,7 +21,7 @@ import { useFeatureSetting } from '../../hooks/subhooks/useFeatureSetting'
 
 function AnatomySettingsModal({ onClose }) {
     const { loading } = useSelector(state => state.anatomy)
-    const { form } = useFeatureSetting()
+    const { form } = useFeatureSetting(onClose)
 
   return (
     <Overlay isOpen={true} onClick={onClose}>
@@ -73,6 +73,17 @@ function AnatomySettingsModal({ onClose }) {
               </FormGroup>
 
               <FormGroup>
+                <Label>Judul Bagian Soal</Label>
+                <Input
+                  type="text"
+                  placeholder="Identifikasi Bagian Anatomi"
+                  value={form.values.anatomy_section_title}
+                  onChange={(e) => form.setFieldValue('anatomy_section_title', e.target.value)}
+                />
+                <HintText>Judul yang ditampilkan pada bagian soal di halaman quiz</HintText>
+              </FormGroup>
+
+              <FormGroup>
                 <Label>Tipe Akses</Label>
                 <Dropdown
                   options={[
@@ -112,7 +123,7 @@ function AnatomySettingsModal({ onClose }) {
           <Button onClick={onClose} disabled={form.isUpdatingConstants}>
             Batal
           </Button>
-          <Button variant="primary" onClick={form.handleSubmit} disabled={loading || form.isUpdatingConstants}>
+          <Button variant="primary" onClick={form.handleSubmit} disabled={loading.isUpdatingConstants}>
             {form.isUpdatingConstants ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </ModalFooter>
