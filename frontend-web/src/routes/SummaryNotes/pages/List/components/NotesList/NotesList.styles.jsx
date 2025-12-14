@@ -131,3 +131,10 @@ export const CardActionButton = styled.button`
     cursor: not-allowed;
   }
 `
+
+export const UpdatedText = styled.div`
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+`

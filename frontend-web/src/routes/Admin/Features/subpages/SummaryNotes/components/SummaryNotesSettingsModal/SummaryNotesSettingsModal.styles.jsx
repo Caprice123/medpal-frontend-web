@@ -6,55 +6,42 @@ export const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.4);
   display: ${props => props.isOpen ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
-  backdrop-filter: blur(4px);
+  overflow: visible;
 `
 
 export const Modal = styled.div`
   background: white;
-  border-radius: 16px;
-  max-width: 800px;
+  border-radius: 8px;
+  max-width: 900px;
   width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: visible;
 `
 
 export const ModalHeader = styled.div`
-  padding: 1.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
-  border-radius: 16px 16px 0 0;
+  border-radius: 8px 8px 0 0;
 `
 
 export const ModalTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #10b981, #059669);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
 `
 
@@ -79,13 +66,39 @@ export const CloseButton = styled.button`
 `
 
 export const ModalBody = styled.div`
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  position: relative;
+
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `
 
 export const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `
 
 export const Label = styled.label`
@@ -98,125 +111,151 @@ export const Label = styled.label`
 
 export const Input = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 0.875rem;
-  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `
 
 export const Textarea = styled.textarea`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
   resize: vertical;
-  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `
 
 export const Select = styled.select`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 0.875rem;
   background: white;
   cursor: pointer;
-  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `
 
 export const HintText = styled.div`
+  margin-top: 0.375rem;
   font-size: 0.75rem;
   color: #6b7280;
-  margin-top: 0.5rem;
-  line-height: 1.4;
+`
+
+export const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + span {
+      background: #3b82f6;
+    }
+
+    &:checked + span:before {
+      transform: translateX(24px);
+    }
+  }
+`
+
+export const ToggleSlider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.2s;
+  border-radius: 34px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.2s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
 `
 
 export const ModalFooter = styled.div`
-  padding: 1.5rem;
-  border-top: 2px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  background: white;
-  border-radius: 0 0 16px 16px;
+  border-radius: 0 0 8px 8px;
 `
 
 export const Button = styled.button`
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.3s ease;
   border: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
 
   ${props => props.variant === 'primary' ? `
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: #3b82f6;
     color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-
     &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
+      background: #2563eb;
     }
   ` : `
     background: white;
-    color: #6b7280;
-    border: 2px solid #e5e7eb;
-
+    color: #374151;
+    border: 1px solid #d1d5db;
     &:hover:not(:disabled) {
-      background: #f3f4f6;
-      border-color: #d1d5db;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+      background: #f9fafb;
     }
   `}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `
 
 export const LoadingSpinner = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
+  border-top-color: white;
   animation: spin 0.8s linear infinite;
 
   @keyframes spin {
-    from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
 `

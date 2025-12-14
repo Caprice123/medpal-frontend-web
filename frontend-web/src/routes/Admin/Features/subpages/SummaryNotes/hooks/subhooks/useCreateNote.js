@@ -8,6 +8,7 @@ import {
 } from '@store/summaryNotes/action'
 import { actions } from '@store/summaryNotes/reducer'
 import { markdownToBlocks } from '@utils/markdownToBlocks'
+import { blocksToMarkdown } from '@utils/blocksToMarkdown'
 
 const { clearGeneratedContent, setError, clearError } = actions
 
@@ -46,6 +47,9 @@ export const useCreateNote = (onClose) => {
         // Stringify the blocks for storage
         const contentString = JSON.stringify(values.content)
 
+        // Convert blocks to markdown
+        const markdownContent = blocksToMarkdown(values.content)
+
         // Combine university and semester tags
         const allTags = [...values.universityTags, ...values.semesterTags]
 
@@ -53,6 +57,7 @@ export const useCreateNote = (onClose) => {
           title: values.title.trim(),
           description: values.description.trim(),
           content: contentString,
+          markdownContent: markdownContent,
           status: values.status,
           isActive: true,
           tagIds: allTags.map(t => t.id),

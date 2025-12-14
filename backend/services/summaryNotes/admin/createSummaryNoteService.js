@@ -3,7 +3,7 @@ import { BaseService } from '../../baseService.js'
 import { ValidationError } from '../../../errors/validationError.js'
 
 export class CreateSummaryNoteService extends BaseService {
-  static async call({ title, description, content, sourceType, sourceUrl, sourceKey, sourceFilename, status, tagIds, createdBy }) {
+  static async call({ title, description, content, markdownContent, sourceType, sourceUrl, sourceKey, sourceFilename, status, tagIds, createdBy }) {
     // Validate required fields
     if (!title) {
       throw new ValidationError('Title is required')
@@ -24,6 +24,7 @@ export class CreateSummaryNoteService extends BaseService {
           title,
           description: description || null,
           content,
+          markdown_content: markdownContent || null,
           source_type: sourceType || null,
           source_url: sourceUrl || null,
           source_key: sourceKey || null,

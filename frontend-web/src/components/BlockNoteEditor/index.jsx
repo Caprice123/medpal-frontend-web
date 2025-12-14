@@ -2,12 +2,14 @@ import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BlockNoteEditor as x } from "@blocknote/core"
+import { EditorContainer, EditorWrapper, ModeToggle, ModeButton } from './BlockNoteEditor.styles'
 
 
 
-function BlockNoteEditor({ initialContent, onChange, editable = true, placeholder }) {
+function BlockNoteEditor({ initialContent, onChange, editable = true, placeholder, showModeToggle = false }) {
+  const [viewMode, setViewMode] = useState('structured') // 'structured' or 'aesthetic'
   const editor = useCreateBlockNote({
     initialContent: initialContent || [
       {
@@ -78,17 +80,48 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
   }
 
   return (
-    <BlockNoteView
-      editor={editor}
-      theme="light"
-      editable={editable}
-      onKeyDown={(e) => {
-        // Prevent tab from leaving the editor
-        if (e.key === 'Tab') {
-          e.stopPropagation()
-        }
-      }}
-    />
+    <EditorContainer>
+      {showModeToggle && (
+        <ModeToggle>
+          <ModeButton
+            $active={viewMode === 'structured'}
+            onClick={() => setViewMode('structured')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            Structured
+          </ModeButton>
+          <ModeButton
+            $active={viewMode === 'aesthetic'}
+            onClick={() => setViewMode('aesthetic')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            Aesthetic
+          </ModeButton>
+        </ModeToggle>
+      )}
+
+      <EditorWrapper $isStructured={viewMode === 'structured'}>
+        <BlockNoteView
+          editor={editor}
+          theme={"black"}
+          editable={editable}
+          onKeyDown={(e) => {
+            // Prevent tab from leaving the editor
+            if (e.key === 'Tab') {
+              e.stopPropagation()
+            }
+          }}
+        />
+      </EditorWrapper>
+    </EditorContainer>
   )
 }
 

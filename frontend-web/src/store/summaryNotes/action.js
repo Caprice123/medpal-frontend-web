@@ -224,7 +224,7 @@ export const updateSummaryNotesConstants = (settings) => async (dispatch) => {
   try {
     const response = await putWithToken(
       Endpoints.summaryNotes.admin.list.replace('/summary-notes', '/constants'),
-      { constants: settings }
+      settings
     )
     return response.data
   } catch (err) {

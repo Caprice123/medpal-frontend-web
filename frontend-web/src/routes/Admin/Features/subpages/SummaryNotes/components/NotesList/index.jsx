@@ -9,17 +9,19 @@ import {
   NoteCard,
   NoteCardHeader,
   NoteCardTitle,
-  StatusBadge,
   NoteDescription,
   TagList,
   Tag,
   NoteStats,
   StatItem,
   StatLabel,
-  StatValue
+  StatValue,
+  CardActions,
+  EditButton,
+  DeleteButton
 } from './NotesList.styles'
 
-function NotesList({ onEdit, onCreateFirst }) {
+function NotesList({ onEdit, onDelete, onCreateFirst }) {
   const { adminNotes, loading } = useSelector((state) => state.summaryNotes)
 
   // Loading state
@@ -46,12 +48,9 @@ function NotesList({ onEdit, onCreateFirst }) {
   return (
     <NotesGrid>
       {adminNotes.map(note => (
-        <NoteCard key={note.id} onClick={() => onEdit(note)}>
+        <NoteCard key={note.id}>
           <NoteCardHeader>
             <NoteCardTitle>{note.title}</NoteCardTitle>
-            <StatusBadge published={note.status === 'published'}>
-              {note.status === 'published' ? 'Published' : 'Draft'}
-            </StatusBadge>
           </NoteCardHeader>
 
           <NoteDescription>
@@ -94,6 +93,18 @@ function NotesList({ onEdit, onCreateFirst }) {
               </StatValue>
             </StatItem>
           </NoteStats>
+
+          <CardActions>
+            <EditButton onClick={() => onEdit(note)}>
+              Edit
+            </EditButton>
+            <DeleteButton onClick={(e) => {
+              e.stopPropagation()
+              onDelete(note)
+            }}>
+              Delete
+            </DeleteButton>
+          </CardActions>
         </NoteCard>
       ))}
     </NotesGrid>

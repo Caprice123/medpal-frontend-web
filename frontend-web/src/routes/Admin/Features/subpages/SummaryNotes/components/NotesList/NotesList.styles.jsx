@@ -56,7 +56,6 @@ export const NoteCard = styled.div`
   border-radius: 8px;
   padding: 1.25rem;
   transition: all 0.2s;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
 
@@ -122,11 +121,13 @@ export const Tag = styled.span`
 
 export const NoteStats = styled.div`
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
   padding-top: 0.75rem;
   border-top: 1px solid #e5e7eb;
   font-size: 0.875rem;
   color: #6b7280;
+  margin-bottom: 0.75rem;
 `
 
 export const StatItem = styled.div`
@@ -146,4 +147,44 @@ export const StatValue = styled.span`
   font-size: 0.875rem;
   color: #374151;
   font-weight: 700;
+`
+
+export const CardActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+`
+
+export const EditButton = styled.button`
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #3b82f6;
+  background: white;
+  color: #3b82f6;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #eff6ff;
+  }
+`
+
+export const DeleteButton = styled.button`
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ef4444;
+  background: white;
+  color: #ef4444;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #fef2f2;
+  }
 `

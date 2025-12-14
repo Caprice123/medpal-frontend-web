@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { fetchSummaryNotesConstants, updateSummaryNotesConstants } from '@store/summaryNotes/action'
+import { useSelector } from 'react-redux'
+import Dropdown from '@components/common/Dropdown'
 import {
   Overlay,
   Modal,
@@ -14,89 +13,17 @@ import {
   Textarea,
   Select,
   HintText,
+  ToggleSwitch,
+  ToggleSlider,
   ModalFooter,
   Button,
   LoadingSpinner
 } from './SummaryNotesSettingsModal.styles'
+import { useFeatureSetting } from '../../hooks/subhooks/useFeatureSetting'
 
 function SummaryNotesSettingsModal({ isOpen, onClose }) {
-  const dispatch = useDispatch()
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [settings, setSettings] = useState({
-    summary_notes_feature_title: '',
-    summary_notes_feature_description: '',
-    summary_notes_generation_model: 'gemini-1.5-pro',
-    summary_notes_generation_prompt: '',
-    summary_notes_credit_cost: '5'
-  })
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchSettings()
-    }
-  }, [isOpen])
-
-  const fetchSettings = async () => {
-    setLoading(true)
-    try {
-      const keys = [
-        'summary_notes_feature_title',
-        'summary_notes_feature_description',
-        'summary_notes_generation_model',
-        'summary_notes_generation_prompt',
-        'summary_notes_credit_cost'
-      ]
-
-      const constants = await dispatch(fetchSummaryNotesConstants(keys))
-
-      setSettings(prevSettings => ({
-        ...prevSettings,
-        ...constants
-      }))
-    } catch (error) {
-      console.error('Failed to fetch settings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleChange = (key, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }))
-  }
-
-  const handleSave = async () => {
-    if (!settings.summary_notes_feature_title.trim()) {
-      alert('Judul fitur tidak boleh kosong')
-      return
-    }
-
-    if (!settings.summary_notes_generation_prompt.trim()) {
-      alert('Prompt tidak boleh kosong')
-      return
-    }
-
-    const creditCost = parseInt(settings.summary_notes_credit_cost)
-    if (isNaN(creditCost) || creditCost < 0) {
-      alert('Jumlah kredit harus berupa angka positif')
-      return
-    }
-
-    setSaving(true)
-    try {
-      await dispatch(updateSummaryNotesConstants(settings))
-      alert('Pengaturan berhasil disimpan!')
-      onClose()
-    } catch (error) {
-      console.error('Failed to save settings:', error)
-      alert('Gagal menyimpan pengaturan: ' + (error.message || 'Terjadi kesalahan'))
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { loading } = useSelector(state => state.summaryNotes)
+  const { form } = useFeatureSetting(onClose)
 
   return (
     <Overlay isOpen={isOpen} onClick={onClose}>
@@ -107,7 +34,7 @@ function SummaryNotesSettingsModal({ isOpen, onClose }) {
         </ModalHeader>
 
         <ModalBody>
-          {loading ? (
+          {loading.isConstantsLoading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <LoadingSpinner />
               <div style={{ marginTop: '1rem', color: '#6b7280' }}>Memuat pengaturan...</div>
@@ -115,73 +42,114 @@ function SummaryNotesSettingsModal({ isOpen, onClose }) {
           ) : (
             <>
               <FormGroup>
-                <Label>Judul Fitur *</Label>
+                <Label>Status Fitur</Label>
+                <ToggleSwitch>
+                  <input
+                    type="checkbox"
+                    checked={form.values.summary_notes_is_active}
+                    onChange={(e) => form.setFieldValue('summary_notes_is_active', e.target.checked)}
+                  />
+                  <ToggleSlider />
+                </ToggleSwitch>
+                <HintText>Aktifkan atau nonaktifkan fitur ringkasan materi</HintText>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Judul Fitur</Label>
                 <Input
                   type="text"
-                  placeholder="Contoh: Ringkasan Materi"
-                  value={settings.summary_notes_feature_title}
-                  onChange={(e) => handleChange('summary_notes_feature_title', e.target.value)}
+                  placeholder="Ringkasan Materi"
+                  value={form.values.summary_notes_feature_title}
+                  onChange={(e) => form.setFieldValue('summary_notes_feature_title', e.target.value)}
                 />
               </FormGroup>
 
               <FormGroup>
                 <Label>Deskripsi Fitur</Label>
-                <Textarea
-                  placeholder="Deskripsi singkat tentang fitur ini..."
-                  value={settings.summary_notes_feature_description}
-                  onChange={(e) => handleChange('summary_notes_feature_description', e.target.value)}
-                  style={{ minHeight: '80px' }}
+                <Input
+                  type="text"
+                  placeholder="Deskripsi singkat"
+                  value={form.values.summary_notes_feature_description}
+                  onChange={(e) => form.setFieldValue('summary_notes_feature_description', e.target.value)}
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label>Model Generasi *</Label>
-                <Select
-                  value={settings.summary_notes_generation_model}
-                  onChange={(e) => handleChange('summary_notes_generation_model', e.target.value)}
-                >
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro (Akurat)</option>
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash (Cepat)</option>
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash (Cepat)</option>
-                  <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Experimental)</option>
-                </Select>
+                <Label>Tipe Akses</Label>
+                <Dropdown
+                  options={[
+                    { value: 'free', label: 'Gratis' },
+                    { value: 'credits', label: 'Credits' },
+                    { value: 'subscription', label: 'Subscription' },
+                    { value: 'subscription_and_credits', label: 'Subscription & Credits' }
+                  ]}
+                  value={{
+                    value: form.values.summary_notes_access_type,
+                    label: form.values.summary_notes_access_type === 'free' ? 'Gratis' :
+                           form.values.summary_notes_access_type === 'credits' ? 'Credits' :
+                           form.values.summary_notes_access_type === 'subscription' ? 'Subscription' :
+                           'Subscription & Credits'
+                  }}
+                  onChange={(option) => form.setFieldValue('summary_notes_access_type', option.value)}
+                />
+              </FormGroup>
+
+              {(form.values.summary_notes_access_type === 'credits' || form.values.summary_notes_access_type === 'subscription_and_credits') && (
+                <FormGroup>
+                  <Label>Kredit per Akses</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={form.values.summary_notes_credit_cost}
+                    onChange={(e) => form.setFieldValue('summary_notes_credit_cost', e.target.value)}
+                  />
+                </FormGroup>
+              )}
+
+              <FormGroup>
+                <Label>Model Generasi</Label>
+                <Dropdown
+                  options={[
+                    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Akurat)' },
+                    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Cepat)' },
+                    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Cepat)' },
+                    { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)' }
+                  ]}
+                  value={{
+                    value: form.values.summary_notes_generation_model,
+                    label: form.values.summary_notes_generation_model === 'gemini-1.5-pro' ? 'Gemini 1.5 Pro (Akurat)' :
+                           form.values.summary_notes_generation_model === 'gemini-2.5-flash' ? 'Gemini 2.5 Flash (Cepat)' :
+                           form.values.summary_notes_generation_model === 'gemini-1.5-flash' ? 'Gemini 1.5 Flash (Cepat)' :
+                           'Gemini 2.0 Flash (Experimental)'
+                  }}
+                  onChange={(option) => form.setFieldValue('summary_notes_generation_model', option.value)}
+                />
                 <HintText>Model yang digunakan untuk generate ringkasan dari dokumen</HintText>
               </FormGroup>
 
               <FormGroup>
-                <Label>Prompt Generasi Ringkasan *</Label>
+                <Label>Prompt Generasi Ringkasan</Label>
                 <Textarea
                   placeholder="Masukkan prompt untuk generate ringkasan..."
-                  value={settings.summary_notes_generation_prompt}
-                  onChange={(e) => handleChange('summary_notes_generation_prompt', e.target.value)}
+                  value={form.values.summary_notes_generation_prompt}
+                  onChange={(e) => form.setFieldValue('summary_notes_generation_prompt', e.target.value)}
                   style={{ minHeight: '200px' }}
                 />
                 <HintText>
                   Prompt ini digunakan ketika admin mengupload dokumen untuk di-generate menjadi ringkasan
                 </HintText>
               </FormGroup>
-
-              <FormGroup>
-                <Label>Jumlah Kredit per Akses *</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="5"
-                  value={settings.summary_notes_credit_cost}
-                  onChange={(e) => handleChange('summary_notes_credit_cost', e.target.value)}
-                />
-                <HintText>Kredit yang akan dikurangi setiap kali user mengakses ringkasan</HintText>
-              </FormGroup>
             </>
           )}
         </ModalBody>
 
         <ModalFooter>
-          <Button onClick={onClose} disabled={saving}>
+          <Button onClick={onClose} disabled={loading.isUpdatingConstants}>
             Batal
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={loading || saving}>
-            {saving ? <LoadingSpinner /> : 'Simpan Pengaturan'}
+          <Button variant="primary" onClick={form.handleSubmit} disabled={loading.isUpdatingConstants}>
+            {loading.isUpdatingConstants ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </ModalFooter>
       </Modal>

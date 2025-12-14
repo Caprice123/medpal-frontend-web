@@ -12,7 +12,8 @@ import {
   TagList,
   Tag,
   CardActions,
-  CardActionButton
+  CardActionButton,
+  UpdatedText
 } from './NotesList.styles'
 import { generatePath, useNavigate } from 'react-router-dom'
 import { SummaryNotesRoute } from '../../../../routes'
@@ -70,6 +71,14 @@ function NotesList() {
               ))}
             </TagList>
           )}
+
+          <UpdatedText>
+            Terakhir diperbarui: {new Date(note.updatedAt).toLocaleDateString("id-ID", {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </UpdatedText>
 
           <div style={{flex: "1"}}></div>
 

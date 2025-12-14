@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchAdminSummaryNotes, fetchSummaryNoteDetail } from '@store/summaryNotes/action'
+import { fetchAdminSummaryNotes, fetchSummaryNoteDetail, deleteSummaryNote } from '@store/summaryNotes/action'
 import { actions } from '@store/summaryNotes/reducer'
 import { fetchTags } from '@store/tags/action'
 import CreateNoteModal from './components/CreateNoteModal'
@@ -19,6 +19,7 @@ import {
   ActionButton
 } from './SummaryNotes.styles'
 import { Filter } from './components/Filter'
+import { actions as tagActions } from "@store/tags/reducer"
 
 function SummaryNotes({ onBack }) {
   const dispatch = useDispatch()
@@ -32,6 +33,7 @@ function SummaryNotes({ onBack }) {
 
   useEffect(() => {
     dispatch(fetchAdminSummaryNotes({}, 1, 30))
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
     dispatch(fetchTags())
   }, [dispatch])
 
@@ -50,6 +52,19 @@ function SummaryNotes({ onBack }) {
       })
     } catch (error) {
       console.error('Failed to fetch note detail:', error)
+    }
+  }
+
+  const handleDeleteNote = async (note) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus "${note.title}"?`)) {
+      return
+    }
+
+    try {
+      await dispatch(deleteSummaryNote(note.id))
+      await dispatch(fetchAdminSummaryNotes({}, pagination.page, 30))
+    } catch (error) {
+      console.error('Failed to delete note:', error)
     }
   }
 
@@ -81,6 +96,7 @@ function SummaryNotes({ onBack }) {
 
       <NotesList
         onEdit={handleEditNote}
+        onDelete={handleDeleteNote}
         onCreateFirst={() => setUiState({ ...uiState, isModalOpen: true, mode: 'create' })}
       />
 

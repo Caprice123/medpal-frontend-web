@@ -8,6 +8,7 @@ import {
 } from '@store/summaryNotes/action'
 import { actions } from '@store/summaryNotes/reducer'
 import { markdownToBlocks } from '@utils/markdownToBlocks'
+import { blocksToMarkdown } from '@utils/blocksToMarkdown'
 
 const { clearGeneratedContent, setError, clearError } = actions
 
@@ -57,6 +58,9 @@ export const useUpdateNote = (onClose) => {
         // Stringify the blocks for storage
         const contentString = JSON.stringify(values.content)
 
+        // Convert blocks to markdown
+        const markdownContent = blocksToMarkdown(values.content)
+
         // Combine university and semester tags
         const allTags = [...values.universityTags, ...values.semesterTags]
 
@@ -64,6 +68,7 @@ export const useUpdateNote = (onClose) => {
           title: values.title.trim(),
           description: values.description.trim(),
           content: contentString,
+          markdownContent: markdownContent,
           status: apiStatus,
           isActive: isActive,
           tagIds: allTags.map(t => t.id),
@@ -116,9 +121,9 @@ export const useUpdateNote = (onClose) => {
         }
       }
 
-      // Separate tags into university and semester
-      const universityTags = selectedNote.tags?.filter(t => t.tag_group?.name === 'university') || []
-      const semesterTags = selectedNote.tags?.filter(t => t.tag_group?.name === 'semester') || []
+      // Backend already separates tags - just use them directly
+      const universityTags = selectedNote.universityTags || []
+      const semesterTags = selectedNote.semesterTags || []
 
       form.setValues({
         title: selectedNote.title || '',
