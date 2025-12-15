@@ -95,7 +95,7 @@ const DeckList = ({ sessionId }) => {
           </FilterGroup>
         </FilterSection>
 
-        {loading?.isDecksLoading ? (
+        {loading?.isGetListDecksLoading ? (
           <LoadingContainer>
             <LoadingSpinner />
             <div style={{ marginTop: '1rem', color: '#6b7280' }}>

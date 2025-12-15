@@ -33,6 +33,7 @@ const Alert = () => {
                 pauseOnFocusLoss: false,
                 closeOnClick: true,
                 draggable: true,
+                hideProgressBar: false,
                 theme: "colored",
                 onOpen: () => dispatch(actions.resetError())
             })

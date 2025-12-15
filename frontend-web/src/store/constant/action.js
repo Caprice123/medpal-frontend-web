@@ -28,7 +28,7 @@ export const fetchConstants = () => async (dispatch, getState) => {
   }
 }
 
-export const updateCalculatorConstants = (constants) => async (dispatch) => {
+export const updateConstants = (constants) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdateConstantLoading', value: true }))
     

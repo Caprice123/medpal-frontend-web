@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   statistics: {
@@ -31,7 +32,14 @@ const statisticSlice = createSlice({
     clearError: (state) => {
       state.error = null
     }
-  }
+  },
+  
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export const { actions } = statisticSlice

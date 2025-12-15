@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   users: [],
@@ -43,7 +44,14 @@ const usersSlice = createSlice({
         state.pagination.currentPage = 1
         Object.assign(state.filter, { [payload.key]: payload.value })
     },
-  }
+  },
+  
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export const actions = usersSlice.actions

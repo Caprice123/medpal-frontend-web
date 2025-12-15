@@ -2,10 +2,6 @@ import { ValidationError } from '../../../errors/validationError.js';
 import authService from '../../../services/auth.service.js';
 
 class AuthController {
-  /**
-   * Login user with Google OAuth
-   * POST /api/auth/login
-   */
   async login(req, res) {
     const { googleToken } = req.body;
 
@@ -35,10 +31,6 @@ class AuthController {
     });
   }
 
-  /**
-   * Logout user
-   * POST /api/auth/logout
-   */
   async logout(req, res) {
     const token = req.headers.authorization?.replace('Bearer ', '');
 

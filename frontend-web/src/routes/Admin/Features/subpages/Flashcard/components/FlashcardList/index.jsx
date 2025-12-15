@@ -1,0 +1,128 @@
+import { useSelector } from 'react-redux'
+import {
+  LoadingOverlay,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateText,
+  ActionButton,
+  QuizzesGrid,
+  QuizCard,
+  QuizCardHeader,
+  QuizCardTitle,
+  StatusBadge,
+  QuizImageContainer,
+  QuizImage,
+  QuizDescription,
+  QuizStats,
+  StatItem,
+  StatLabel,
+  StatValue,
+  CardActions,
+  CardActionButton,
+  TagList,
+  Tag
+} from './FlashcardList.styles'
+
+function FlashcardList({ onEdit, onDelete, onCreateFirst }) { 
+  const { decks, loading } = useSelector((state) => state.flashcard)
+
+  // Loading state
+  if (loading?.isGetListDecksLoading) {
+    return <LoadingOverlay>Loading flashcards...</LoadingOverlay>
+  }
+
+  // Empty state
+  if (decks.length === 0) {
+    return (
+      <EmptyState>
+        <EmptyStateIcon>📋</EmptyStateIcon>
+        <EmptyStateText>No flashcards found</EmptyStateText>
+        {onCreateFirst && (
+          <ActionButton onClick={onCreateFirst}>
+            Create Your First Quiz
+          </ActionButton>
+        )}
+      </EmptyState>
+    )
+  }
+
+  // Data state - render quiz grid
+  return (
+    <QuizzesGrid>
+      {decks.map(quiz => (
+        <QuizCard key={quiz.id}>
+          <QuizCardHeader>
+            <QuizCardTitle>{quiz.title}</QuizCardTitle>
+            <StatusBadge published={quiz.status === 'published'}>
+              {quiz.status === 'published' ? 'Published' : 'Draft'}
+            </StatusBadge>
+          </QuizCardHeader>
+
+          {/* <QuizImageContainer>
+            {quiz.image_url ? (
+              <QuizImage src={quiz.image_url} alt={quiz.title} />
+            ) : (
+              <span style={{ color: '#9ca3af' }}>No Image</span>
+            )}
+          </QuizImageContainer> */}
+
+          <QuizDescription>
+            {quiz.description || 'Tidak ada deskripsi'}
+          </QuizDescription>
+
+          {/* University Tags */}
+          {quiz.universityTags && quiz.universityTags.length > 0 && (
+            <TagList>
+              {quiz.universityTags.map((tag) => (
+                <Tag key={tag.id} university>
+                  🏛️ {tag.name}
+                </Tag>
+              ))}
+            </TagList>
+          )}
+
+          {/* Semester Tags */}
+          {quiz.semesterTags && quiz.semesterTags.length > 0 && (
+            <TagList>
+              {quiz.semesterTags.map((tag) => (
+                <Tag key={tag.id} semester>
+                  📚 {tag.name}
+                </Tag>
+              ))}
+            </TagList>
+          )}
+
+          <div style={{flex: "1"}}></div>
+
+          <QuizStats>
+            <StatItem>
+              <StatLabel>Kartu</StatLabel>
+              <StatValue>{quiz.questionCount || 0}</StatValue>
+            </StatItem>
+            <StatItem>
+              <StatLabel>Created</StatLabel>
+              <StatValue>
+                {new Date(quiz.createdAt).toLocaleDateString("id-ID")}
+              </StatValue>
+            </StatItem>
+          </QuizStats>
+
+          <CardActions>
+            <CardActionButton onClick={() => onEdit(quiz)}>
+              Edit
+            </CardActionButton>
+            <CardActionButton
+              danger
+              onClick={() => onDelete(quiz.id)}
+              disabled={loading?.isDeletingQuiz}
+            >
+              Delete
+            </CardActionButton>
+          </CardActions>
+        </QuizCard>
+      ))}
+    </QuizzesGrid>
+  )
+}
+
+export default FlashcardList

@@ -7,85 +7,82 @@ const {
   setLoading,
   setDetail,
   setTopics,
-  setSelectedTopic,
-  setError,
-  clearError,
-  addTopic,
-  updateTopic,
-  removeTopic
 } = actions
 
 // Fetch all calculator topics (admin)
-export const fetchAdminCalculatorTopics = () => async (dispatch) => {
+export const fetchAdminCalculatorTopics = () => async (dispatch, getState) => {
   try {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: true }))
+    dispatch(setLoading({ key: 'isGetListCalculatorsLoading', value: true }))
     
-    const response = await getWithToken(Endpoints.calculators.admin.list)
+    const { filter } = getState().calculator
+
+    const requestQuery = {}
+    if (filter.name) requestQuery.name = filter.name
+    if (filter.tagName) requestQuery.tagName = filter.tagName
+    
+    const route = Endpoints.api.calculators + "/topics"
+    const response = await getWithToken(route, requestQuery)
     dispatch(setTopics(response.data.data || response.data || []))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: false }))
+    dispatch(setLoading({ key: 'isGetListCalculatorsLoading', value: false }))
   }
 }
 
 // Fetch single calculator topic
 export const fetchAdminCalculatorTopic = (topicId) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: true }))
+    dispatch(setLoading({ key: 'isGetDetailCalculatorLoading', value: true }))
     
     const response = await getWithToken(Endpoints.calculators.admin.detail(topicId))
     const topic = response.data.data || response.data
-    dispatch(setSelectedTopic(topic))
+    dispatch(setDetail(topic))
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: false }))
+    dispatch(setLoading({ key: 'isGetDetailCalculatorLoading', value: false }))
   }
 }
 
 // Create calculator topic
 export const createCalculatorTopic = (data, onSuccess) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isCreatingTopic', value: true }))
+    dispatch(setLoading({ key: 'isCreateCalculatorLoading', value: true }))
     
     await postWithToken(Endpoints.calculators.admin.create, data)
     if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isCreatingTopic', value: false }))
+    dispatch(setLoading({ key: 'isCreateCalculatorLoading', value: false }))
   }
 }
 
 // Update calculator topic
 export const updateCalculatorTopic = (topicId, data) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isUpdatingTopic', value: true }))
+    dispatch(setLoading({ key: 'isUpdateCalculatorLoading', value: true }))
     
-    const response = await putWithToken(Endpoints.calculators.admin.update(topicId), data)
-    const topic = response.data.data || response.data
-    dispatch(updateTopic(topic))
-    return topic
+    await putWithToken(Endpoints.calculators.admin.update(topicId), data)
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isUpdatingTopic', value: false }))
+    dispatch(setLoading({ key: 'isUpdateCalculatorLoading', value: false }))
   }
 }
 
 // Delete calculator topic
 export const deleteCalculatorTopic = (topicId) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isDeletingTopic', value: true }))
+    dispatch(setLoading({ key: 'isDeleteCalculatorLoading', value: true }))
     
     await deleteWithToken(Endpoints.calculators.admin.delete(topicId))
-    dispatch(removeTopic(topicId))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isDeletingTopic', value: false }))
+    dispatch(setLoading({ key: 'isDeleteCalculatorLoading', value: false }))
   }
 }
 
@@ -133,7 +130,7 @@ export const updateCalculatorConstants = (constants) => async (dispatch) => {
 
 export const getCalculatorTopics = () => async (dispatch, getState) => {
   try {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: true }))
+    dispatch(setLoading({ key: 'isGetListCalculatorsLoading', value: true }))
     
     const { filter } = getState().calculator
     const requestQuery = {
@@ -146,13 +143,13 @@ export const getCalculatorTopics = () => async (dispatch, getState) => {
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isTopicsLoading', value: false }))
+    dispatch(setLoading({ key: 'isGetListCalculatorsLoading', value: false }))
   }
 }
 
 export const getCalculatorTopicDetail = (id) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isTopicDetailLoading', value: true }))
+    dispatch(setLoading({ key: 'isGetDetailCalculatorLoading', value: true }))
     
     const route = Endpoints.api.calculators + `/topics/${id}`
     const response = await getWithToken(route)
@@ -160,13 +157,13 @@ export const getCalculatorTopicDetail = (id) => async (dispatch) => {
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
-    dispatch(setLoading({ key: 'isTopicDetailLoading', value: false }))
+    dispatch(setLoading({ key: 'isGetDetailCalculatorLoading', value: false }))
   }
 }
 
 export const calculateResult = (id, inputs) => async (dispatch) => {
     try {
-        dispatch(setLoading({ key: 'isCalculateLoading', value: true }))
+        dispatch(setLoading({ key: 'isCalculateResultLoading', value: true }))
         
         const subRoute = `/${id}/calculate`
         const route = Endpoints.api.calculators + subRoute
@@ -175,6 +172,6 @@ export const calculateResult = (id, inputs) => async (dispatch) => {
     } catch (err) {
         handleApiError(err, dispatch)
     } finally {
-        dispatch(setLoading({ key: 'isCalculateLoading', value: false }))
+        dispatch(setLoading({ key: 'isCalculateResultLoading', value: false }))
     }
 }

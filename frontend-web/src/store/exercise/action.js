@@ -17,8 +17,6 @@ const {
   updateTopic,
   removeTopic,
   addQuestion,
-  updateQuestion,
-  removeQuestion,
   clearGeneratedQuestions,
   clearSelectedTopic
 } = actions

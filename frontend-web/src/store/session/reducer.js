@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   // Current active session
@@ -93,7 +94,14 @@ const sessionSlice = createSlice({
     clearError: (state) => {
       state.error = null
     }
-  }
+  },
+  
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export const { actions } = sessionSlice

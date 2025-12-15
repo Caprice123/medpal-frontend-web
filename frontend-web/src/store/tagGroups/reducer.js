@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   tagGroups: [],
@@ -22,7 +23,14 @@ const tagsSlice = createSlice({
     setTagGroups: (state, action) => {
       state.tagGroups = action.payload
     },
-  }
+  },
+  
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export const actions = tagsSlice.actions

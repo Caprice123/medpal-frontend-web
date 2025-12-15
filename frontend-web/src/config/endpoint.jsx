@@ -19,9 +19,11 @@ export default {
     // },
     admin: {
         constants: "/admin/v1/constants",
+        flashcards: "/admin/v1/flashcards",
     },
     api: {
-        calculators: "/api/v1/calculators"
+        calculators: "/api/v1/calculators",
+        flashcards: "/admin/v1/flashcards",
     },
     tagGroups: "/admin/v1/tag-groups",
     users: "/admin/v1/users",

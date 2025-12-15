@@ -27,6 +27,7 @@ export class GetCalculatorTopicsService extends BaseService {
                 }
             }
         }
+        console.log(where)
 
         const topics = await prisma.calculator_topics.findMany({
             where,

@@ -32,6 +32,13 @@ export class UpdateFlashcardCardsService extends BaseService {
                 }))
             })
 
+            await tx.flashcard_decks.update({
+                where: { id: parseInt(deckId) },
+                data: {
+                    flashcard_count: cards.length,
+                }
+            })
+
             // Fetch and return updated deck
             return await tx.flashcard_decks.findUnique({
                 where: { id: parseInt(deckId) },

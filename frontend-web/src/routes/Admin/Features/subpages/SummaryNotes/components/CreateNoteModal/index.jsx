@@ -77,7 +77,7 @@ const CreateNoteModal = ({ onClose }) => {
     <Modal
       isOpen={true}
       onClose={handleModalClose}
-      title="Buat Ringkasan Baru"
+      title="Feature Setting"
       size="large"
       footer={
         <>

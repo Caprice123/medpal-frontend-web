@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   plans: [],
@@ -51,7 +52,14 @@ const { reducer, actions } = createSlice({
     addPurchase: (state, { payload }) => {
       state.purchaseHistory = [payload, ...state.purchaseHistory]
     }
-  }
+  },
+  
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export { actions }

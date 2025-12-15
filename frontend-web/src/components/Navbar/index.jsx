@@ -79,7 +79,7 @@ export const Navbar = () => {
               )}
               <StatusItem>
                 <span>💎</span>
-                <span>{userStatus?.creditBalance ?? balance}</span>
+                <span>{balance}</span>
               </StatusItem>
             </StatusSection>
             {user && (

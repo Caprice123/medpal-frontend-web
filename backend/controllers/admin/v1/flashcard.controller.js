@@ -6,59 +6,17 @@ import { UpdateFlashcardCardsService } from '../../../services/flashcard/admin/u
 import idriveService from '../../../services/idrive.service.js'
 
 class FlashcardController {
-  async generateCards(req, res) {
-    const { content, type, cardCount = 10 } = req.body
+    
+  async index(req, res) {
+    const { university, semester } = req.query
 
-    const cards = await GenerateFlashcardService.call({ content, type, cardCount })
+    const decks = await GetFlashcardDecksService.call({ university, semester })
 
     return res.status(200).json({
-      data: cards
+      data: decks
     })
   }
 
-  /**
-   * Generate flashcards from uploaded PDF (preview mode)
-   * POST /admin/v1/flashcards/generate-from-pdf
-   */
-  async generateCardsFromPDF(req, res) {
-    const { cardCount = 10 } = req.body
-
-    // Check if file was uploaded
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'PDF file is required'
-      })
-    }
-
-    // Upload PDF to iDrive E2 cloud storage
-    const uploadResult = await idriveService.uploadFlashcardPDF(
-      req.file.path,
-      req.file.originalname.replace('.pdf', '')
-    )
-
-    // Generate flashcards from the uploaded PDF
-    const cards = await GenerateFlashcardService.call({
-      pdfFilePath: req.file.path,
-      type: 'pdf',
-      cardCount: parseInt(cardCount) || 10
-    })
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        cards: cards,
-        pdf_url: uploadResult.url,
-        pdf_key: uploadResult.key,
-        pdf_filename: uploadResult.fileName
-      }
-    })
-  }
-
-  /**
-   * Create flashcard deck
-   * POST /admin/v1/flashcards/decks
-   */
   async create(req, res) {
     const {
       title,
@@ -86,46 +44,20 @@ class FlashcardController {
     })
 
     return res.status(201).json({
-      success: true,
       data: deck,
-      message: 'Deck created successfully'
     })
   }
-
-  /**
-   * Get all decks with optional filters
-   * GET /admin/v1/flashcards/decks
-   */
-  async index(req, res) {
-    const { university, semester } = req.query
-
-    const decks = await GetFlashcardDecksService.call({ university, semester })
-
-    return res.status(200).json({
-      success: true,
-      data: decks
-    })
-  }
-
-  /**
-   * Get single deck detail with cards
-   * GET /admin/v1/flashcards/decks/:id
-   */
+  
   async show(req, res) {
     const { id } = req.params
 
     const deck = await GetFlashcardDeckDetailService.call(id)
 
     return res.status(200).json({
-      success: true,
       data: deck
     })
   }
 
-  /**
-   * Update deck cards
-   * PUT /admin/v1/flashcards/decks/:id
-   */
   async update(req, res) {
     const { id } = req.params
     const { cards } = req.body
@@ -133,8 +65,51 @@ class FlashcardController {
     const updatedDeck = await UpdateFlashcardCardsService.call(id, cards)
 
     return res.status(200).json({
-      success: true,
       data: updatedDeck
+    })
+  }
+
+  async generateCards(req, res) {
+    const { content, type, cardCount = 10 } = req.body
+
+    const cards = await GenerateFlashcardService.call({ content, type, cardCount })
+
+    return res.status(200).json({
+      data: cards
+    })
+  }
+
+  async generateCardsFromPDF(req, res) {
+    const { cardCount = 10 } = req.body
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'PDF file is required'
+      })
+    }
+
+    // Upload PDF to iDrive E2 cloud storage
+    const uploadResult = await idriveService.uploadFlashcardPDF(
+      req.file.path,
+      req.file.originalname.replace('.pdf', '')
+    )
+
+    // Generate flashcards from the uploaded PDF
+    const cards = await GenerateFlashcardService.call({
+      pdfFilePath: req.file.path,
+      type: 'pdf',
+      cardCount: parseInt(cardCount) || 10
+    })
+
+    return res.status(200).json({
+      data: {
+        cards: cards,
+        pdf_url: uploadResult.url,
+        pdf_key: uploadResult.key,
+        pdf_filename: uploadResult.fileName
+      }
     })
   }
 }

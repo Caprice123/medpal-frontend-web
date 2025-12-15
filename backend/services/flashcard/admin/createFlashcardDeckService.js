@@ -17,6 +17,7 @@ export class CreateFlashcardDeckService extends BaseService {
                 pdf_url: content_type === 'pdf' ? pdf_url : null,
                 pdf_key: content_type === 'pdf' ? pdf_key : null,
                 pdf_filename: content_type === 'pdf' ? pdf_filename : null,
+                flashcard_count: cards.length,
                 status: 'ready',
                 created_by: created_by,
                 flashcard_cards: {
@@ -57,9 +58,10 @@ export class CreateFlashcardDeckService extends BaseService {
             throw new ValidationError('Content type must be either "text" or "pdf"')
         }
 
-        if (content_type === 'text' && !content) {
-            throw new ValidationError('Content is required for text type')
-        }
+        // Content validation is optional for flashcards since they use individual cards
+        // if (content_type === 'text' && !content) {
+        //     throw new ValidationError('Content is required for text type')
+        // }
 
         if (!tags || tags.length === 0) {
             throw new ValidationError('At least one tag is required')

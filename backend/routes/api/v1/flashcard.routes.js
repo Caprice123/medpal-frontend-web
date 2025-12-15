@@ -9,7 +9,7 @@ const router = express.Router()
 router.use(authenticateToken)
 
 // Deck endpoints (for regular users)
-router.get('/decks', asyncHandler(flashcardController.getDecks.bind(flashcardController)))
+router.get('/', asyncHandler(flashcardController.getDecks.bind(flashcardController)))
 
 // Start flashcard deck (no session required)
 router.post('/start', asyncHandler(flashcardController.startDeck.bind(flashcardController)))

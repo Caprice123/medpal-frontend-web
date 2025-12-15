@@ -11,7 +11,6 @@ class ConstantController {
     const constants = await GetConstantsService.call(keyArray)
 
     return res.status(200).json({
-      success: true,
       data: constants
     })
   }
@@ -20,9 +19,9 @@ class ConstantController {
     const constants = await UpdateConstantsService.call(req.body)
 
     return res.status(200).json({
-      success: true,
-      data: constants,
-      message: 'Constants updated successfully'
+        data: {
+            success: true,
+        }
     })
   }
 }

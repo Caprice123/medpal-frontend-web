@@ -14,7 +14,11 @@ export class GetFlashcardDeckDetailService extends BaseService {
                 },
                 flashcard_deck_tags: {
                     include: {
-                        tags: true
+                        tags: {
+                            include: {
+                                tag_group: true
+                            }
+                        }
                     }
                 }
             }
@@ -24,13 +28,17 @@ export class GetFlashcardDeckDetailService extends BaseService {
             throw new ValidationError('Deck not found')
         }
 
-        // Transform tags to simpler format
+        // Transform tags to include tag_group info
         const transformedDeck = {
             ...deck,
             tags: deck.flashcard_deck_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,
-                type: t.tags.type
+                type: t.tags.type,
+                tag_group: {
+                    id: t.tags.tag_group?.id,
+                    name: t.tags.tag_group?.name
+                }
             }))
         }
 

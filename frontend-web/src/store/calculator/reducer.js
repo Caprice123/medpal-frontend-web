@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   topics: [],
@@ -7,12 +8,13 @@ const initialState = {
     tagName: undefined
   },
   detail: undefined,
-  selectedTopic: null,
   loading: {
-    isTopicsLoading: false,
-    isCreatingTopic: false,
-    isUpdatingTopic: false,
-    isDeletingTopic: false
+    isGetListCalculatorsLoading: false,
+    isGetDetailCalculatorLoading: false,
+    isCreateCalculatorLoading: false,
+    isUpdateCalculatorLoading: false,
+    isDeleteCalculatorLoading: false,
+    isCalculateResultLoading: false,
   },
   error: null
 }
@@ -30,31 +32,17 @@ const { reducer, actions } = createSlice({
     setTopics: (state, { payload }) => {
       state.topics = payload
     },
-    setSelectedTopic: (state, { payload }) => {
-      state.selectedTopic = payload
-    },
-    setError: (state, { payload }) => {
-      state.error = payload
-    },
-    clearError: (state) => {
-      state.error = null
-    },
-    addTopic: (state, { payload }) => {
-      state.topics.push(payload)
-    },
-    updateTopic: (state, { payload }) => {
-      const index = state.topics.findIndex(t => t.id === payload.id)
-      if (index !== -1) {
-        state.topics[index] = payload
-      }
-    },
-    removeTopic: (state, { payload }) => {
-      state.topics = state.topics.filter(t => t.id !== payload)
-    },
     updateFilter: (state, { payload: { key, value } }) => {
       state.filter[key] = value
     }
-  }
+  },
+
+    extraReducers: (builder) => {
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
+    },
 })
 
 export { actions }

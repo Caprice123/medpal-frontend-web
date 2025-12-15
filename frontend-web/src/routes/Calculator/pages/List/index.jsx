@@ -42,7 +42,7 @@ function CalculatorPage() {
         <Content>
           <Filter />
 
-          {loading.isTopicsLoading ? (
+          {loading.isGetListCalculatorsLoading ? (
             <EmptyState>
               <LoadingSpinner style={{ margin: '0 auto' }} />
               <p>Loading calculators...</p>

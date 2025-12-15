@@ -15,10 +15,13 @@ import pricing from "./pricing/reducer";
 import summaryNotes from "./summaryNotes";
 import user from "./user";
 import anatomy from "./anatomy";
+import mcq from "./mcq";
+import constant from "./constant";
 
 export const rootReducer = combineReducers({
     auth,
     calculator,
+    constant,
     common,
     credit,
     exercise,
@@ -32,6 +35,7 @@ export const rootReducer = combineReducers({
     summaryNotes,
     user,
     anatomy,
+    mcq,
 })
 
 export const store = configureStore({

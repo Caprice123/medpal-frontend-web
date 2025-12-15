@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { resetAllState } from '../globalAction'
 
 const initialState = {
   quizzes: [],
@@ -57,10 +58,10 @@ const { reducer, actions } = createSlice({
       state.uploadedImage = payload
     },
     setFilters: (state, { payload }) => {
-      state.filters = { ...state.filters, ...payload }
+      state.filter = { ...state.filter, ...payload }
     },
     clearFilters: (state) => {
-      state.filters = {
+      state.filter = {
         university: '',
         semester: '',
         status: ''
@@ -122,7 +123,13 @@ const { reducer, actions } = createSlice({
     setPage: (state, { payload }) => {
       state.pagination.page = payload
     }
-  }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetAllState, (state) => ({
+        ...initialState,
+        loading: state.loading, // 🔥 preserve current loading state
+    }));
+  },
 })
 
 export { actions }

@@ -66,7 +66,7 @@ function Calculator({ onBack }) {
 
       <Filter />
 
-      {loading.isTopicsLoading ? (
+      {loading.isGetListCalculatorsLoading ? (
         <EmptyState>
           <h3>Loading...</h3>
           <p>Memuat data kalkulator...</p>

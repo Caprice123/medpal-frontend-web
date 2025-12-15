@@ -513,7 +513,7 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
     errors,
     draggedIndex,
     showConfirmClose,
-    loading: loading.isCreatingTopic || loading.isUpdatingTopic,
+    loading: loading.isCreateCalculatorLoading || loading.isUpdateCalculatorLoading,
     // Clinical References
     newReference,
     setNewReference,
