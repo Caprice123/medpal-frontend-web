@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchFlashcardDecks } from '@store/flashcard/action'
 import { fetchCreditBalance } from '@store/credit/action'
 import { startFlashcardDeck, submitFlashcardProgress, clearSession } from '@store/session/action'
-import DeckList from './components/DeckList'
+import FlashcardListPage from './pages/List'
 import FlashcardPlayer from './components/FlashcardPlayer'
 import {
   PageContainer,
@@ -16,7 +16,7 @@ import { actions as tagActions } from '@store/tags/reducer'
 function FlashcardPage() {
   const dispatch = useDispatch()
 
-  const { decks, loading } = useSelector(state => state.flashcard)
+  const { loading } = useSelector(state => state.flashcard)
   const { topicSnapshot } = useSelector(state => state.session)
   const [currentDeckId, setCurrentDeckId] = useState(null)
   const [isStarting, setIsStarting] = useState(false)
@@ -112,8 +112,7 @@ function FlashcardPage() {
   // Show deck selection
   return (
     <PageContainer>
-      <DeckList
-        decks={decks}
+      <FlashcardListPage
         onSelectDeck={handleStartDeck}
       />
     </PageContainer>

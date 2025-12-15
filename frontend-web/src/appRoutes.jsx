@@ -3,7 +3,6 @@ import Home from '@routes/Home';
 import Dashboard from '@routes/Dashboard';
 import AdminPanel from '@routes/Admin/AdminPanel';
 import SessionDetail from '@routes/SessionDetail';
-import FlashcardPage from '@routes/Flashcard';
 import ExercisePage from '@routes/Exercise';
 import UITest from '@routes/UITest';
 import EditorTest from '@routes/EditorTest';
@@ -13,6 +12,7 @@ import { calculatorRoutes } from './routes/Calculator/routes';
 import { anatomyQuizRoutes } from './routes/AnatomyQuiz/routes';
 import { summaryNotesRoutes } from './routes/SummaryNotes/routes';
 import { multipleChoiceRoutes } from './routes/MultipleChoice/routes';
+import { flashcardRoutes } from './routes/Flashcard/routes';
 
 const appRoutes = [
     { path: '/', element: <Home /> },
@@ -31,13 +31,6 @@ const appRoutes = [
                 )
             },
             {
-                path: '/flashcards',
-                element: (
-                        <FlashcardPage />
-                    
-                )
-            },
-            {
                 path: '/exercises',
                 element: (
                         <ExercisePage />
@@ -48,6 +41,7 @@ const appRoutes = [
             ...calculatorRoutes,
             ...summaryNotesRoutes,
             ...multipleChoiceRoutes,
+            ...flashcardRoutes,
             {
                 path: '/admin',
                 element: (

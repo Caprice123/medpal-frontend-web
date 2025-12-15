@@ -3,9 +3,9 @@ import TextInput from '@components/common/TextInput'
 import Dropdown from '@components/common/Dropdown'
 import Button from '@components/common/Button'
 import { useDispatch, useSelector } from 'react-redux'
-import { actions } from '@store/summaryNotes/reducer'
+import { actions } from '@store/flashcard/reducer'
 import { useMemo } from 'react'
-import { fetchAdminSummaryNotes } from '@store/summaryNotes/action'
+import { fetchFlashcardDecks } from '@store/flashcard/action'
 
 export const Filter = () => {
   const dispatch = useDispatch()
@@ -13,21 +13,16 @@ export const Filter = () => {
   const { tags } = useSelector(state => state.tags)
 
   const onSearch = () => {
-    dispatch(fetchAdminSummaryNotes())
+    dispatch(fetchFlashcardDecks())
   }
 
   const universityTags = useMemo(() => {
-    return tags?.find(tag => tag.name === "university")?.tags?.map((tag) => ({ label: tag.name, value: tag.name })) || []
+    return tags?.find(tag => tag.name === "university")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
   }, [tags])
 
   const semesterTags = useMemo(() => {
-    return tags?.find(tag => tag.name === "semester")?.tags?.map((tag) => ({ label: tag.name, value: tag.name })) || []
+    return tags?.find(tag => tag.name === "semester")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
   }, [tags])
-
-  const statusOptions = [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' }
-  ]
 
   const onChangeFilter = (key, value) => {
     dispatch(actions.updateFilter({ key: key, value: value })) 
@@ -79,16 +74,6 @@ export const Filter = () => {
               value={filters.semester ? semesterTags.find(t => t.value === filters.semester) : null}
               onChange={(option) => onChangeFilter("semester", option?.value || "")}
               placeholder="Filter berdasarkan semester..."
-            />
-          </FilterComponent.Group>
-
-          <FilterComponent.Group>
-            <FilterComponent.Label>Status</FilterComponent.Label>
-            <Dropdown
-              options={statusOptions}
-              value={filters.status ? statusOptions.find(t => t.value === filters.status) : null}
-              onChange={(option) => onChangeFilter("status", option?.value || "")}
-              placeholder="Filter berdasarkan status..."
             />
           </FilterComponent.Group>
         </FilterComponent>

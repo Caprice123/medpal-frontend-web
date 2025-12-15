@@ -14,10 +14,11 @@ const {
 /**
  * Fetch all flashcard decks (user endpoint)
  */
-export const fetchFlashcardDecks = (filters = {}) => async (dispatch) => {
+export const fetchFlashcardDecks = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetListDecksLoading', value: true }))
 
+    const { filters } = getState().flashcard
     const queryParams = {}
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
