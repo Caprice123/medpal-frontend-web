@@ -71,9 +71,9 @@ const UpdateQuizModal = ({ onClose }) => {
             <Button
               variant="primary"
               onClick={form.handleSubmit}
-              disabled={loading.isCreatingQuiz || loading.isUpdatingQuiz}
+              disabled={loading.isCreateAnatomyQuizLoading || loading.isUpdateAnatomyQuizLoading}
             >
-              {(loading.isCreatingQuiz || loading.isUpdatingQuiz)
+              {(loading.isCreateAnatomyQuizLoading || loading.isUpdateAnatomyQuizLoading)
                 ? 'Updating...'
                 : 'Update Quiz'}
             </Button>

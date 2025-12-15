@@ -1,7 +1,7 @@
 import { useFormik } from "formik"
 import { uploadImageSchema } from "../../validationSchema/uploadImageSchema"
 import { useDispatch } from "react-redux"
-import { uploadAnatomyImage } from "@store/anatomy/action"
+import { uploadAnatomyImage } from '@store/anatomy/adminAction'
 
 export const useUploadAttachment = (onSuccess) => {
     const dispatch = useDispatch()

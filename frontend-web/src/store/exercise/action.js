@@ -375,7 +375,7 @@ export const startExerciseTopic = (topicId) => async (dispatch) => {
  */
 export const submitExerciseProgress = (topicId, answers) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isSubmittingExercise', value: true }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingExercise', value: true }))
     dispatch(clearError())
 
     const response = await postWithToken(Endpoints.exercises.submit, {
@@ -388,6 +388,6 @@ export const submitExerciseProgress = (topicId, answers) => async (dispatch) => 
     handleApiError(err, dispatch)
     throw err
   } finally {
-    dispatch(setLoading({ key: 'isSubmittingExercise', value: false }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingExercise', value: false }))
   }
 }

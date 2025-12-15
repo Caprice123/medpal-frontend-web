@@ -286,10 +286,10 @@ const Detail = () => {
                     <Button
                       variant="primary"
                       onClick={handleQuizSubmit}
-                      disabled={!allQuestionsAnswered || loading.isSubmitting}
+                      disabled={!allQuestionsAnswered || loading.isSubmitAnatomyQuizLoading}
                       style={{ flex: 1, padding: '1rem' }}
                     >
-                      {loading.isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'}
+                      {loading.isSubmitAnatomyQuizLoading ? 'Mengirim...' : 'Kirim Jawaban'}
                     </Button>
                   )}
                 </div>

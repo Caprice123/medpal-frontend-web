@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useAnatomyQuizSection } from './hooks/useAnatomyQuizSection'
 import { actions } from '@store/anatomy/reducer'
-import { fetchAdminAnatomyQuizzes, fetchAdminAnatomyQuiz } from '@store/anatomy/action'
+import { fetchAdminAnatomyQuizzes, fetchAdminAnatomyQuiz } from '@store/anatomy/adminAction'
 import CreateQuizModal from './components/CreateQuizModal'
 import AnatomySettingsModal from './components/AnatomySettingsModal'
 import QuizList from './components/QuizList'
@@ -78,7 +78,7 @@ function AnatomyQuiz({ onBack }) {
         currentPage={pagination.page}
         isLastPage={pagination.isLastPage}
         onPageChange={handlePageChange}
-        isLoading={loading.isQuizzesLoading}
+        isLoading={loading.isGetListAnatomyQuizLoading}
         variant="admin"
         language="id"
       />

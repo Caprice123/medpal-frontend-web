@@ -10,9 +10,12 @@ const router = express.Router()
 router.use(authenticateToken)
 router.use(requireAdmin)
 
-// Constants configuration for anatomy feature
-router.get('/constants', asyncHandler(anatomyController.getConstants.bind(anatomyController)))
-router.put('/constants', asyncHandler(anatomyController.updateConstants.bind(anatomyController)))
+// Quiz CRUD
+router.post('/', asyncHandler(anatomyController.create.bind(anatomyController)))
+router.get('/', asyncHandler(anatomyController.index.bind(anatomyController)))
+router.get('/:id', asyncHandler(anatomyController.show.bind(anatomyController)))
+router.put('/:id', asyncHandler(anatomyController.update.bind(anatomyController)))
+router.delete('/:id', asyncHandler(anatomyController.delete.bind(anatomyController)))
 
 // Upload anatomy image only (no AI generation)
 router.post(
@@ -27,12 +30,5 @@ router.post(
   uploadImage,
   asyncHandler(anatomyController.generateQuestionsFromImage.bind(anatomyController))
 )
-
-// Quiz CRUD
-router.post('/quizzes', asyncHandler(anatomyController.create.bind(anatomyController)))
-router.get('/quizzes', asyncHandler(anatomyController.index.bind(anatomyController)))
-router.get('/quizzes/:id', asyncHandler(anatomyController.show.bind(anatomyController)))
-router.put('/quizzes/:id', asyncHandler(anatomyController.update.bind(anatomyController)))
-router.delete('/quizzes/:id', asyncHandler(anatomyController.delete.bind(anatomyController)))
 
 export default router

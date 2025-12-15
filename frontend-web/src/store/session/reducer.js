@@ -18,7 +18,7 @@ const initialState = {
   // Loading states
   loading: {
     isCreatingSession: false,
-    isSubmittingAnswer: false,
+    isSubmitAnatomyQuizLoadingAnswer: false,
     isCompletingSession: false,
     isLoadingSessions: false,
     isLoadingDetail: false,

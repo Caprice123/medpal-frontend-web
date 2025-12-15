@@ -1,8 +1,8 @@
 import { useFormik } from "formik"
 import { featureSettingSchema } from "../../validationSchema/featureSettingSchema"
 import { useDispatch } from "react-redux"
-import { updateAnatomyConstants } from "@store/anatomy/action"
-import { fetchAnatomyConstants } from "../../../../../../../store/anatomy/action"
+import { fetchConstants, updateConstants } from "@/store/constant/action"
+import { actions } from "@/store/constant/reducer"
 import { useEffect } from "react"
 
 export const useFeatureSetting = (onClose) => {
@@ -18,19 +18,33 @@ export const useFeatureSetting = (onClose) => {
         },
         validationSchema: featureSettingSchema,
         onSubmit: (values) => {
-            dispatch(updateAnatomyConstants(values, onClose))
+            dispatch(updateConstants(values, onClose))
         }
     })
-    console.log(form.values)
-    console.log(form.errors)
 
-    useEffect(() => {
-        const onLoad = async () => {
-            const constants = await dispatch(fetchAnatomyConstants())
-            form.setValues(constants)
-        }
-        onLoad()
-    }, [])
+  useEffect(() => {
+    const onLoad = async () => {
+      const keys = [
+        "anatomy_feature_title",
+        "anatomy_feature_description",
+        "anatomy_access_type",
+        "anatomy_credit_cost",
+        "anatomy_is_active",
+        "anatomy_section_title"
+      ]
+      dispatch(actions.updateFilter({ key: "keys", value: keys }))
+      const constants = await dispatch(fetchConstants())
+
+      // Convert string boolean to actual boolean for toggle switch
+      const formattedConstants = {
+        ...constants,
+        flashcard_is_active: constants.flashcard_is_active === 'true'
+      }
+
+      form.setValues(formattedConstants)
+    }
+    onLoad()
+  }, [dispatch])
 
     return {
         form,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { fetchAdminAnatomyQuizzes } from '@store/anatomy/action'
+import { fetchAdminAnatomyQuizzes } from '@store/anatomy/adminAction'
 import { fetchTags } from '@store/tags/action'
 import { actions } from "@store/tags/reducer"
 

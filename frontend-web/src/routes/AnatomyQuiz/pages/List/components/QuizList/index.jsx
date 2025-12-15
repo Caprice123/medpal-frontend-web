@@ -30,7 +30,7 @@ function QuizList() {
   const navigate = useNavigate()
 
   // Loading state
-  if (loading?.isQuizzesLoading) {
+  if (loading?.isGetListAnatomyQuizLoading) {
     return <LoadingOverlay>Loading quizzes...</LoadingOverlay>
   }
 

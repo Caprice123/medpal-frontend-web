@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchAnatomyQuizForUser, submitAnatomyQuizAnswers, clearAnatomyCurrentQuiz, fetchAnatomyConstantsForUser } from '@store/anatomy/action'
+import { fetchDetailAnatomyQuiz, submitAnatomyQuizAnswers } from '@store/anatomy/action'
+import { fetchConstants } from '@store/constant/action'
 
 export const useAnatomyQuizDetail = () => {
   const dispatch = useDispatch()
@@ -9,7 +10,7 @@ export const useAnatomyQuizDetail = () => {
   const { id } = useParams()
 
   // Redux state
-  const { currentQuiz, loading } = useSelector(state => state.anatomy)
+  const { detail: currentQuiz, loading } = useSelector(state => state.anatomy)
 
   // Local state
   const [answers, setAnswers] = useState({})
@@ -19,27 +20,26 @@ export const useAnatomyQuizDetail = () => {
 
   // Fetch constants on mount
   useEffect(() => {
-    const fetchConstants = async () => {
+    const fetchCorrespondingConstant = async () => {
       try {
-        const constants = await dispatch(fetchAnatomyConstantsForUser(['anatomy_section_title']))
-        if (constants.anatomy_section_title) {
+        const keys = ['anatomy_section_title']
+        const constants = await dispatch(fetchConstants(keys))
+        if (constants?.anatomy_section_title) {
           setSectionTitle(constants.anatomy_section_title)
         }
       } catch (error) {
         console.error('Failed to fetch constants:', error)
       }
     }
-    fetchConstants()
+    fetchCorrespondingConstant()
   }, [dispatch])
 
   // Load quiz on mount and when id changes
   useEffect(() => {
-    // Clear any previous quiz result and answers before loading new quiz
-    dispatch(clearAnatomyCurrentQuiz())
     setAnswers({})
     setFormErrors({})
     setQuizResult(null)
-    dispatch(fetchAnatomyQuizForUser(id))
+    dispatch(fetchDetailAnatomyQuiz(id))
   }, [dispatch, id])
 
   // Handle input change

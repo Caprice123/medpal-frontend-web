@@ -2,30 +2,15 @@ import { useEffect } from 'react'
 import {
   Container,
   Content,
-  QuizzesList,
-  QuizCard,
-  QuizImageContainer,
-  QuizImage,
-  QuizCardContent,
-  QuizTitle,
-  QuizDescription,
-  TagContainer,
-  Tag,
-  QuestionCount,
-  LoadingSpinner,
-  EmptyState,
-  EmptyIcon,
-  EmptyText
 } from './AnatomyQuiz.styles'
 import { fetchAnatomyQuizzes } from '@store/anatomy/action'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchTags } from '@store/tags/action'
 import { actions as tagActions } from '@store/tags/reducer'
-import { generatePath, useNavigate } from 'react-router-dom'
 import { AnatomyQuizRoute } from '../../routes'
 import { Filter } from './components/Filter'
 import { actions } from "@store/anatomy/reducer"
-import { fetchAdminAnatomyQuizzes } from '@store/anatomy/action'
+import { fetchAdminAnatomyQuizzes } from '@store/anatomy/adminAction'
 import QuizList from './components/QuizList'
 import Pagination from '@components/Pagination'
 
@@ -59,7 +44,7 @@ function AnatomyQuizPage() {
             currentPage={pagination.page}
             isLastPage={pagination.isLastPage}
             onPageChange={handlePageChange}
-            isLoading={loading.isQuizzesLoading}
+            isLoading={loading.isGetListAnatomyQuizLoading}
             variant="admin"
             language="id"
         />

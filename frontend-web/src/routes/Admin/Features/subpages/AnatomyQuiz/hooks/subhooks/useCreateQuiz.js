@@ -3,7 +3,7 @@ import { useFormik } from 'formik'
 import { useState, useCallback, useRef } from 'react'
 import {
   createAnatomyQuiz,
-} from '@store/anatomy/action'
+} from '@store/anatomy/adminAction'
 import { useUploadAttachment } from './useUploadAttachment'
 
 export const useCreateQuiz = (closeCallback) => {

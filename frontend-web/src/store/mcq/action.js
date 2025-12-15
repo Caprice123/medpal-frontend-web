@@ -84,7 +84,7 @@ export const fetchMcqTopicById = (topicId) => async (dispatch) => {
  */
 export const submitMcqAnswers = (topicId, answers) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isSubmitting', value: true }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoading', value: true }))
 
     const response = await postWithToken(Endpoints.mcq.submit(topicId), { answers })
 
@@ -94,7 +94,7 @@ export const submitMcqAnswers = (topicId, answers) => async (dispatch) => {
     handleApiError(err, dispatch)
     throw err
   } finally {
-    dispatch(setLoading({ key: 'isSubmitting', value: false }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoading', value: false }))
   }
 }
 

@@ -1,16 +1,9 @@
 import { GetAnatomyQuizzesService } from '../../../services/anatomy/getAnatomyQuizzesService.js'
 import { GetAnatomyQuizDetailService } from '../../../services/anatomy/admin/getAnatomyQuizDetailService.js'
-import { StartAnatomyQuizService } from '../../../services/anatomy/startAnatomyQuizService.js'
-import { SubmitAnatomyAnswersService } from '../../../services/anatomy/submitAnatomyAnswersService.js'
-import { GetAnatomyConstantsService } from '../../../services/anatomy/admin/getAnatomyConstantsService.js'
 import prisma from '../../../prisma/client.js'
 
 class AnatomyController {
-  /**
-   * Get all published anatomy quizzes with optional filters
-   * GET /api/v1/anatomy/quizzes
-   */
-  async getQuizzes(req, res) {
+  async index(req, res) {
     const { university, semester } = req.query
 
     const result = await GetAnatomyQuizzesService.call({ university, semester })
@@ -22,11 +15,7 @@ class AnatomyController {
     })
   }
 
-  /**
-   * Get single quiz for user to take
-   * GET /api/v1/anatomy/quizzes/:id
-   */
-  async getQuiz(req, res) {
+  async show(req, res) {
     const { id } = req.params
     const userId = req.user.id
 
@@ -50,11 +39,7 @@ class AnatomyController {
     })
   }
 
-  /**
-   * Submit answers for a quiz (simpler approach)
-   * POST /api/v1/anatomy/quizzes/:id/submit
-   */
-  async submitQuizAnswers(req, res) {
+  async submit(req, res) {
     const { id } = req.params
     const { answers } = req.body // Array of { question_id, answer }
     const userId = req.user.id
@@ -109,65 +94,6 @@ class AnatomyController {
         answers: results
       },
       message: 'Quiz submitted successfully'
-    })
-  }
-
-  /**
-   * Start an anatomy quiz (creates session)
-   * POST /api/v1/anatomy/quizzes/:id/start
-   */
-  async startQuiz(req, res) {
-    const { id } = req.params
-    const userId = req.user.id
-
-    const result = await StartAnatomyQuizService.call({
-      quizId: id,
-      userId
-    })
-
-    return res.status(200).json({
-      success: true,
-      data: result,
-      message: 'Anatomy quiz started successfully'
-    })
-  }
-
-  /**
-   * Submit answers for an anatomy quiz attempt
-   * POST /api/v1/anatomy/attempts/:attemptId/submit
-   */
-  async submitAnswers(req, res) {
-    const { attemptId } = req.params
-    const { answers } = req.body
-    const userId = req.user.id
-
-    const result = await SubmitAnatomyAnswersService.call({
-      attemptId,
-      userId,
-      answers
-    })
-
-    return res.status(200).json({
-      success: true,
-      data: result,
-      message: 'Answers submitted successfully'
-    })
-  }
-
-  /**
-   * Get anatomy constants
-   * GET /api/v1/anatomy/constants
-   */
-  async getConstants(req, res) {
-    const { keys } = req.query
-    const keysArray = keys ? keys.split(',') : null
-
-    const constants = await GetAnatomyConstantsService.call({ keys: keysArray })
-
-    return res.status(200).json({
-      success: true,
-      data: constants,
-      message: 'Constants retrieved successfully'
     })
   }
 }

@@ -121,7 +121,7 @@ const AnatomyQuizDetail = () => {
                           <Button
                             variant="primary"
                             type="submit"
-                            disabled={loading.isSubmitting}
+                            disabled={loading.isSubmitAnatomyQuizLoading}
                             style={{
                               width: '100%',
                               padding: '1rem',
@@ -129,7 +129,7 @@ const AnatomyQuizDetail = () => {
                               fontWeight: 600
                             }}
                           >
-                            {loading.isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'}
+                            {loading.isSubmitAnatomyQuizLoading ? 'Mengirim...' : 'Kirim Jawaban'}
                           </Button>
                         </SubmitButtonContainer>
                       </QuestionsContainer>

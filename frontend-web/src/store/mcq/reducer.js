@@ -22,7 +22,7 @@ const initialState = {
     isUploadingImage: false,
     isGenerating: false,
     isChecking: false,
-    isSubmitting: false,
+    isSubmitAnatomyQuizLoading: false,
     isConstantsLoading: false,
     isUpdatingConstants: false,
   },

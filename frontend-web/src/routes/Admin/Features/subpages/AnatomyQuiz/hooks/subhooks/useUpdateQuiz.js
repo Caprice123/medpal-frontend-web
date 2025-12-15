@@ -2,16 +2,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useFormik } from 'formik'
 import { useState, useCallback, useRef, useMemo } from 'react'
 import {
-  updateAnatomyQuiz,
-} from '@store/anatomy/action'
+    fetchAdminAnatomyQuizzes,
+    updateAnatomyQuiz,
+} from '@store/anatomy/adminAction'
 import { useUploadAttachment } from './useUploadAttachment'
-import { fetchAdminAnatomyQuizzes } from '../../../../../../../store/anatomy/action'
 
 export const useUpdateQuiz = (closeCallback) => {
   const dispatch = useDispatch()
   const [showConfirmClose, setShowConfirmClose] = useState(false)
   const initialFormData = useRef(null)
-  const { selectedQuiz } = useSelector(state => state.anatomy)
+  const { detail: selectedQuiz } = useSelector(state => state.anatomy)
   const { tags } = useSelector(state => state.tags)
 
   // Get university and semester tags from Redux

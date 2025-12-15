@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  fetchAnatomyQuizForUser,
+  fetchDetailAnatomyQuiz,
   submitAnatomyQuizAnswers,
-  clearAnatomyCurrentQuiz
 } from '@store/anatomy/action'
 import QuizResult from './QuizResult'
 import {
@@ -41,32 +40,17 @@ function QuizDetail() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { currentQuiz, quizResult, loading } = useSelector(state => state.anatomy)
+  const { detail: currentQuiz, loading } = useSelector(state => state.anatomy)
 
   const [answers, setAnswers] = useState({})
   const [errors, setErrors] = useState({})
   const [imageZoomed, setImageZoomed] = useState(false)
   const [showSubscriptionGate, setShowSubscriptionGate] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [quizResult, setQuizResult] = useState(null)
 
   useEffect(() => {
-    const loadQuiz = async () => {
-      try {
-        await dispatch(fetchAnatomyQuizForUser(id))
-      } catch (error) {
-        if (error.response?.data?.message?.includes('subscription')) {
-          setShowSubscriptionGate(true)
-        } else {
-          setErrorMessage(error.response?.data?.message || 'Failed to load quiz')
-        }
-      }
-    }
-
-    loadQuiz()
-
-    return () => {
-      dispatch(clearAnatomyCurrentQuiz())
-    }
+    dispatch(fetchDetailAnatomyQuiz(id))
   }, [id, dispatch])
 
   const handleAnswerChange = (questionId, value) => {
@@ -86,7 +70,7 @@ function QuizDetail() {
 
   const validateAnswers = () => {
     const newErrors = {}
-    currentQuiz.anatomy_questions.forEach(question => {
+    currentQuiz.questions.forEach(question => {
       const answer = answers[question.id]?.trim()
       if (!answer) {
         newErrors[question.id] = 'This field is required'
@@ -107,7 +91,8 @@ function QuizDetail() {
         userAnswer: userAnswer.trim()
       }))
 
-      await dispatch(submitAnatomyQuizAnswers(id, formattedAnswers))
+      const result = await dispatch(submitAnatomyQuizAnswers(id, formattedAnswers))
+      setQuizResult(result)
     } catch (error) {
       console.error('Failed to submit answers:', error)
       setErrorMessage(error.response?.data?.message || 'Failed to submit answers')
@@ -173,7 +158,7 @@ function QuizDetail() {
   }
 
   // Loading state
-  if (loading.isQuizLoading || !currentQuiz) {
+  if (loading.isGetDetailAnatomyQuizLoading || !currentQuiz) {
     return (
       <Container>
         <LoadingOverlay>Loading quiz...</LoadingOverlay>
@@ -205,12 +190,12 @@ function QuizDetail() {
               <QuizDescription>{currentQuiz.description}</QuizDescription>
             )}
             <div style={{ color: '#6BB9E8', fontWeight: 600 }}>
-              {currentQuiz.anatomy_questions?.length || 0} Questions
+              {currentQuiz.questions?.length || 0} Questions
             </div>
           </QuizHeader>
 
           <QuestionsList>
-            {currentQuiz.anatomy_questions?.map((question, index) => (
+            {currentQuiz.questions?.map((question, index) => (
               <QuestionCard key={question.id} hasError={errors[question.id]}>
                 <QuestionNumber>Question {index + 1}</QuestionNumber>
                 <QuestionLabel>{question.question}</QuestionLabel>
@@ -233,9 +218,9 @@ function QuizDetail() {
             </BackButton>
             <SubmitButton
               onClick={handleSubmit}
-              disabled={loading.isSubmitting}
+              disabled={loading.isSubmitAnatomyQuizLoading}
             >
-              {loading.isSubmitting ? 'Submitting...' : 'Submit Answers'}
+              {loading.isSubmitAnatomyQuizLoading ? 'Submitting...' : 'Submit Answers'}
             </SubmitButton>
           </SubmitSection>
         </QuestionsSection>

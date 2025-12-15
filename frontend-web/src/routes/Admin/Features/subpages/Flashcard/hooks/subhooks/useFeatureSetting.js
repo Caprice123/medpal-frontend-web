@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux"
 import { useEffect } from "react"
 import { featureSettingSchema } from "../../validationSchema/featureSettingSchema"
 import { fetchConstants, updateConstants } from "@/store/constant/action"
+import { actions } from "@/store/constant/reducer"
 
 export const useFeatureSetting = (onClose) => {
   const dispatch = useDispatch()
@@ -24,7 +25,7 @@ export const useFeatureSetting = (onClose) => {
         // Convert boolean to string for backend
         const constantsToSave = {
           ...values,
-          summary_notes_is_active: String(values.summary_notes_is_active)
+          flashcard_is_active: String(values.flashcard_is_active)
         }
         await dispatch(updateConstants(constantsToSave))
         onClose()
@@ -46,6 +47,7 @@ export const useFeatureSetting = (onClose) => {
         "flashcard_generation_prompt_text_based",
         "flashcard_generation_prompt_document_based",
       ]
+      dispatch(actions.updateFilter({ key: "key", value: keys}))
       const constants = await dispatch(fetchConstants(keys))
 
       // Convert string boolean to actual boolean for toggle switch

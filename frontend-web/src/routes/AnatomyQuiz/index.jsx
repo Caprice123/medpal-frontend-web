@@ -134,7 +134,7 @@ function AnatomyQuiz() {
         </div>
       </FilterSection>
 
-      {loading.isQuizzesLoading ? (
+      {loading.isGetListAnatomyQuizLoading ? (
         <LoadingOverlay>
           <div>Loading quizzes...</div>
         </LoadingOverlay>

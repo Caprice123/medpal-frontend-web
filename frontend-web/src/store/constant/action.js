@@ -1,4 +1,4 @@
-import { actions } from '@store/calculator/reducer'
+import { actions } from '@store/constant/reducer'
 import Endpoints from '@config/endpoint'
 import { handleApiError } from '@utils/errorUtils'
 import { getWithToken, putWithToken } from '../../utils/requestUtils'
@@ -12,7 +12,7 @@ export const fetchConstants = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetListConstantsLoading', value: true }))
     
-    const { keys } = getState().constants
+    const { keys } = getState().constant
     const queryParams = {}
     if (keys && Array.isArray(keys)) {
       queryParams.keys = keys.join(',')

@@ -20,10 +20,12 @@ export default {
     admin: {
         constants: "/admin/v1/constants",
         flashcards: "/admin/v1/flashcards",
+        anatomy: "/admin/v1/anatomy",
     },
     api: {
         calculators: "/api/v1/calculators",
         flashcards: "/admin/v1/flashcards",
+        anatomy: "/api/v1/anatomy",
     },
     tagGroups: "/admin/v1/tag-groups",
     users: "/admin/v1/users",

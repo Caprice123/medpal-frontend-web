@@ -350,7 +350,7 @@ export const startFlashcardDeck = (deckId) => async (dispatch) => {
  */
 export const submitFlashcardProgress = (deckId, answers = []) => async (dispatch) => {
   try {
-    dispatch(setLoading({ key: 'isSubmittingAnswers', value: true }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingAnswers', value: true }))
     dispatch(clearError())
 
     const response = await postWithToken(
@@ -365,7 +365,7 @@ export const submitFlashcardProgress = (deckId, answers = []) => async (dispatch
     handleApiError(err, dispatch)
     throw err
   } finally {
-    dispatch(setLoading({ key: 'isSubmittingAnswers', value: false }))
+    dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingAnswers', value: false }))
   }
 }
 

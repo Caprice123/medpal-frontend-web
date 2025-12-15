@@ -27,7 +27,7 @@ function QuizList({ onEdit, onDelete, onCreateFirst }) {
   const { quizzes, loading } = useSelector((state) => state.anatomy)
 
   // Loading state
-  if (loading?.isQuizzesLoading) {
+  if (loading?.isGetListAnatomyQuizLoading) {
     return <LoadingOverlay>Loading quizzes...</LoadingOverlay>
   }
 
@@ -114,7 +114,7 @@ function QuizList({ onEdit, onDelete, onCreateFirst }) {
             <CardActionButton
               danger
               onClick={() => onDelete(quiz.id)}
-              disabled={loading?.isDeletingQuiz}
+              disabled={loading?.isDeleteAnatomyQuizLoading}
             >
               Delete
             </CardActionButton>
