@@ -220,6 +220,7 @@ class McqController {
 
     if (type === 'pdf') {
       if (!req.file) {
+        console.log(req.file)
         return res.status(400).json({
           success: false,
           message: 'PDF file is required for PDF type generation'

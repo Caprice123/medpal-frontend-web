@@ -1,7 +1,8 @@
 import { useFormik } from 'formik'
 import { useDispatch } from 'react-redux'
-import { updateMcqConstants, fetchMcqConstants } from '@store/mcq/action'
 import { useEffect } from 'react'
+import { fetchConstants, updateConstants } from "@/store/constant/action"
+import { actions } from "@/store/constant/reducer"
 
 export const useFeatureSetting = (onClose) => {
   const dispatch = useDispatch()
@@ -16,17 +17,38 @@ export const useFeatureSetting = (onClose) => {
       mcq_generation_model: 'gemini-1.5-flash',
       mcq_generation_prompt: ''
     },
-    onSubmit: (values) => {
-      dispatch(updateMcqConstants(values, onClose))
+    onSubmit: async (values) => {
+      const constantsToSave = {
+          ...values,
+          mcq_is_active: String(values.mcq_is_active)
+      }
+      await dispatch(updateConstants(constantsToSave))
+      onClose()
     }
   })
 
   useEffect(() => {
     const onLoad = async () => {
-      const constants = await dispatch(fetchMcqConstants())
-      if (constants) {
-        form.setValues(constants)
+      const keys = [
+        "mcq_feature_title",
+        "mcq_feature_description",
+        "mcq_access_type",
+        "mcq_credit_cost",
+        "mcq_is_active",
+        "mcq_generation_model",
+        "mcq_generation_prompt_text_based",
+        "mcq_generation_prompt_document_based",
+      ]
+      dispatch(actions.updateFilter({ key: "keys", value: keys }))
+      const constants = await dispatch(fetchConstants())
+
+      // Convert string boolean to actual boolean for toggle switch
+      const formattedConstants = {
+        ...constants,
+        mcq_is_active: constants.mcq_is_active === 'true'
       }
+
+      form.setValues(formattedConstants)
     }
     onLoad()
   }, [])

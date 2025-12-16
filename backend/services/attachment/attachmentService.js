@@ -42,13 +42,11 @@ class AttachmentService {
       });
 
       // Create attachment record
-      const attachment = await prisma.attachments.create({
-        data: {
-          name,
-          recordType,
-          recordId,
-          blobId: blob.id
-        }
+      const attachment = await this.attach({
+        name,
+        recordType,
+        recordId,
+        blobId: blob.id
       });
 
       return {
@@ -60,6 +58,17 @@ class AttachmentService {
       console.error('Error uploading and attaching file:', error);
       throw new Error('Failed to upload and attach file: ' + error.message);
     }
+  }
+
+  async attach({ blob, recordType, recordId, name }) {
+    await prisma.attachments.create({
+      data: {
+        name,
+        recordType,
+        recordId,
+        blobId: blob.id
+      }
+    });
   }
 
   /**
