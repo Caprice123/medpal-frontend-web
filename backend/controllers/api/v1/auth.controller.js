@@ -25,8 +25,31 @@ class AuthController {
     return res.status(200).json({
       data: {
         user: result.user,
-        token: result.token,
-        expiredAt: result.expiredAt,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        accessTokenExpiresAt: result.accessTokenExpiresAt,
+        refreshTokenExpiresAt: result.refreshTokenExpiresAt,
+      }
+    });
+  }
+
+  async refresh(req, res) {
+    const { refreshToken } = req.body;
+
+    // Validate input
+    if (!refreshToken) {
+      throw new ValidationError('Refresh token is required');
+    }
+
+    // Call service method
+    const result = await authService.refreshToken(refreshToken);
+
+    return res.status(200).json({
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        accessTokenExpiresAt: result.accessTokenExpiresAt,
+        refreshTokenExpiresAt: result.refreshTokenExpiresAt,
       }
     });
   }

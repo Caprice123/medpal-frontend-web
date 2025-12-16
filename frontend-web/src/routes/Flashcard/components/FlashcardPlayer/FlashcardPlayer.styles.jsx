@@ -70,7 +70,7 @@ export const Flashcard = styled.div`
   transform: ${props => props.flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'};
 
   @media (max-width: 768px) {
-    height: 250px;
+    min-height: 250px;
   }
 `
 
@@ -110,9 +110,11 @@ export const CardLabel = styled.div`
 export const CardContent = styled.div`
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  gap: 16px;
 
   p {
     font-size: 24px;
@@ -123,6 +125,14 @@ export const CardContent = styled.div`
       font-size: 20px;
     }
   }
+`
+
+export const CardImage = styled.img`
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 12px;
 `
 
 export const AnswerSection = styled.div`

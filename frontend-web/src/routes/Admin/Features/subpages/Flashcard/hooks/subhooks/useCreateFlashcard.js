@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux'
 import { useFormik } from 'formik'
 import {
   createFlashcardDeck,
-  fetchAdminFlashcardDecks
+  fetchAdminFlashcardDecks,
+  uploadCardImage
 } from '@store/flashcard/adminAction'
 import { KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
@@ -37,6 +38,7 @@ export const useCreateFlashcard = (onClose) => {
           cards: values.cards.map((card, index) => ({
             front: card.front,
             back: card.back,
+            image_key: card.image?.key || null, // Backend will create attachment link
             order: index
           })),
           tags: allTags.map(t => t.id),
@@ -80,7 +82,8 @@ export const useCreateFlashcard = (onClose) => {
       tempId: Date.now(),
       front: '',
       back: '',
-      order: form.values.cards.length
+      order: form.values.cards.length,
+      image: null,
     }
     form.setFieldValue("cards", [...form.values.cards, newCard])
   }
@@ -93,6 +96,23 @@ export const useCreateFlashcard = (onClose) => {
       order: idx
     }))
     form.setFieldValue("cards", reorderedCards)
+  }
+
+  const handleImageUpload = async (cardIndex, file) => {
+    try {
+      // Upload image to centralized endpoint
+      const result = await dispatch(uploadCardImage(file))
+      form.setFieldValue(`cards.${cardIndex}.image`, {
+        url: result.url, // Temporary presigned URL for preview
+        key: result.key, // Frontend will send this key when creating/updating cards
+        filename: result.filename,
+        contentType: result.contentType,
+        byteSize: result.byteSize,
+      })
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      alert('Failed to upload image. Please try again.')
+    }
   }
 
   // Drag and drop handler
@@ -119,6 +139,7 @@ export const useCreateFlashcard = (onClose) => {
     handleAddCard,
     handleRemoveCard,
     handleDragEnd,
+    handleImageUpload,
     setPdfInfo
   }
 }

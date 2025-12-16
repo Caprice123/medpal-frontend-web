@@ -55,8 +55,8 @@ function DeckList() {
     <DeckGrid>
       {decks.map((deck) => {
         // Get tag groups
-        const universityTags = deck.tags?.filter(tag => tag.tagGroup?.name === 'university') || []
-        const semesterTags = deck.tags?.filter(tag => tag.tagGroup?.name === 'semester') || []
+        const universityTags = deck.tags?.filter(tag => tag.tag_group?.name === 'university') || []
+        const semesterTags = deck.tags?.filter(tag => tag.tag_group?.name === 'semester') || []
 
         return (
           <DeckCard key={deck.id}>

@@ -103,6 +103,21 @@ class IDriveService {
   }
 
   /**
+   * Upload a flashcard card image to iDrive E2
+   * @param {string} filePath - Local file path
+   * @param {string} cardName - Name identifier for the card
+   * @returns {Promise<{url: string, key: string, fileName: string}>}
+   */
+  async uploadFlashcardImage(filePath, cardName) {
+    const sanitizedName = cardName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const timestamp = Date.now();
+    const ext = path.extname(filePath);
+    const fileName = `${sanitizedName}-${timestamp}${ext}`;
+
+    return this.uploadFile(filePath, 'flashcard-images', fileName);
+  }
+
+  /**
    * Get a signed URL for temporary access to a private file
    * @param {string} key - File key in bucket
    * @param {number} expiresIn - URL expiration time in seconds (default: 3600)

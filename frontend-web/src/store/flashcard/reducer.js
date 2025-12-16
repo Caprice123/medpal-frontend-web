@@ -13,6 +13,7 @@ const initialState = {
     isUpdatingDeck: false,
     isDeletingDeck: false,
     isGetDetailFlashcardDeckLoading: false,
+    isUploadingImage: false,
   },
   filters: {
     university: '',
@@ -54,6 +55,9 @@ const { reducer, actions } = createSlice({
     },
     setPage: (state, { payload }) => {
       state.pagination.page = payload
+    },
+    updatePagination: (state, { payload }) => {
+      state.pagination = { ...state.pagination, ...payload }
     }
   },
   

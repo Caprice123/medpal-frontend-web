@@ -12,6 +12,7 @@ import {
   CardBack,
   CardLabel,
   CardContent,
+  CardImage,
   AnswerSection,
   AnswerLabel,
   AnswerInput,
@@ -176,6 +177,9 @@ const FlashcardPlayer = ({ onSubmit, onBack }) => {
           <CardFront>
             <CardLabel>Question</CardLabel>
             <CardContent>
+              {currentCard.image_url && (
+                <CardImage src={currentCard.image_url} alt="Flashcard image" />
+              )}
               <p>{currentCard.front || currentCard.front_text}</p>
             </CardContent>
           </CardFront>
@@ -287,18 +291,6 @@ const FlashcardPlayer = ({ onSubmit, onBack }) => {
           </PrimaryButton>
         )}
       </NavigationButtons>
-
-      {/* Card Navigation Dots */}
-      <CardDots>
-        {cards.map((_, index) => (
-          <Dot
-            key={index}
-            active={index === currentCardIndex}
-            completed={index < currentCardIndex}
-            onClick={() => setCurrentCardIndex(index)}
-          />
-        ))}
-      </CardDots>
     </PlayerContainer>
   )
 }

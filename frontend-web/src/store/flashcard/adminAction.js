@@ -7,21 +7,30 @@ const {
   setLoading,
   setDecks,
   setDetail,
+  updatePagination,
 } = actions
 
 export const fetchAdminFlashcardDecks = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetListDecksLoading', value: true }))
 
-    const { filters } = getState().flashcard
-    const queryParams = {}
+    const { filters, pagination } = getState().flashcard
+    const queryParams = {
+      page: pagination.page,
+      perPage: pagination.perPage
+    }
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
 
     const route = Endpoints.admin.flashcards
     const response = await getWithToken(route, queryParams)
 
-    dispatch(setDecks(response.data.data || response.data.decks || []))
+    const responseData = response.data.data || response.data
+
+    dispatch(setDecks(responseData.decks || []))
+    if (responseData.pagination) {
+      dispatch(updatePagination(responseData.pagination))
+    }
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -139,6 +148,23 @@ export const updateDeckCards = (deckId, cards) => async (dispatch) => {
 }
 
 /**
+ * Update full flashcard deck (admin only)
+ * Supports FormData for image uploads
+ */
+export const updateFlashcardDeck = (deckId, deckData) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isUpdatingDeck', value: true }))
+
+    const route = Endpoints.admin.flashcards + `/${deckId}`
+    await putWithToken(route, deckData)
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isUpdatingDeck', value: false }))
+  }
+}
+
+/**
  * Delete deck (admin only)
  */
 export const deleteFlashcardDeck = (deckId) => async (dispatch) => {
@@ -151,5 +177,28 @@ export const deleteFlashcardDeck = (deckId) => async (dispatch) => {
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isDeletingDeck', value: false }))
+  }
+}
+
+/**
+ * Upload card image (admin only)
+ * Returns the uploaded image URL
+ */
+export const uploadCardImage = (imageFile) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isUploadingImage', value: true }))
+
+    const formData = new FormData()
+    formData.append('image', imageFile)
+
+    const route = Endpoints.admin.flashcards + '/upload-image'
+    const response = await postWithToken(route, formData)
+
+    return response.data.data // { url, key, fileName }
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isUploadingImage', value: false }))
   }
 }

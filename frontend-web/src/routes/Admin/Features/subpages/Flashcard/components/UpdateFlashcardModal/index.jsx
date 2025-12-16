@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
@@ -7,6 +7,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useUpdateFlashcard } from '../../hooks/subhooks/useUpdateFlashcard'
 import { useGenerateFlashcard } from '../../hooks/subhooks/useGenerateFlashcard'
+import { formatFileSize } from '@utils/formatUtils'
 import {
   FormSection,
   FormRow,
@@ -39,7 +40,7 @@ import {
   HelpText
 } from './UpdateFlashcardModal.styles'
 
-const SortableCard = ({ card, index, form, handleRemoveCard }) => {
+const SortableCard = memo(function SortableCard({ card, index, form, handleRemoveCard, handleImageUpload }) {
   const {
     attributes,
     listeners,
@@ -52,6 +53,17 @@ const SortableCard = ({ card, index, form, handleRemoveCard }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  }
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        handleImageUpload(index, file)
+      } else {
+        alert('Please select an image file')
+      }
+    }
   }
 
   return (
@@ -79,6 +91,44 @@ const SortableCard = ({ card, index, form, handleRemoveCard }) => {
         )}
       </FormSection>
 
+      {/* Front Image Upload */}
+      <FormSection>
+        <Label>Image (Optional)</Label>
+        {!card.image?.key ? (
+          <UploadArea onClick={() => document.getElementById(`card-image-${card.tempId}`).click()}>
+            <input
+              id={`card-image-${card.tempId}`}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              style={{ display: 'none' }}
+            />
+            <UploadIcon>🖼️</UploadIcon>
+            <UploadText>Klik untuk upload gambar</UploadText>
+            <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+              PNG, JPG, GIF (max 5MB)
+            </UploadText>
+          </UploadArea>
+        ) : (
+          <ExistingFileInfo>
+            <FileIcon>🖼️</FileIcon>
+            <div style={{ flex: 1 }}>
+              <FileName>
+                {card.image?.filename || 'Image'}
+              </FileName>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
+                {formatFileSize(card.image.byteSize)}
+              </div>
+            </div>
+            <RemoveFileButton onClick={() => {
+              form.setFieldValue(`cards.${index}.image`, null)  
+            }}>
+              Hapus
+            </RemoveFileButton>
+          </ExistingFileInfo>
+        )}
+      </FormSection>
+
       <FormSection>
         <Label>Back (Answer) *</Label>
         <Textarea
@@ -93,13 +143,24 @@ const SortableCard = ({ card, index, form, handleRemoveCard }) => {
       </FormSection>
     </FlashcardCard>
   )
-}
+})
 
 const UpdateFlashcardModal = ({ onClose }) => {
   const { loading } = useSelector(state => state.flashcard)
   const { tags } = useSelector(state => state.tags)
 
-  const { form, sensors, handleAddCard, handleRemoveCard, handleDragEnd, setPdfInfo, selectedDeck } = useUpdateFlashcard(onClose)
+  const {
+    form,
+    sensors,
+    handleAddCard,
+    handleRemoveCard,
+    handleDragEnd,
+    handleImageUpload,
+    setPdfInfo,
+    pdfInfo,
+    initialContentType,
+    initialTextContent
+  } = useUpdateFlashcard(onClose)
 
   const {
     contentType,
@@ -114,7 +175,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
     handleGenerate,
     canGenerate,
     isGenerating
-  } = useGenerateFlashcard(form, setPdfInfo)
+  } = useGenerateFlashcard(form, setPdfInfo, initialContentType, initialTextContent)
 
   // Get tags from both university and semester groups - memoized
   const universityTags = useMemo(() =>
@@ -158,26 +219,24 @@ const UpdateFlashcardModal = ({ onClose }) => {
         </>
       }
     >
-      {/* Note: Currently only cards can be updated. Title, description, and tags are read-only */}
       <FormSection>
         <Label>Title *</Label>
         <Input
           type="text"
           value={form.values.title}
-          disabled
+          onChange={(e) => form.setFieldValue('title', e.target.value)}
           placeholder="e.g., Sistem Kardiovaskular"
         />
-        <HelpText>Title cannot be edited at this time</HelpText>
+        {form.errors.title && <ErrorText>{form.errors.title}</ErrorText>}
       </FormSection>
 
       <FormSection>
         <Label>Description</Label>
         <Textarea
           value={form.values.description}
-          disabled
+          onChange={(e) => form.setFieldValue('description', e.target.value)}
           placeholder="Brief description of this flashcard deck"
         />
-        <HelpText>Description cannot be edited at this time</HelpText>
       </FormSection>
 
       {/* University Tags */}
@@ -188,8 +247,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
           selectedTags={form.values.universityTags}
           onTagsChange={handleUniversityTagsChange}
           placeholder="-- Pilih Universitas --"
-          helpText="Tags cannot be edited at this time"
-          disabled
+          helpText="Pilih universitas untuk membantu mengorganisir deck"
         />
       </FormSection>
 
@@ -201,8 +259,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
           selectedTags={form.values.semesterTags || []}
           onTagsChange={handleSemesterTagsChange}
           placeholder="-- Pilih Semester --"
-          helpText="Tags cannot be edited at this time"
-          disabled
+          helpText="Pilih semester untuk membantu mengorganisir deck"
         />
       </FormSection>
 
@@ -228,6 +285,19 @@ const UpdateFlashcardModal = ({ onClose }) => {
 
         {contentType === 'document' ? (
           <UploadSection>
+            {/* Show existing PDF info if deck was created from PDF */}
+            {pdfInfo && !pdfFile && (
+              <ExistingFileInfo style={{ marginBottom: '1rem', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd' }}>
+                <FileIcon>📕</FileIcon>
+                <div style={{ flex: 1 }}>
+                  <FileName>{pdfInfo.pdf_filename || 'Existing PDF'}</FileName>
+                  <div style={{ fontSize: '0.85rem', color: '#0369a1', marginTop: '0.25rem' }}>
+                    Deck ini dibuat dari PDF. Upload PDF baru untuk re-generate.
+                  </div>
+                </div>
+              </ExistingFileInfo>
+            )}
+
             {!pdfFile ? (
               <UploadArea onClick={() => document.getElementById('pdf-upload-update').click()}>
                 <input
@@ -239,7 +309,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
                 />
                 <UploadIcon>📤</UploadIcon>
                 <UploadText>
-                  {isGenerating ? 'Uploading...' : 'Klik untuk upload PDF'}
+                  {isGenerating ? 'Uploading...' : pdfInfo ? 'Upload PDF baru untuk re-generate' : 'Klik untuk upload PDF'}
                 </UploadText>
                 <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
                   PDF file (max 20MB)
@@ -322,6 +392,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
                 index={index}
                 form={form}
                 handleRemoveCard={handleRemoveCard}
+                handleImageUpload={handleImageUpload}
               />
             ))}
           </SortableContext>
@@ -335,7 +406,7 @@ const UpdateFlashcardModal = ({ onClose }) => {
             name="status"
             value="draft"
             checked={form.values.status === 'draft'}
-            disabled
+            onChange={(e) => form.setFieldValue('status', e.target.value)}
           />
           Save as Draft
         </StatusOption>
@@ -345,11 +416,10 @@ const UpdateFlashcardModal = ({ onClose }) => {
             name="status"
             value="published"
             checked={form.values.status === 'published'}
-            disabled
+            onChange={(e) => form.setFieldValue('status', e.target.value)}
           />
           Publish Now
         </StatusOption>
-        <HelpText>Status cannot be edited at this time</HelpText>
       </StatusToggle>
     </Modal>
   )

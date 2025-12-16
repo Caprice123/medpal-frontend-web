@@ -7,6 +7,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useCreateFlashcard } from '../../hooks/subhooks/useCreateFlashcard'
 import { useGenerateFlashcard } from '../../hooks/subhooks/useGenerateFlashcard'
+import { formatFileSize } from '@utils/formatUtils'
 import {
   FormSection,
   FormRow,
@@ -39,7 +40,7 @@ import {
   HelpText
 } from './CreateFlashcardModal.styles'
 
-const SortableCard = ({ card, index, form, handleRemoveCard }) => {
+const SortableCard = ({ card, index, form, handleRemoveCard, handleImageUpload }) => {
   const {
     attributes,
     listeners,
@@ -52,6 +53,17 @@ const SortableCard = ({ card, index, form, handleRemoveCard }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  }
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        handleImageUpload(index, file)
+      } else {
+        alert('Please select an image file')
+      }
+    }
   }
 
   return (
@@ -79,6 +91,44 @@ const SortableCard = ({ card, index, form, handleRemoveCard }) => {
         )}
       </FormSection>
 
+      {/* Image Upload */}
+      <FormSection>
+        <Label>Image (Optional)</Label>
+        {!card.image?.key ? (
+          <UploadArea onClick={() => document.getElementById(`card-image-${card.tempId}`).click()}>
+            <input
+              id={`card-image-${card.tempId}`}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              style={{ display: 'none' }}
+            />
+            <UploadIcon>🖼️</UploadIcon>
+            <UploadText>Klik untuk upload gambar</UploadText>
+            <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+              PNG, JPG, GIF (max 5MB)
+            </UploadText>
+          </UploadArea>
+        ) : (
+          <ExistingFileInfo>
+            <FileIcon>🖼️</FileIcon>
+            <div style={{ flex: 1 }}>
+              <FileName>
+                {card.image?.filename || 'Image'}
+              </FileName>
+              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
+                {formatFileSize(card.image.byteSize)}
+              </div>
+            </div>
+            <RemoveFileButton onClick={() => {
+              form.setFieldValue(`cards.${index}.image`, null)  
+            }}>
+              Hapus
+            </RemoveFileButton>
+          </ExistingFileInfo>
+        )}
+      </FormSection>
+
       <FormSection>
         <Label>Back (Answer) *</Label>
         <Textarea
@@ -99,7 +149,7 @@ const CreateFlashcardModal = ({ onClose }) => {
   const { loading } = useSelector(state => state.flashcard)
   const { tags } = useSelector(state => state.tags)
 
-  const { form, sensors, handleAddCard, handleRemoveCard, handleDragEnd, setPdfInfo } = useCreateFlashcard(onClose)
+  const { form, sensors, handleAddCard, handleRemoveCard, handleDragEnd, handleImageUpload, setPdfInfo } = useCreateFlashcard(onClose)
 
   const {
     contentType,
@@ -317,6 +367,7 @@ const CreateFlashcardModal = ({ onClose }) => {
                 index={index}
                 form={form}
                 handleRemoveCard={handleRemoveCard}
+                handleImageUpload={handleImageUpload}
               />
             ))}
           </SortableContext>

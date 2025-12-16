@@ -28,6 +28,7 @@ export class UpdateFlashcardCardsService extends BaseService {
                     deck_id: parseInt(deckId),
                     front: card.front,
                     back: card.back,
+                    image_url: card.image_url || null,
                     order: card.order !== undefined ? card.order : index
                 }))
             })

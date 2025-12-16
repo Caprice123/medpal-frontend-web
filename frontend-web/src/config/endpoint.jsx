@@ -24,7 +24,7 @@ export default {
     },
     api: {
         calculators: "/api/v1/calculators",
-        flashcards: "/admin/v1/flashcards",
+        flashcards: "/api/v1/flashcards",
         anatomy: "/api/v1/anatomy",
     },
     tagGroups: "/admin/v1/tag-groups",

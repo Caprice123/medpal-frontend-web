@@ -3,17 +3,20 @@ import { CreateFlashcardDeckService } from '../../../services/flashcard/admin/cr
 import { GetFlashcardDecksService } from '../../../services/flashcard/getFlashcardDecksService.js'
 import { GetFlashcardDeckDetailService } from '../../../services/flashcard/admin/getFlashcardDeckDetailService.js'
 import { UpdateFlashcardCardsService } from '../../../services/flashcard/admin/updateFlashcardCardsService.js'
+import { UpdateFlashcardDeckService } from '../../../services/flashcard/admin/updateFlashcardDeckService.js'
 import idriveService from '../../../services/idrive.service.js'
+import blobService from '../../../services/attachment/blobService.js'
+import path from 'path'
 
 class FlashcardController {
     
   async index(req, res) {
-    const { university, semester } = req.query
+    const { university, semester, page, perPage } = req.query
 
-    const decks = await GetFlashcardDecksService.call({ university, semester })
+    const result = await GetFlashcardDecksService.call({ university, semester, page, perPage })
 
     return res.status(200).json({
-      data: decks
+      data: result
     })
   }
 
@@ -39,7 +42,7 @@ class FlashcardController {
       pdf_key,
       pdf_filename,
       tags,
-      cards,
+      cards, // Cards already include image_url from centralized upload
       created_by: req.user.id
     })
 
@@ -60,13 +63,33 @@ class FlashcardController {
 
   async update(req, res) {
     const { id } = req.params
-    const { cards } = req.body
+    const { title, description, status, tags, cards, pdf_url, pdf_key, pdf_filename } = req.body
 
-    const updatedDeck = await UpdateFlashcardCardsService.call(id, cards)
+    // Check if this is a full deck update or just cards
+    if (title !== undefined || tags !== undefined) {
+      // Full deck update
+      const updatedDeck = await UpdateFlashcardDeckService.call(id, {
+        title,
+        description,
+        status,
+        tags,
+        cards, // Cards already include image_url from centralized upload
+        pdf_url,
+        pdf_key,
+        pdf_filename
+      })
 
-    return res.status(200).json({
-      data: updatedDeck
-    })
+      return res.status(200).json({
+        data: updatedDeck
+      })
+    } else {
+      // Simple cards update (backward compatibility)
+      const updatedDeck = await UpdateFlashcardCardsService.call(id, cards)
+
+      return res.status(200).json({
+        data: updatedDeck
+      })
+    }
   }
 
   async generateCards(req, res) {
@@ -109,6 +132,50 @@ class FlashcardController {
         pdf_url: uploadResult.url,
         pdf_key: uploadResult.key,
         pdf_filename: uploadResult.fileName
+      }
+    })
+  }
+
+  async uploadImage(req, res) {
+    // File is already uploaded by multer middleware
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      })
+    }
+
+    // Upload to iDrive
+    const uploadResult = await idriveService.uploadFile(
+      req.file.path,
+      'flashcard-images',
+      req.file.originalname,
+    )
+
+    // Create blob record only (no attachment yet - will be linked when card is created)
+    const blob = await blobService.createBlob({
+      key: uploadResult.key,
+      filename: uploadResult.fileName,
+      contentType: idriveService.getContentType(path.extname(req.file.path)),
+      byteSize: blobService.getFileSize(req.file.path),
+      checksum: blobService.calculateChecksum(req.file.path),
+      metadata: {
+        originalName: path.basename(req.file.path),
+        uploadedFrom: 'flashcard_card'
+      }
+    })
+
+    // Generate presigned URL for immediate preview (1 hour)
+    const presignedUrl = await idriveService.getSignedUrl(blob.key, 3600)
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        url: presignedUrl, // Temporary presigned URL for preview
+        key: blob.key, // Frontend will send this key when creating/updating cards
+        filename: blob.filename,
+        contentType: idriveService.getContentType(path.extname(req.file.path)),
+        byteSize: blobService.getFileSize(req.file.path),
       }
     })
   }

@@ -26,6 +26,7 @@ import {
 function FlashcardList({ onEdit, onDelete, onCreateFirst }) { 
   const { decks, loading } = useSelector((state) => state.flashcard)
 
+  console.log(decks)
   // Loading state
   if (loading?.isGetListDecksLoading) {
     return <LoadingOverlay>Loading flashcards...</LoadingOverlay>
@@ -49,55 +50,60 @@ function FlashcardList({ onEdit, onDelete, onCreateFirst }) {
   // Data state - render quiz grid
   return (
     <QuizzesGrid>
-      {decks.map(quiz => (
-        <QuizCard key={quiz.id}>
-          <QuizCardHeader>
-            <QuizCardTitle>{quiz.title}</QuizCardTitle>
-            <StatusBadge published={quiz.status === 'published'}>
-              {quiz.status === 'published' ? 'Published' : 'Draft'}
-            </StatusBadge>
-          </QuizCardHeader>
+      {decks.map(quiz => {
+        // Filter tags by tag_group
+        const universityTags = quiz.tags?.filter(tag => tag.tag_group?.name === 'university') || []
+        const semesterTags = quiz.tags?.filter(tag => tag.tag_group?.name === 'semester') || []
 
-          {/* <QuizImageContainer>
-            {quiz.image_url ? (
-              <QuizImage src={quiz.image_url} alt={quiz.title} />
-            ) : (
-              <span style={{ color: '#9ca3af' }}>No Image</span>
+        return (
+          <QuizCard key={quiz.id}>
+            <QuizCardHeader>
+              <QuizCardTitle>{quiz.title}</QuizCardTitle>
+              <StatusBadge published={quiz.status === 'published'}>
+                {quiz.status === 'published' ? 'Published' : 'Draft'}
+              </StatusBadge>
+            </QuizCardHeader>
+
+            {/* <QuizImageContainer>
+              {quiz.image_url ? (
+                <QuizImage src={quiz.image_url} alt={quiz.title} />
+              ) : (
+                <span style={{ color: '#9ca3af' }}>No Image</span>
+              )}
+            </QuizImageContainer> */}
+
+            <QuizDescription>
+              {quiz.description || 'Tidak ada deskripsi'}
+            </QuizDescription>
+
+            {/* University Tags */}
+            {universityTags.length > 0 && (
+              <TagList>
+                {universityTags.map((tag) => (
+                  <Tag key={tag.id} university>
+                    🏛️ {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
             )}
-          </QuizImageContainer> */}
 
-          <QuizDescription>
-            {quiz.description || 'Tidak ada deskripsi'}
-          </QuizDescription>
-
-          {/* University Tags */}
-          {quiz.universityTags && quiz.universityTags.length > 0 && (
-            <TagList>
-              {quiz.universityTags.map((tag) => (
-                <Tag key={tag.id} university>
-                  🏛️ {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
-
-          {/* Semester Tags */}
-          {quiz.semesterTags && quiz.semesterTags.length > 0 && (
-            <TagList>
-              {quiz.semesterTags.map((tag) => (
-                <Tag key={tag.id} semester>
-                  📚 {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
+            {/* Semester Tags */}
+            {semesterTags.length > 0 && (
+              <TagList>
+                {semesterTags.map((tag) => (
+                  <Tag key={tag.id} semester>
+                    📚 {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
 
           <div style={{flex: "1"}}></div>
 
           <QuizStats>
             <StatItem>
               <StatLabel>Kartu</StatLabel>
-              <StatValue>{quiz.questionCount || 0}</StatValue>
+              <StatValue>{quiz.cardCount || 0}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Created</StatLabel>
@@ -107,20 +113,21 @@ function FlashcardList({ onEdit, onDelete, onCreateFirst }) {
             </StatItem>
           </QuizStats>
 
-          <CardActions>
-            <CardActionButton onClick={() => onEdit(quiz)}>
-              Edit
-            </CardActionButton>
-            <CardActionButton
-              danger
-              onClick={() => onDelete(quiz.id)}
-              disabled={loading?.isDeleteAnatomyQuizLoading}
-            >
-              Delete
-            </CardActionButton>
-          </CardActions>
-        </QuizCard>
-      ))}
+            <CardActions>
+              <CardActionButton onClick={() => onEdit(quiz)}>
+                Edit
+              </CardActionButton>
+              <CardActionButton
+                danger
+                onClick={() => onDelete(quiz.id)}
+                disabled={loading?.isDeleteAnatomyQuizLoading}
+              >
+                Delete
+              </CardActionButton>
+            </CardActions>
+          </QuizCard>
+        )
+      })}
     </QuizzesGrid>
   )
 }

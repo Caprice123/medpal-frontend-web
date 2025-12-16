@@ -1,6 +1,10 @@
 import { Filter } from './components/Filter'
 import DeckList from './components/DeckList'
 import { useFlashcardList } from './hooks/useFlashcardList'
+import Pagination from '@components/Pagination'
+import { useDispatch, useSelector } from 'react-redux'
+import { actions } from '@store/flashcard/reducer'
+import { fetchFlashcardDecks } from '@store/flashcard/action'
 import {
   Container,
   DeckSelectionContainer
@@ -8,6 +12,13 @@ import {
 
 function FlashcardListPage() {
   useFlashcardList()
+  const dispatch = useDispatch()
+  const { pagination, loading } = useSelector(state => state.flashcard)
+
+  const handlePageChange = (page) => {
+    dispatch(actions.setPage(page))
+    dispatch(fetchFlashcardDecks())
+  }
 
   return (
     <Container>
@@ -15,6 +26,15 @@ function FlashcardListPage() {
         <Filter />
 
         <DeckList />
+
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isGetListDecksLoading}
+          variant="user"
+          language="id"
+        />
       </DeckSelectionContainer>
     </Container>
   )

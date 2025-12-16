@@ -6,9 +6,15 @@ export class GetFlashcardDecksService extends BaseService {
     static async call(filters = {}) {
         this.validate(filters)
 
-        const where = {
-            is_active: true,
-            status: 'ready'
+        // Pagination
+        const page = parseInt(filters.page) || 1
+        const perPage = parseInt(filters.perPage) || 20
+        const skip = (page - 1) * perPage
+
+        const where = {}
+
+        if (filters.status) {
+            where.status = filters.status
         }
 
         // Build filter conditions for tags
@@ -40,11 +46,17 @@ export class GetFlashcardDecksService extends BaseService {
         }
 
         const decks = await prisma.flashcard_decks.findMany({
+            skip,
+            take: perPage,
             where,
             include: {
                 flashcard_deck_tags: {
                     include: {
-                        tags: true
+                        tags: {
+                            include: {
+                                tag_group: true
+                            }
+                        }
                     }
                 },
                 flashcard_cards: {
@@ -64,19 +76,28 @@ export class GetFlashcardDecksService extends BaseService {
             title: deck.title,
             description: deck.description,
             content_type: deck.content_type,
-            content: deck.content,
-            pdf_url: deck.pdf_url,
+            status: deck.status,
             tags: deck.flashcard_deck_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,
-                tagGroupId: t.tags.tag_group_id
+                tag_group: {
+                    id: t.tags.tag_group?.id,
+                    name: t.tags.tag_group?.name
+                }
             })),
             cardCount: deck.flashcard_cards.length,
             createdAt: deck.created_at,
-            updatedAt: deck.updated_at
+            updatedAt: deck.updated_at,
         }))
 
-        return transformedDecks
+        return {
+            decks: transformedDecks,
+            pagination: {
+                page,
+                perPage,
+                isLastPage: decks.length < perPage
+            }
+        }
     }
 
     static validate(filters) {

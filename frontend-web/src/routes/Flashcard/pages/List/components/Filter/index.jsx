@@ -13,11 +13,11 @@ export const Filter = () => {
     const { tags } = useSelector((state) => state.tags)
 
     const universityTags = useMemo(() => {
-        return tags?.find(tag => tag.name === 'university')?.tags?.map((tag) => ({ label: tag.name, value: tag.name })) || []
+        return tags?.find(tag => tag.name === 'university')?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
     }, [tags])
 
     const semesterTags = useMemo(() => {
-        return tags?.find(tag => tag.name === 'semester')?.tags?.map((tag) => ({ label: tag.name, value: tag.name })) || []
+        return tags?.find(tag => tag.name === 'semester')?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
     }, [tags])
 
     const onSearch = () => {
@@ -58,8 +58,8 @@ export const Filter = () => {
                     <FilterComponent.Label>Universitas</FilterComponent.Label>
                     <Dropdown
                     options={universityTags}
-                    value={filters.university ? { label: filters.university, value: filters.university } : null}
-                    onChange={(option) => dispatch(actions.updateFilter({ key: 'university', value: option.value }))}
+                    value={filters.university ? universityTags.find((tag) => tag.id == filters.university) : null}
+                    onChange={(option) => dispatch(actions.updateFilter({ key: 'university', value: option?.value }))}
                     placeholder="Filter berdasarkan universitas..."
                     />
                 </FilterComponent.Group>
@@ -68,8 +68,8 @@ export const Filter = () => {
                     <FilterComponent.Label>Semester</FilterComponent.Label>
                     <Dropdown
                     options={semesterTags}
-                    value={filters.semester ? { label: filters.semester, value: filters.semester } : null}
-                    onChange={(option) => dispatch(actions.updateFilter({ key: 'semester', value: option.value }))}
+                    value={filters.semester ? semesterTags.find((tag) => tag.id == filters.semester) : null}
+                    onChange={(option) => dispatch(actions.updateFilter({ key: 'semester', value: option?.value }))}
                     placeholder="Filter berdasarkan semester..."
                     />
                 </FilterComponent.Group>

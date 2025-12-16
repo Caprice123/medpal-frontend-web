@@ -6,7 +6,8 @@ import { getWithToken } from '../../utils/requestUtils'
 const {
   setLoading,
   setDecks,
-  setDetail
+  setDetail,
+  updatePagination,
 } = actions
 
 // ============= Decks Actions =============
@@ -18,15 +19,23 @@ export const fetchFlashcardDecks = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isGetListDecksLoading', value: true }))
 
-    const { filters } = getState().flashcard
-    const queryParams = {}
+    const { filters, pagination } = getState().flashcard
+    const queryParams = {
+      page: pagination.page,
+      perPage: pagination.perPage
+    }
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
 
     const route = Endpoints.api.flashcards
     const response = await getWithToken(route, queryParams)
 
-    dispatch(setDecks(response.data.data || response.data.decks || []))
+    // Backend returns { data: { decks: [...], pagination: {...} } }
+    const responseData = response.data.data || response.data
+
+    // New paginated response
+    dispatch(setDecks(responseData.decks))
+    dispatch(updatePagination(responseData.pagination))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {

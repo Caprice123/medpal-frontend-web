@@ -18,7 +18,16 @@ export const login = (googleCredential, onSuccess) => async (dispatch) => {
         const response = await api.post(Endpoints.Login, requestBody)
         const { data } = response.data
         setUser(data.user)
-        setToken(data.token)
+
+        // Store new token structure with both access and refresh tokens
+        const tokenData = {
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            accessTokenExpiredAt: data.accessTokenExpiresAt,
+            refreshTokenExpiredAt: data.refreshTokenExpiresAt
+        }
+        setToken(tokenData)
+
         onSuccess()
     } catch(err) {
         handleApiError(err, dispatch)

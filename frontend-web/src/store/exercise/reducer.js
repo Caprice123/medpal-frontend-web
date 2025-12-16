@@ -3,10 +3,12 @@ import { resetAllState } from '../globalAction'
 
 const initialState = {
   topics: [],
-  tags: [],
-  selectedTopic: null,
-  questions: [],
-  generatedQuestions: [],
+  detail: null,
+  filters: {
+    university: '',
+    semester: '',
+    status: ''
+  },
   loading: {
     isTopicsLoading: false,
     isTagsLoading: false,
@@ -16,12 +18,6 @@ const initialState = {
     isDeletingTopic: false,
     isQuestionsLoading: false,
   },
-  error: null,
-  filters: {
-    university: '',
-    semester: '',
-    status: ''
-  }
 }
 
 const { reducer, actions } = createSlice({
@@ -37,8 +33,8 @@ const { reducer, actions } = createSlice({
     setTags: (state, { payload }) => {
       state.tags = payload
     },
-    setSelectedTopic: (state, { payload }) => {
-      state.selectedTopic = payload
+    setDetail: (state, { payload }) => {
+      state.detail = payload
     },
     setQuestions: (state, { payload }) => {
       state.questions = payload

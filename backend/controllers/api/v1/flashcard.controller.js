@@ -4,9 +4,9 @@ import { SubmitFlashcardProgressService } from '../../../services/flashcard/subm
 
 class FlashcardController {
   async getDecks(req, res) {
-    const { university, semester } = req.query
+    const { university, semester, page, perPage } = req.query
 
-    const decks = await GetFlashcardDecksService.call({ university, semester })
+    const decks = await GetFlashcardDecksService.call({ university, semester, status: "published", page, perPage })
 
     return res.status(200).json({
       success: true,

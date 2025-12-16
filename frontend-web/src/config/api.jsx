@@ -13,6 +13,9 @@ const api = axios.create({
 const isTokenExpired = (isoString) => {
     const now = new Date(); // Current date and time
     const targetDate = new Date(isoString); // Convert ISO string to Date object
+    console.log(now)
+    console.log(isoString)
+    console.log(targetDate)
     return targetDate < now; // Check if the target date is before now
 };
 
@@ -21,7 +24,7 @@ let refreshPromise = null; // Holds the promise of the ongoing refresh
 
 const refreshAccessToken = async () => {
     const token = getToken();
-    const refreshResponse = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/v1/refresh`, {
+    const refreshResponse = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/refresh`, {
         refreshToken: token.refreshToken,
     });
     const newToken = refreshResponse.data.data;
@@ -65,13 +68,13 @@ export const setupAxiosInterceptors = (navigate, dispatch) => {
             }
 
             // Redirect to login if the refresh token is expired
-            if (isTokenExpired(token.refreshTokenExpiredAt)) {
+            if (isTokenExpired(token.refreshTokenExpiresAt)) {
                 navigate(SIGN_IN_ROUTE);
                 return config;
             }
 
             // If the access token is expired, refresh it
-            if (isTokenExpired(token.accessTokenExpiredAt)) {
+            if (isTokenExpired(token.accessTokenExpiresAt)) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     refreshPromise = refreshAccessToken()
@@ -92,6 +95,9 @@ export const setupAxiosInterceptors = (navigate, dispatch) => {
                 // Wait for the ongoing refresh token request
                 const newAccessToken = await refreshPromise;
                 config.headers.Authorization = `Bearer ${newAccessToken}`;
+            } else {
+                // Use the current access token if not expired
+                config.headers.Authorization = `Bearer ${token.accessToken}`;
             }
 
             return config;

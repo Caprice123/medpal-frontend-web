@@ -1,15 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { generateFlashcards, generateFlashcardsFromPDF } from '@store/flashcard/adminAction'
 
-export const useGenerateFlashcard = (mainForm, setPdfInfo) => {
+export const useGenerateFlashcard = (mainForm, setPdfInfo, initialContentType = 'document', initialTextContent = '') => {
   const dispatch = useDispatch()
   const { loading } = useSelector(state => state.flashcard)
 
-  const [contentType, setContentType] = useState('document') // 'document' or 'text'
-  const [textContent, setTextContent] = useState('')
+  const [contentType, setContentType] = useState(initialContentType)
+  const [textContent, setTextContent] = useState(initialTextContent)
   const [pdfFile, setPdfFile] = useState(null)
   const [cardCount, setCardCount] = useState(10)
+
+  // Update state when initial values change (when deck detail is loaded)
+  useEffect(() => {
+    setContentType(initialContentType)
+  }, [initialContentType])
+
+  useEffect(() => {
+    setTextContent(initialTextContent)
+  }, [initialTextContent])
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0]

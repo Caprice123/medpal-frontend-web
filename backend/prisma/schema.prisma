@@ -229,20 +229,20 @@ model user_learning_sessions {
 }
 
 model flashcard_decks {
-  id           Int      @id @default(autoincrement())
-  title        String
-  description  String?
-  content_type String
-  content      String?
-  pdf_url      String?
-  pdf_key      String?
-  pdf_filename String?
-  flashcard_count   Int?
-  status       String   @default("draft")
-  is_active    Boolean  @default(true)
-  created_by   Int
-  created_at   DateTime @default(now())
-  updated_at   DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String?
+  content_type    String
+  content         String?
+  pdf_url         String?
+  pdf_key         String?
+  pdf_filename    String?
+  flashcard_count Int?
+  status          String   @default("draft")
+  is_active       Boolean  @default(true)
+  created_by      Int
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
 
   flashcard_cards     flashcard_cards[]
   flashcard_deck_tags flashcard_deck_tags[]
@@ -258,6 +258,7 @@ model flashcard_cards {
   deck_id    Int
   front      String
   back       String
+  image_url  String?
   order      Int      @default(0)
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -349,17 +350,20 @@ model user_question_progress {
 }
 
 model user_sessions {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  token        String   @unique
-  isActive     Boolean  @default(true)
-  userAgent    String?
-  ipAddress    String?
-  expiresAt    DateTime
-  lastActiveAt DateTime @default(now())
-  createdAt    DateTime @default(now())
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  token                String   @unique
+  refreshToken         String?  @unique
+  refreshTokenExpiresAt DateTime?
+  isActive             Boolean  @default(true)
+  userAgent            String?
+  ipAddress            String?
+  expiresAt            DateTime
+  lastActiveAt         DateTime @default(now())
+  createdAt            DateTime @default(now())
 
   @@index([token])
+  @@index([refreshToken])
   @@index([userId])
 }
 
@@ -832,9 +836,9 @@ model mcq_topics {
   created_at      DateTime @default(now())
   updated_at      DateTime @default(now())
 
-  mcq_questions mcq_questions[]
+  mcq_questions  mcq_questions[]
   mcq_topic_tags mcq_topic_tags[]
-  mcq_attempts mcq_attempts[]
+  mcq_attempts   mcq_attempts[]
 
   @@index([created_by])
   @@index([is_active])
@@ -848,15 +852,15 @@ model mcq_questions {
   image_url      String?
   image_key      String?
   image_filename String?
-  options        Json     // Array of option strings
-  correct_answer Int      // Index of correct option (0-based)
+  options        Json // Array of option strings
+  correct_answer Int // Index of correct option (0-based)
   explanation    String?
   order          Int      @default(0)
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  mcq_topic mcq_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
-  mcq_answers mcq_answers[]
+  mcq_topic         mcq_topics          @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  mcq_answers       mcq_answers[]
   user_mcq_progress user_mcq_progress[]
 
   @@index([topic_id])
@@ -892,7 +896,7 @@ model mcq_attempts {
   created_at      DateTime  @default(now())
   updated_at      DateTime  @default(now())
 
-  mcq_topic mcq_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  mcq_topic   mcq_topics    @relation(fields: [topic_id], references: [id], onDelete: Cascade)
   mcq_answers mcq_answers[]
 
   @@index([user_id])
@@ -904,10 +908,10 @@ model mcq_answers {
   id          Int      @id @default(autoincrement())
   attempt_id  Int
   question_id Int
-  user_answer Int      // Index of selected option (0-based)
+  user_answer Int // Index of selected option (0-based)
   is_correct  Boolean
   answered_at DateTime @default(now())
-  time_taken  Int?     // in seconds
+  time_taken  Int? // in seconds
 
   mcq_attempt  mcq_attempts  @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
   mcq_question mcq_questions @relation(fields: [question_id], references: [id], onDelete: Cascade)

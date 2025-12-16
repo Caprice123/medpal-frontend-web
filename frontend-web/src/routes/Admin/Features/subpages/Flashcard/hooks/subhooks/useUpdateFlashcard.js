@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useFormik } from 'formik'
 import {
-  updateDeckCards,
-  fetchAdminFlashcardDecks
+  updateFlashcardDeck,
+  fetchAdminFlashcardDecks,
+  uploadCardImage
 } from '@store/flashcard/adminAction'
 import { KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
@@ -11,8 +12,10 @@ import { updateFlashcardSchema } from '../../validationSchema/createFlashcardSch
 
 export const useUpdateFlashcard = (onClose) => {
   const dispatch = useDispatch()
-  const { selectedDeck, cards } = useSelector(state => state.flashcard)
+  const { detail } = useSelector(state => state.flashcard)
   const [pdfInfo, setPdfInfo] = useState(null)
+  const [initialContentType, setInitialContentType] = useState('document')
+  const [initialTextContent, setInitialTextContent] = useState('')
 
   const form = useFormik({
     initialValues: {
@@ -26,21 +29,39 @@ export const useUpdateFlashcard = (onClose) => {
     validationSchema: updateFlashcardSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        if (!selectedDeck?.id) {
+        if (!detail?.id) {
           console.error('No deck selected for update')
           return
         }
+        console.log(values)
 
-        // For now, we can only update cards
-        // TODO: Add API endpoint to update full deck including title, description, tags
-        const cardsPayload = values.cards.map((card, index) => ({
-          id: card.id, // Preserve existing card IDs
+        // Combine university and semester tags
+        const universityTagIds = values.universityTags?.map(tag => tag.id) || []
+        const semesterTagIds = values.semesterTags?.map(tag => tag.id) || []
+        const allTagIds = [...universityTagIds, ...semesterTagIds]
+
+        // Prepare cards data (image keys sent to backend for attachment linking)
+        const cardsData = values.cards.map((card, index) => ({
+          id: card.id, // Preserve existing card IDs for updates
           front: card.front,
           back: card.back,
+          image_key: card.image?.key || null, // Backend will create attachment link
           order: index
         }))
 
-        await dispatch(updateDeckCards(selectedDeck.id, cardsPayload))
+        const payload = {
+          title: values.title,
+          description: values.description || '',
+          status: values.status,
+          tags: allTagIds,
+          cards: cardsData,
+          pdf_url: pdfInfo?.pdf_url || null,
+          pdf_key: pdfInfo?.pdf_key || null,
+          pdf_filename: pdfInfo?.pdf_filename || null
+        }
+
+        console.log(payload)
+        await dispatch(updateFlashcardDeck(detail.id, payload))
 
         // Refresh the list
         await dispatch(fetchAdminFlashcardDecks())
@@ -59,49 +80,58 @@ export const useUpdateFlashcard = (onClose) => {
     enableReinitialize: true
   })
 
-  // Populate form when selectedDeck changes
+  // Populate form when detail changes
   useEffect(() => {
-    if (selectedDeck && cards && cards.length > 0) {
-      console.log('Populating form with deck:', selectedDeck)
-      console.log('Tags:', selectedDeck.tags)
-
+    if (detail) {
       // Map tags to the format expected by TagSelector
-      const universityTags = selectedDeck.tags?.filter(tag =>
+      const universityTags = detail.tags?.filter(tag =>
         tag.tag_group?.name === 'university'
       ) || []
 
-      const semesterTags = selectedDeck.tags?.filter(tag =>
+      const semesterTags = detail.tags?.filter(tag =>
         tag.tag_group?.name === 'semester'
       ) || []
 
-      console.log('University tags:', universityTags)
-      console.log('Semester tags:', semesterTags)
-
       // Add tempId to cards for drag-and-drop
-      const cardsWithTempIds = cards.map((card, index) => ({
+      const cardsWithTempIds = detail.flashcard_cards?.map((card, index) => ({
         ...card,
+        image: card.image ? {
+            url: card.image.url, // Temporary presigned URL for preview
+            key: card.image.key, // Frontend will send this key when creating/updating cards
+            filename: card.image.filename,
+            contentType: card.image.contentType,
+            byteSize: card.image.byteSize,
+        } : null,
         tempId: card.id || Date.now() + index
-      }))
+      })) || []
 
       form.setValues({
-        title: selectedDeck.title || '',
-        description: selectedDeck.description || '',
+        title: detail.title || '',
+        description: detail.description || '',
         cards: cardsWithTempIds,
         universityTags: universityTags,
         semesterTags: semesterTags,
-        status: selectedDeck.status || 'draft'
+        status: detail.status || 'draft'
       })
 
-      // If deck was generated from PDF, set PDF info
-      if (selectedDeck.pdf_url) {
+      // Set initial content based on content_type
+      if (detail.content_type === 'pdf' && detail.pdf_url) {
+        setInitialContentType('document')
         setPdfInfo({
-          pdf_url: selectedDeck.pdf_url,
-          pdf_key: selectedDeck.pdf_key,
-          pdf_filename: selectedDeck.pdf_filename
+          pdf_url: detail.pdf_url,
+          pdf_key: detail.pdf_key,
+          pdf_filename: detail.pdf_filename
         })
+      } else if (detail.content_type === 'text' && detail.content) {
+        setInitialContentType('text')
+        setInitialTextContent(detail.content)
+      } else {
+        // Default to document if no content_type
+        setInitialContentType('document')
+        setInitialTextContent('')
       }
     }
-  }, [selectedDeck, cards, form])
+  }, [detail])
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -116,7 +146,9 @@ export const useUpdateFlashcard = (onClose) => {
       tempId: Date.now(),
       front: '',
       back: '',
-      order: form.values.cards.length
+      order: form.values.cards.length,
+      image: null,
+      image_url: null
     }
     form.setFieldValue("cards", [...form.values.cards, newCard])
   }
@@ -130,6 +162,26 @@ export const useUpdateFlashcard = (onClose) => {
     }))
     form.setFieldValue("cards", reorderedCards)
   }
+
+  const handleImageUpload = async (cardIndex, file) => {
+    try {
+      // Upload image to centralized endpoint
+      const result = await dispatch(uploadCardImage(file))
+      console.log(file)
+      form.setFieldValue(`cards.${cardIndex}.image`, {
+        url: result.url, // Temporary presigned URL for preview
+        key: result.key, // Frontend will send this key when creating/updating cards
+        filename: result.filename,
+        contentType: result.contentType,
+        byteSize: result.byteSize,
+      })
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      alert('Failed to upload image. Please try again.')
+    }
+  }
+
+  console.log(form.values)
 
   // Drag and drop handler
   const handleDragEnd = (event) => {
@@ -155,7 +207,10 @@ export const useUpdateFlashcard = (onClose) => {
     handleAddCard,
     handleRemoveCard,
     handleDragEnd,
+    handleImageUpload,
     setPdfInfo,
-    selectedDeck
+    pdfInfo,
+    initialContentType,
+    initialTextContent
   }
 }

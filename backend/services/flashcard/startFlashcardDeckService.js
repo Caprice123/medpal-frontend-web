@@ -2,6 +2,7 @@ import prisma from '../../prisma/client.js'
 import { BaseService } from '../baseService.js'
 import { ValidationError } from '../../errors/validationError.js'
 import { HasActiveSubscriptionService } from '../pricing/getUserStatusService.js'
+import idriveService from '../idrive.service.js'
 
 export class StartFlashcardDeckService extends BaseService {
   static async call({ flashcardDeckId, userId }) {
@@ -103,6 +104,61 @@ export class StartFlashcardDeckService extends BaseService {
         remainingCards.splice(selectedIndex, 1)
       }
 
+      // Get attachments for all cards
+      const attachments = await tx.attachments.findMany({
+        where: {
+          recordType: 'flashcard_card',
+          recordId: { in: cardIds },
+          name: 'image'
+        }
+      })
+
+      // Get blobs for all attachments
+      const blobIds = attachments.map(a => a.blobId)
+      const blobs = await tx.blobs.findMany({
+        where: { id: { in: blobIds } }
+      })
+
+      // Create maps for quick lookup
+      const attachmentMap = new Map()
+      attachments.forEach(att => {
+        attachmentMap.set(att.recordId, att)
+      })
+
+      const blobMap = new Map()
+      blobs.forEach(blob => {
+        blobMap.set(blob.id, blob)
+      })
+
+      // Get blob keys for presigned URL generation
+      const blobKeys = []
+      const cardBlobKeyMap = new Map()
+
+      sortedCards.forEach(card => {
+        const attachment = attachmentMap.get(card.id)
+        if (attachment) {
+          const blob = blobMap.get(attachment.blobId)
+          if (blob) {
+            blobKeys.push(blob.key)
+            cardBlobKeyMap.set(card.id, blob.key)
+          }
+        }
+      })
+
+      // Generate presigned URLs (bulk operation)
+      const presignedUrls = blobKeys.length > 0
+        ? await idriveService.getBulkSignedUrls(blobKeys, 3600)
+        : []
+
+      // Map presigned URLs back to cards
+      const urlMap = new Map()
+      let urlIndex = 0
+      sortedCards.forEach(card => {
+        if (cardBlobKeyMap.has(card.id)) {
+          urlMap.set(card.id, presignedUrls[urlIndex++])
+        }
+      })
+
       // Create deck snapshot with sorted cards
       const deckSnapshot = {
         id: deck.id,
@@ -118,6 +174,7 @@ export class StartFlashcardDeckService extends BaseService {
           id: card.id,
           front: card.front || '',
           back: card.back || '',
+          image_url: urlMap.get(card.id) || null,
           order: index  // Spaced repetition order
         }))
       }
