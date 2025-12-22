@@ -130,7 +130,7 @@ export class GetAnatomyQuizzesService extends BaseService {
         title: quiz.title,
         description: quiz.description,
         image_url: urlMap.get(quiz.image_key),
-        cost: parseInt(cost),
+        cost: parseFloat(cost),
         tags: allTags,
         universityTags,
         semesterTags,

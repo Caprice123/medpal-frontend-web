@@ -7,7 +7,7 @@ export class StartFlashcardWithDeckService extends BaseService {
   static async call({ userLearningSessionId, flashcardDeckId, userId }) {
     // Get credit cost from constants BEFORE transaction
     const constants = await GetConstantsService.call(['flashcard_credit_cost'])
-    const creditCost = parseInt(constants.flashcard_credit_cost)
+    const creditCost = parseFloat(constants.flashcard_credit_cost)
 
     const result = await prisma.$transaction(async (tx) => {
       // Get the flashcard session

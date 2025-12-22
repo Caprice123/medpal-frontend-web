@@ -35,7 +35,7 @@ const Alert = () => {
                 draggable: true,
                 hideProgressBar: false,
                 theme: "colored",
-                onOpen: () => dispatch(actions.resetError())
+                onClose: () => dispatch(actions.resetError())
             })
         }
     }, [error?.message, dispatch])

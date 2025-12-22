@@ -13,6 +13,7 @@ import { anatomyQuizRoutes } from './routes/AnatomyQuiz/routes';
 import { summaryNotesRoutes } from './routes/SummaryNotes/routes';
 import { multipleChoiceRoutes } from './routes/MultipleChoice/routes';
 import { flashcardRoutes } from './routes/Flashcard/routes';
+import { chatbotRoutes } from './routes/Chatbot/routes';
 
 const appRoutes = [
     { path: '/', element: <Home /> },
@@ -42,6 +43,7 @@ const appRoutes = [
             ...summaryNotesRoutes,
             ...multipleChoiceRoutes,
             ...flashcardRoutes,
+            ...chatbotRoutes,
             {
                 path: '/admin',
                 element: (

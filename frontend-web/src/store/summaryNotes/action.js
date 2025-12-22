@@ -14,6 +14,9 @@ const {
   updateNote,
   removeNote,
   setPagination,
+  setEmbeddings,
+  setSelectedEmbedding,
+  setEmbeddingsPagination,
   setError,
   clearError
 } = actions
@@ -230,6 +233,45 @@ export const updateSummaryNotesConstants = (settings) => async (dispatch) => {
   } catch (err) {
     handleApiError(err, dispatch)
     throw err
+  }
+}
+
+// ============= ChromaDB Embeddings Endpoints =============
+
+export const fetchEmbeddings = (page, perPage) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isEmbeddingsLoading', value: true }))
+    dispatch(clearError())
+
+    const queryParams = {
+      page: page || 1,
+      perPage: perPage || 20
+    }
+
+    const response = await getWithToken(Endpoints.summaryNotes.admin.embeddings, queryParams)
+    dispatch(setEmbeddings(response.data.data || []))
+    dispatch(setEmbeddingsPagination(response.data.pagination || { page: 1, perPage: 20, totalCount: 0, totalPages: 0, isLastPage: false }))
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isEmbeddingsLoading', value: false }))
+  }
+}
+
+export const fetchEmbeddingDetail = (embeddingId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isEmbeddingDetailLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(Endpoints.summaryNotes.admin.embeddingDetail(embeddingId))
+    const embedding = response.data.data
+    dispatch(setSelectedEmbedding(embedding))
+    return embedding
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isEmbeddingDetailLoading', value: false }))
   }
 }
 

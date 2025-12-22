@@ -15,7 +15,9 @@
     "db:studio": "prisma studio",
     "db:seed": "node prisma/seed.js",
     "db:seed:exercise": "node prisma/seeds/exerciseConstants.seed.js",
-    "db:seed:flashcard": "node prisma/seeds/flashcardConstants.seed.js"
+    "db:seed:flashcard": "node prisma/seeds/flashcardConstants.seed.js",
+    "chromadb:start": "python -m chromadb.cli.cli run --path ./data/chromadb --port 8000",
+    "embed:notes": "node scripts/embedAllSummaryNotes.js"
   },
   "keywords": [],
   "author": "",
@@ -23,9 +25,12 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.931.0",
     "@aws-sdk/s3-request-presigner": "^3.931.0",
+    "@blocknote/core": "^0.45.0",
     "@google/generative-ai": "^0.24.1",
+    "@perplexity-ai/perplexity_ai": "^0.18.1",
     "@prisma/client": "^6.19.0",
     "bcrypt": "^6.0.0",
+    "chromadb": "^3.1.8",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",

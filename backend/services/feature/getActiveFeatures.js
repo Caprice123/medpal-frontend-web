@@ -34,6 +34,10 @@ export class GetActiveFeaturesService extends BaseService {
         "mcq_credit_cost",
         "mcq_session_type",
         "mcq_is_active",
+        "chatbot_feature_title",
+        "chatbot_feature_description",
+        "chatbot_access_type",
+        "chatbot_is_active",
     ])
 
     const features = []
@@ -43,7 +47,7 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.exercise_feature_title,
         description: featureConstants.exercise_feature_description,
-        cost: parseInt(featureConstants.exercise_credit_cost) || 0,
+        cost: parseFloat(featureConstants.exercise_credit_cost) || 0,
         icon: '🎓',
         sessionType: featureConstants.exercise_session_type,
         isActive: featureConstants.exercise_is_active
@@ -55,7 +59,7 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.flashcard_feature_title,
         description: featureConstants.flashcard_feature_description,
-        cost: parseInt(featureConstants.flashcard_credit_cost) || 0,
+        cost: parseFloat(featureConstants.flashcard_credit_cost) || 0,
         icon: '🎴',
         sessionType: featureConstants.flashcard_session_type,
         isActive: featureConstants.flashcard_is_active
@@ -67,7 +71,7 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.summary_notes_feature_title,
         description: featureConstants.summary_notes_feature_description,
-        cost: parseInt(featureConstants.summary_notes_credit_cost) || 0,
+        cost: parseFloat(featureConstants.summary_notes_credit_cost) || 0,
         icon: '📝',
         sessionType: 'summary_notes',
         isActive: featureConstants.summary_notes_is_active
@@ -79,7 +83,7 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.calculator_feature_title,
         description: featureConstants.calculator_feature_description,
-        cost: parseInt(featureConstants.calculator_credit_cost) || 0,
+        cost: parseFloat(featureConstants.calculator_credit_cost) || 0,
         icon: '🧮',
         sessionType: "calculator",
         isActive: featureConstants.calculator_is_active
@@ -91,7 +95,7 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.anatomy_feature_title,
         description: featureConstants.anatomy_feature_description,
-        cost: parseInt(featureConstants.anatomy_credit_cost) || 0,
+        cost: parseFloat(featureConstants.anatomy_credit_cost) || 0,
         icon: '🫀',
         accessType: featureConstants.anatomy_access_type || 'subscription',
         sessionType: "anatomy",
@@ -104,10 +108,23 @@ export class GetActiveFeaturesService extends BaseService {
       features.push({
         name: featureConstants.mcq_feature_title,
         description: featureConstants.mcq_feature_description,
-        cost: parseInt(featureConstants.mcq_credit_cost) || 0,
+        cost: parseFloat(featureConstants.mcq_credit_cost) || 0,
         icon: '📝',
         sessionType: featureConstants.mcq_session_type,
         isActive: featureConstants.mcq_is_active
+      })
+    }
+
+    // Chatbot feature
+    if (featureConstants.chatbot_feature_title && featureConstants.chatbot_is_active === 'true') {
+      features.push({
+        name: featureConstants.chatbot_feature_title,
+        description: featureConstants.chatbot_feature_description,
+        cost: 0, // Cost is per-mode, not per-feature
+        icon: '💬',
+        accessType: featureConstants.chatbot_access_type || 'subscription',
+        sessionType: "chatbot",
+        isActive: featureConstants.chatbot_is_active
       })
     }
 

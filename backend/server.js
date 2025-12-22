@@ -30,6 +30,8 @@ import adminTagGroupsRoutes from './routes/admin/v1/tagGroup.routes.js';
 import adminUsersRoutes from './routes/admin/v1/users.routes.js';
 import adminAnatomyRoutes from './routes/admin/v1/anatomy.routes.js';
 import adminMcqRoutes from './routes/admin/v1/mcq.routes.js';
+import chatbotRoutes from './routes/api/v1/chatbot.routes.js';
+import adminChatbotRoutes from './routes/admin/v1/chatbot.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
@@ -68,6 +70,7 @@ app.use('/api/v1/pricing', pricingRoutes);
 app.use('/api/v1/calculators', calculatorRoutes);
 app.use('/api/v1/anatomy', anatomyRoutes);
 app.use('/api/v1/mcq', mcqRoutes);
+app.use('/api/v1/chatbot', chatbotRoutes);
 
 // Admin Routes
 app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);
@@ -82,6 +85,7 @@ app.use('/admin/v1/tag-groups', adminTagGroupsRoutes);
 app.use('/admin/v1/users', adminUsersRoutes);
 app.use('/admin/v1/anatomy', adminAnatomyRoutes);
 app.use('/admin/v1/mcq', adminMcqRoutes);
+app.use('/admin/v1/chatbot', adminChatbotRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/client.js'
 import { BaseService } from '../../baseService.js'
 import { ValidationError } from '../../../errors/validationError.js'
+import embeddingService from '../../embedding/embeddingService.js'
 
 export class CreateSummaryNoteService extends BaseService {
   static async call({ title, description, content, markdownContent, sourceType, sourceUrl, sourceKey, sourceFilename, status, tagIds, createdBy }) {
@@ -58,6 +59,16 @@ export class CreateSummaryNoteService extends BaseService {
 
       return completeSummaryNote
     })
+
+    // Auto-embed if status is 'published'
+    if (result.status === 'published') {
+      try {
+        await embeddingService.embedSummaryNote(result)
+      } catch (error) {
+        console.error('Failed to embed summary note:', error)
+        // Don't throw - note was created successfully, embedding is supplementary
+      }
+    }
 
     return result
   }

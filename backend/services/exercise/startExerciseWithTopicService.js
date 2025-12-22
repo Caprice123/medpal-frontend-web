@@ -7,7 +7,7 @@ export class StartExerciseWithTopicService extends BaseService {
   static async call({ userLearningSessionId, attemptId, exerciseTopicId, userId }) {
     // Get credit cost from constants BEFORE transaction
     const constants = await GetConstantsService.call(['exercise_credit_cost'])
-    const creditCost = parseInt(constants.exercise_credit_cost)
+    const creditCost = parseFloat(constants.exercise_credit_cost)
 
     const result = await prisma.$transaction(async (tx) => {
       // Get the attempt directly

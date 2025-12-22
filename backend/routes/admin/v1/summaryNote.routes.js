@@ -52,4 +52,8 @@ router.delete('/:id', authenticateToken, requireAdmin, asyncHandler(SummaryNotes
 // Generate summary from document
 router.post('/generate', authenticateToken, requireAdmin, upload.single('document'), asyncHandler(SummaryNotesAdminController.generateFromDocument))
 
+// ChromaDB embeddings routes
+router.get('/embeddings/list', authenticateToken, requireAdmin, asyncHandler(SummaryNotesAdminController.getEmbeddings))
+router.get('/embeddings/:id', authenticateToken, requireAdmin, asyncHandler(SummaryNotesAdminController.getEmbeddingDetail))
+
 export default router

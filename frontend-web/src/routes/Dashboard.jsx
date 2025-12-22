@@ -213,6 +213,11 @@ function Dashboard() {
         return
       }
 
+      if (sessionType == "chatbot") {
+        navigate("/chatbot")
+        return
+      }
+
       // For calculator, navigate to dedicated calculator page
       if (!sessionType) {
         navigate('/calculators')

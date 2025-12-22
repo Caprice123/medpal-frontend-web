@@ -12,7 +12,7 @@ export class StartSummaryNoteSessionService extends BaseService {
 
     // Get credit cost from constants
     const constants = await GetConstantsService.call(['summary_notes_credit_cost'])
-    const creditCost = parseInt(constants.summary_notes_credit_cost || 5)
+    const creditCost = parseFloat(constants.summary_notes_credit_cost || 5)
 
     const result = await prisma.$transaction(async (tx) => {
       // Verify the user_learning_session exists and belongs to the user

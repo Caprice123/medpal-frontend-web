@@ -120,6 +120,8 @@ export default {
             list: `${API_BASE_URL}/admin/v1/summary-notes`,
             detail: (id) => `${API_BASE_URL}/admin/v1/summary-notes/${id}`,
             generate: `${API_BASE_URL}/admin/v1/summary-notes/generate`,
+            embeddings: `${API_BASE_URL}/admin/v1/summary-notes/embeddings/list`,
+            embeddingDetail: (id) => `${API_BASE_URL}/admin/v1/summary-notes/embeddings/${id}`,
         }
     },
     anatomy: {
@@ -153,6 +155,24 @@ export default {
             topics: `${API_BASE_URL}/admin/v1/mcq/topics`,
             topic: (id) => `${API_BASE_URL}/admin/v1/mcq/topics/${id}`,
             constants: `${API_BASE_URL}/admin/v1/mcq/constants`,
+        }
+    },
+    chatbot: {
+        // User endpoints
+        config: `${API_BASE_URL}/api/v1/chatbot/config`,
+        conversations: `${API_BASE_URL}/api/v1/chatbot/conversations`,
+        conversation: (id) => `${API_BASE_URL}/api/v1/chatbot/conversations/${id}`,
+        messages: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/messages`,
+        send: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/send`,
+        feedback: (messageId) => `${API_BASE_URL}/api/v1/chatbot/messages/${messageId}/feedback`,
+        constants: `${API_BASE_URL}/api/v1/chatbot/constants`,
+
+        // Admin endpoints
+        admin: {
+            conversations: `${API_BASE_URL}/admin/v1/chatbot/conversations`,
+            conversation: (id) => `${API_BASE_URL}/admin/v1/chatbot/conversations/${id}`,
+            messages: (conversationId) => `${API_BASE_URL}/admin/v1/chatbot/conversations/${conversationId}/messages`,
+            constants: `${API_BASE_URL}/admin/v1/chatbot/constants`,
         }
     },
 }

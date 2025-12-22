@@ -7,6 +7,7 @@ import SummaryNotes from './subpages/SummaryNotes'
 import Calculator from './subpages/Calculator'
 import AnatomyQuiz from './subpages/AnatomyQuiz'
 import MultipleChoice from './subpages/MultipleChoice'
+import Chatbot from './subpages/Chatbot'
 import { fetchFeatures } from '@store/feature/action'
 import {
   Container,
@@ -110,6 +111,8 @@ function Features() {
             return <AnatomyQuiz onBack={handleBackToList} />
         case "mcq":
             return <MultipleChoice onBack={handleBackToList} />
+        case "chatbot":
+            return <Chatbot onBack={handleBackToList} />
     }
   }
 

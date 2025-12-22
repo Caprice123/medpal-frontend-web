@@ -17,6 +17,7 @@ import user from "./user";
 import anatomy from "./anatomy";
 import mcq from "./mcq";
 import constant from "./constant";
+import chatbot from "./chatbot/reducer";
 
 export const rootReducer = combineReducers({
     auth,
@@ -36,6 +37,7 @@ export const rootReducer = combineReducers({
     user,
     anatomy,
     mcq,
+    chatbot,
 })
 
 export const store = configureStore({

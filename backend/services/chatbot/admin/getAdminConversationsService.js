@@ -1,0 +1,107 @@
+import prisma from '../../../prisma/client.js'
+import { BaseService } from '../../baseService.js'
+import { ValidationError } from '../../../errors/validationError.js'
+
+export class GetAdminConversationsService extends BaseService {
+  static async call({ page = 1, perPage = 20, userId, search }) {
+    this.validate({ page, perPage, userId })
+
+    const skip = (page - 1) * perPage
+    const take = perPage + 1
+
+    const where = {
+      is_deleted: false
+    }
+
+    if (userId) {
+      where.user_id = userId
+    }
+
+    if (search) {
+      where.topic = {
+        contains: search,
+        mode: 'insensitive'
+      }
+    }
+
+    const conversations = await prisma.chatbot_conversations.findMany({
+      where,
+      take,
+      skip,
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        chatbot_messages: {
+          where: { is_deleted: false },
+          orderBy: { created_at: 'desc' },
+          take: 1,
+          select: {
+            content: true,
+            sender_type: true,
+            mode_type: true,
+            created_at: true
+          }
+        },
+        _count: {
+          select: {
+            chatbot_messages: {
+              where: { is_deleted: false }
+            }
+          }
+        }
+      },
+      orderBy: {
+        updated_at: 'desc'
+      }
+    })
+
+    const isLastPage = conversations.length <= perPage
+    const paginatedConversations = conversations.slice(0, perPage)
+
+    const transformedConversations = paginatedConversations.map(conv => ({
+      id: conv.id,
+      userId: conv.user_id,
+      topic: conv.topic,
+      user: {
+        id: conv.users.id,
+        name: conv.users.name,
+        email: conv.users.email
+      },
+      messageCount: conv._count.chatbot_messages,
+      lastMessage: conv.chatbot_messages[0] || null,
+      createdAt: conv.created_at,
+      updatedAt: conv.updated_at
+    }))
+
+    return {
+      data: transformedConversations,
+      pagination: {
+        page,
+        perPage,
+        isLastPage
+      }
+    }
+  }
+
+  static validate({ page, perPage, userId }) {
+    if (page && (isNaN(parseInt(page)) || parseInt(page) < 1)) {
+      throw new ValidationError('Invalid page number')
+    }
+
+    if (perPage) {
+      const perPageNum = parseInt(perPage)
+      if (isNaN(perPageNum) || perPageNum < 1 || perPageNum > 100) {
+        throw new ValidationError('Invalid perPage. Must be between 1 and 100')
+      }
+    }
+
+    if (userId && isNaN(parseInt(userId))) {
+      throw new ValidationError('Invalid user ID')
+    }
+  }
+}

@@ -37,9 +37,9 @@ model credit_transactions {
   userId           Int
   userCreditId     Int
   type             String
-  amount           Int
-  balanceBefore    Int
-  balanceAfter     Int
+  amount           Decimal       @db.Decimal(10, 2)
+  balanceBefore    Decimal       @db.Decimal(10, 2)
+  balanceAfter     Decimal       @db.Decimal(10, 2)
   description      String?
   creditPlanId     Int?
   sessionId        Int?
@@ -378,8 +378,9 @@ model users {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  user_credit       user_credits?
-  user_subscription user_subscriptions[]
+  user_credit          user_credits?
+  user_subscription    user_subscriptions[]
+  chatbot_conversations chatbot_conversations[]
 }
 
 model user_subscriptions {
@@ -398,7 +399,7 @@ model user_subscriptions {
 model user_credits {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
-  balance   Int      @default(0)
+  balance   Decimal  @default(0) @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
@@ -937,4 +938,78 @@ model user_mcq_progress {
   @@index([user_id])
   @@index([question_id])
   @@index([topic_id])
+}
+
+// ============= Chatbot Feature =============
+
+model chatbot_conversations {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  topic      String
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  users            users              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chatbot_messages chatbot_messages[]
+
+  @@index([user_id])
+  @@index([created_at])
+  @@index([updated_at])
+  @@index([is_deleted])
+  @@index([user_id, is_deleted, updated_at]) // Composite index for listing user conversations
+}
+
+model chatbot_messages {
+  id              Int      @id @default(autoincrement())
+  conversation_id Int
+  sender_type     String // 'user' or 'ai'
+  mode_type       String? // 'normal', 'validated', 'research' (null for user messages)
+  content         String   @db.Text
+  credits_used    Int      @default(0)
+  is_deleted      Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  chatbot_conversation      chatbot_conversations       @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  chatbot_message_sources   chatbot_message_sources[]
+  chatbot_message_feedbacks chatbot_message_feedbacks[]
+
+  @@index([conversation_id])
+  @@index([sender_type])
+  @@index([mode_type])
+  @@index([created_at])
+  @@index([is_deleted])
+  @@index([conversation_id, created_at]) // Composite index for message listing
+}
+
+model chatbot_message_sources {
+  id          Int      @id @default(autoincrement())
+  message_id  Int
+  source_type String // 'summary_note', 'web_search'
+  title       String
+  content     String   @db.Text
+  url         String?
+  score       Float? // Similarity/relevance score
+  created_at  DateTime @default(now())
+
+  chatbot_message chatbot_messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@index([message_id])
+  @@index([source_type])
+}
+
+model chatbot_message_feedbacks {
+  id         Int      @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+  is_helpful Boolean
+  feedback   String?  @db.Text
+  created_at DateTime @default(now())
+
+  chatbot_message chatbot_messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@unique([message_id, user_id]) // One feedback per user per message
+  @@index([message_id])
+  @@index([user_id])
+  @@index([is_helpful])
 }

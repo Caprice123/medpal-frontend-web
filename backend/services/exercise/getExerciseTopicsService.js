@@ -69,7 +69,7 @@ export class GetExerciseTopicsService extends BaseService {
             content_type: topic.content_type,
             content: topic.content,
             pdf_url: topic.pdf_url,
-            cost: parseInt(cost),
+            cost: parseFloat(cost),
             tags: topic.exercise_topic_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,

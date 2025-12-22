@@ -4,6 +4,7 @@ import { GetSummaryNotesListService } from '../../../../services/summaryNotes/ad
 import { GetSummaryNoteDetailService } from '../../../../services/summaryNotes/admin/getSummaryNoteDetailService.js'
 import { DeleteSummaryNoteService } from '../../../../services/summaryNotes/admin/deleteSummaryNoteService.js'
 import { GenerateSummaryFromDocumentService } from '../../../../services/summaryNotes/admin/generateSummaryFromDocumentService.js'
+import { GetEmbeddingsService } from '../../../../services/embedding/getEmbeddingsService.js'
 
 class SummaryNotesAdminController {
   // List all summary notes (with pagination)
@@ -120,6 +121,34 @@ class SummaryNotesAdminController {
       success: true,
       data: result,
       message: 'Summary generated successfully'
+    })
+  }
+
+  // Get ChromaDB embeddings
+  async getEmbeddings(req, res) {
+    const { page, perPage } = req.query
+
+    const result = await GetEmbeddingsService.call({
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 20
+    })
+
+    return res.status(200).json({
+      success: true,
+      data: result.data,
+      pagination: result.pagination
+    })
+  }
+
+  // Get specific embedding document
+  async getEmbeddingDetail(req, res) {
+    const { id } = req.params
+
+    const embedding = await GetEmbeddingsService.getById(id)
+
+    return res.status(200).json({
+      success: true,
+      data: embedding
     })
   }
 }

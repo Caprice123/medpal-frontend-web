@@ -9,6 +9,11 @@ const initialState = {
     semester: '',
     status: ''
   },
+  pagination: {
+    page: 1,
+    perPage: 20,
+    isLastPage: false
+  },
   loading: {
     isTopicsLoading: false,
     isTagsLoading: false,
@@ -88,9 +93,28 @@ const { reducer, actions } = createSlice({
     clearSelectedTopic: (state) => {
       state.selectedTopic = null
       state.questions = []
+    },
+    setPage: (state, { payload }) => {
+      state.pagination.page = payload
+    },
+    nextPage: (state) => {
+      if (!state.pagination.isLastPage) {
+        state.pagination.page += 1
+      }
+    },
+    previousPage: (state) => {
+      if (state.pagination.page > 1) {
+        state.pagination.page -= 1
+      }
+    },
+    updatePagination: (state, { payload }) => {
+      state.pagination = { ...state.pagination, ...payload }
+    },
+    updateFilter: (state, { payload: { key, value } }) => {
+      state.filters[key] = value
     }
   },
-  
+
     extraReducers: (builder) => {
       builder.addCase(resetAllState, (state) => ({
           ...initialState,

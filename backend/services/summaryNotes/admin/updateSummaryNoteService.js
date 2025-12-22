@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/client.js'
 import { BaseService } from '../../baseService.js'
 import { ValidationError } from '../../../errors/validationError.js'
+import embeddingService from '../../embedding/embeddingService.js'
 
 export class UpdateSummaryNoteService extends BaseService {
   static async call({ id, title, description, content, markdownContent, sourceType, sourceUrl, sourceKey, sourceFilename, status, isActive, tagIds }) {
@@ -73,6 +74,26 @@ export class UpdateSummaryNoteService extends BaseService {
 
       return completeSummaryNote
     })
+
+    // Handle embedding updates
+    try {
+      const wasPublished = existing.status === 'published'
+      const isPublished = result.status === 'published'
+
+      if (!wasPublished && isPublished) {
+        // Status changed from draft to published → create embedding
+        await embeddingService.embedSummaryNote(result)
+      } else if (wasPublished && !isPublished) {
+        // Status changed from published to draft → delete embedding
+        await embeddingService.deleteSummaryNoteEmbedding(result.id)
+      } else if (isPublished) {
+        // Still published → update embedding (in case content changed)
+        await embeddingService.embedSummaryNote(result)
+      }
+    } catch (error) {
+      console.error('Failed to update embedding for summary note:', error)
+      // Don't throw - note was updated successfully, embedding is supplementary
+    }
 
     return result
   }
