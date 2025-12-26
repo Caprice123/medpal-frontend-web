@@ -15,9 +15,7 @@ const getAdminSkripsiSetService = async (setId) => {
         }
       },
       tabs: {
-        orderBy: {
-          created_at: 'asc'
-        },
+        orderBy: { id: 'asc' },
         include: {
           messages: {
             orderBy: {

@@ -2,15 +2,13 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '@store/store'
 import { shallowEqual } from 'react-redux'
-import { fetchSet, switchTab, saveSetContent } from '@store/skripsi/action'
+import { fetchSet, switchTab, saveSetContent, uploadImage } from '@store/skripsi/action'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
-import Endpoints from '@config/endpoint'
-import { postWithToken } from '@utils/requestUtils'
 import { convertHtmlToDocxReliable } from '@utils/htmlToDocx'
 import { Container, EditorArea, LoadingState } from './Editor.styles'
 import TopBar from './components/TopBar'
@@ -30,24 +28,15 @@ const SkripsiEditor = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   // Image upload handler
-  const handleImageUpload = async (file) => {
+  const handleImageUpload = useCallback(async (file) => {
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-      formData.append('type', 'skripsi-editor')
-
-      const response = await postWithToken(Endpoints.api.uploadImage, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-
-      return response.data.data.url
+      const url = await dispatch(uploadImage(file, 'skripsi-editor'))
+      return url
     } catch (error) {
       console.error('Image upload failed:', error)
       throw error
     }
-  }
+  }, [dispatch])
 
   // Initialize TipTap editor
   const editor = useEditor({

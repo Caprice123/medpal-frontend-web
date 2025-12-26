@@ -2,7 +2,8 @@ import { actions } from '@store/skripsi/reducer'
 import Endpoints from '@config/endpoint'
 import { handleApiError } from '@utils/errorUtils'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
-import { getToken } from '@utils/authToken'
+import { getToken, setToken } from '@utils/authToken'
+import api from '@config/api'
 
 const {
   setSets,
@@ -43,6 +44,23 @@ export const fetchAdminSets = (filters = {}, page = 1, perPage = 20) => async (d
     throw err
   } finally {
     dispatch(setLoading({ key: 'isSetsLoading', value: false }))
+  }
+}
+
+export const fetchAdminSet = (setId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isAdminSetLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(Endpoints.skripsi.admin.set(setId))
+    const set = response.data.data
+
+    return set
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isAdminSetLoading', value: false }))
   }
 }
 
@@ -156,6 +174,27 @@ export const switchTab = (tab) => (dispatch) => {
   dispatch(setCurrentTab(tab))
 }
 
+export const uploadImage = (file, type = 'skripsi-editor') => async (dispatch) => {
+  try {
+    dispatch(clearError())
+
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('type', type)
+
+    const response = await postWithToken(Endpoints.api.uploadImage, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    return response.data.data.url
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  }
+}
+
 export const saveSetContent = (setId, editorContent) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSavingContent', value: true }))
@@ -210,15 +249,44 @@ export const sendMessage = (tabId, message, onStreamUpdate = null) => async (dis
   }
 }
 
-// Streaming message handler - character-by-character typing
-const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = null) => {
+// Helper function to ensure token is valid and refreshed if needed
+const ensureValidToken = async () => {
   const token = getToken()
 
   if (!token) {
     throw new Error('No authentication token found')
   }
 
-  const url = `${Endpoints.skripsi.sendMessage(tabId)}`
+  // Check if access token is expired
+  const isTokenExpired = (isoString) => {
+    const now = new Date()
+    const targetDate = new Date(isoString)
+    return targetDate < now
+  }
+
+  // If access token is expired, refresh it using axios
+  if (isTokenExpired(token.accessTokenExpiresAt)) {
+    try {
+      const refreshResponse = await api.post('/api/v1/refresh', {
+        refreshToken: token.refreshToken,
+      })
+      const newToken = refreshResponse.data.data
+      setToken(newToken)
+      return newToken.accessToken
+    } catch (error) {
+      throw new Error('Failed to refresh token')
+    }
+  }
+
+  return token.accessToken
+}
+
+// Streaming message handler - character-by-character typing
+const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = null) => {
+  // Ensure token is valid and refreshed if needed
+  const accessToken = await ensureValidToken()
+
+  const url = `${import.meta.env.VITE_API_BASE_URL}${Endpoints.skripsi.sendMessage(tabId)}`
 
   const streamingMessageId = `streaming-${Date.now()}`
   const messageCreatedAt = new Date().toISOString()
@@ -311,7 +379,7 @@ const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = n
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token.accessToken}`
+        'Authorization': `Bearer ${accessToken}`
       },
       body: JSON.stringify({ message: content })
     })

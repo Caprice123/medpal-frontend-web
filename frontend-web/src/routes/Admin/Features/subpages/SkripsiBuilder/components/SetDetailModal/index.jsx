@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
-import { getWithToken } from '@utils/requestUtils'
-import Endpoints from '@config/endpoint'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchAdminSet } from '@store/skripsi/action'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -41,9 +41,10 @@ const TAB_CONFIGS = [
 ]
 
 function SetDetailModal({ set, isOpen, onClose }) {
+  const dispatch = useDispatch()
+  const loading = useSelector(state => state.skripsi.loading)
   const [setData, setSetData] = useState(null)
   const [currentTab, setCurrentTab] = useState(null)
-  const [loading, setLoading] = useState(false)
   const chatMessagesRef = useRef(null)
 
   useEffect(() => {
@@ -60,18 +61,13 @@ function SetDetailModal({ set, isOpen, onClose }) {
 
   const fetchSetData = async () => {
     try {
-      setLoading(true)
-      const response = await getWithToken(Endpoints.skripsi.admin.set(set.id))
-      console.log('Admin set data:', response.data.data) // Debug log
-      console.log('Tabs:', response.data.data.tabs) // Debug log
-      setSetData(response.data.data)
-      if (response.data.data.tabs && response.data.data.tabs.length > 0) {
-        setCurrentTab(response.data.data.tabs[0])
+      const setData = await dispatch(fetchAdminSet(set.id))
+      setSetData(setData)
+      if (setData.tabs && setData.tabs.length > 0) {
+        setCurrentTab(setData.tabs[0])
       }
     } catch (error) {
       console.error('Failed to fetch set:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -99,7 +95,7 @@ function SetDetailModal({ set, isOpen, onClose }) {
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </ModalHeader>
 
-        {loading ? (
+        {loading.isAdminSetLoading ? (
           <LoadingState>Memuat data...</LoadingState>
         ) : !setData ? (
           <LoadingState>Data tidak ditemukan</LoadingState>
@@ -127,10 +123,6 @@ function SetDetailModal({ set, isOpen, onClose }) {
             <EditorArea>
               {/* Chat Panel */}
               <ChatPanel>
-                <ChatHeader>
-                  <ChatTitle>Chat dengan AI</ChatTitle>
-                </ChatHeader>
-
                 <ChatMessages ref={chatMessagesRef}>
                   {currentTab?.messages?.length === 0 ? (
                     <EmptyMessages>

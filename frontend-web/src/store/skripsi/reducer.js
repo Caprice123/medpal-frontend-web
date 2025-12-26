@@ -8,6 +8,7 @@ const initialState = {
   loading: {
     isSetsLoading: false,
     isSetLoading: false,
+    isAdminSetLoading: false,
     isSendingMessage: false,
     isSavingContent: false,
   },
