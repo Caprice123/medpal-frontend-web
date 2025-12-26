@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)

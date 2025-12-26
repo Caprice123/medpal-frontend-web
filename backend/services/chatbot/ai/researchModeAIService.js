@@ -1,6 +1,6 @@
 import { Perplexity } from '@perplexity-ai/perplexity_ai'
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
 
 export class ResearchModeAIService extends BaseService {

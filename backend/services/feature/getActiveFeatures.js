@@ -1,6 +1,6 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
-import { GetConstantsService } from '#constant/getConstantsService.js'
+import { BaseService } from '#services/baseService'
+import { GetConstantsService } from '#services/constant/getConstantsService'
 
 export class GetActiveFeaturesService extends BaseService {
   static async call() {

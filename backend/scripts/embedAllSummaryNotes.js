@@ -5,9 +5,9 @@
  * - Updates markdown_content in database
  */
 
-import prisma from '#prisma/client.js'
-import embeddingService from '#services/embedding/embeddingService.js'
-import { initializeVectorDB } from '#services/vectorDB/vectorDBFactory.js'
+import prisma from '#prisma/client'
+import embeddingService from '#services/embedding/embeddingService'
+import { initializeVectorDB } from '#services/vectorDB/vectorDBFactory'
 
 import { BlockNoteEditor } from "@blocknote/core"
 

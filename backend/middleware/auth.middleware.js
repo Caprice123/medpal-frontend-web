@@ -1,5 +1,5 @@
-import { AuthorizationError } from '#errors/authorizationError.js';
-import authService from '#services/auth.service.js';
+import { AuthorizationError } from '#errors/authorizationError';
+import authService from '#services/auth.service';
 
 /**
  * Authentication middleware

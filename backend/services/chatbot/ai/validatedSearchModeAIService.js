@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
-import RAGService from '#rag/ragService.js'
+import { BaseService } from '#services/baseService'
+import RAGService from '#services/rag/ragService'
 import { ValidationError } from '#errors/validationError'
 
 

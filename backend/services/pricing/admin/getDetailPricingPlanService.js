@@ -1,5 +1,5 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 
 export class GetDetailPricingPlanService extends BaseService {
   static async call(id) {

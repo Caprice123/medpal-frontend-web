@@ -1,5 +1,5 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 
 export class GetConversationsListService extends BaseService {
   static async call({ page = 1, perPage = 30, search = '', userId = null } = {}) {

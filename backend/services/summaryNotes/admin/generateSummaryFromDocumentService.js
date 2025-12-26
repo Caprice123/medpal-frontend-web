@@ -2,9 +2,9 @@ import { GoogleAIFileManager } from '@google/generative-ai/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs'
 import path from 'path'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
-import idriveService from '#idrive.service.js'
+import idriveService from '#services/idrive.service'
 
 export class GenerateSummaryFromDocumentService extends BaseService {
   static async call({ filePath, mimeType, filename }) {

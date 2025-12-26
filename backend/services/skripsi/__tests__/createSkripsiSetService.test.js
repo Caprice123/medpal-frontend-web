@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import createSkripsiSetService from '#createSkripsiSetService.js'
+import createSkripsiSetService from '#createSkripsiSetService'
 import prisma from '#config/database'
 
 describe('createSkripsiSetService', () => {

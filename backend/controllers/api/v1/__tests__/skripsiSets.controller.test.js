@@ -1,33 +1,33 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import * as SkripsiSetsController from '../skripsiSets.controller.js'
+import * as SkripsiSetsController from '#skripsiSets.controller'
 
 // Mock services
-jest.mock('../../../../services/skripsi/getSkripsiSetsService.js', () => ({
+jest.mock('#services/skripsi/getSkripsiSetsService', () => ({
   __esModule: true,
   default: jest.fn(),
 }))
-jest.mock('../../../../services/skripsi/createSkripsiSetService.js', () => ({
+jest.mock('#services/skripsi/createSkripsiSetService', () => ({
   __esModule: true,
   default: jest.fn(),
 }))
-jest.mock('../../../../services/skripsi/getSkripsiSetService.js', () => ({
+jest.mock('#services/skripsi/getSkripsiSetService', () => ({
   __esModule: true,
   default: jest.fn(),
 }))
-jest.mock('../../../../services/skripsi/updateSkripsiSetService.js', () => ({
+jest.mock('#services/skripsi/updateSkripsiSetService', () => ({
   __esModule: true,
   default: jest.fn(),
 }))
-jest.mock('../../../../services/skripsi/deleteSkripsiSetService.js', () => ({
+jest.mock('#services/skripsi/deleteSkripsiSetService', () => ({
   __esModule: true,
   default: jest.fn(),
 }))
 
-import getSkripsiSetsService from '../../../../services/skripsi/getSkripsiSetsService.js'
-import createSkripsiSetService from '../../../../services/skripsi/createSkripsiSetService.js'
-import getSkripsiSetService from '../../../../services/skripsi/getSkripsiSetService.js'
-import updateSkripsiSetService from '../../../../services/skripsi/updateSkripsiSetService.js'
-import deleteSkripsiSetService from '../../../../services/skripsi/deleteSkripsiSetService.js'
+import getSkripsiSetsService from '#services/skripsi/getSkripsiSetsService'
+import createSkripsiSetService from '#services/skripsi/createSkripsiSetService'
+import getSkripsiSetService from '#services/skripsi/getSkripsiSetService'
+import updateSkripsiSetService from '#services/skripsi/updateSkripsiSetService'
+import deleteSkripsiSetService from '#services/skripsi/deleteSkripsiSetService'
 
 describe('SkripsiSetsController', () => {
   let req, res

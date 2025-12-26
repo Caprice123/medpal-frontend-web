@@ -1,6 +1,6 @@
 import prisma from '#prisma/client';
 import blobService from '#services/attachment/blobService';
-import idriveService from '#idrive.service.js';
+import idriveService from '#services/idrive.service';
 import path from 'path';
 
 /**

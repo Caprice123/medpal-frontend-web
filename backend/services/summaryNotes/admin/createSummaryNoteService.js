@@ -1,7 +1,7 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
-import embeddingService from '#embedding/embeddingService.js'
+import embeddingService from '#services/embedding/embeddingService'
 
 export class CreateSummaryNoteService extends BaseService {
   static async call({ title, description, content, markdownContent, sourceType, sourceUrl, sourceKey, sourceFilename, status, tagIds, createdBy }) {

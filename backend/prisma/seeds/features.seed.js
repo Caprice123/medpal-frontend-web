@@ -1,4 +1,4 @@
-import prisma from '#client.js'
+import prisma from '#client'
 
 export async function seedFeatures() {
   console.log('🌱 Seeding features...')

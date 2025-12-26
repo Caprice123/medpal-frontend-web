@@ -1,8 +1,8 @@
 import { ValidationError } from '#errors/validationError'
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
-import { GetConstantsService } from '#constant/getConstantsService.js'
-import idriveService from '#idrive.service.js'
+import { BaseService } from '#services/baseService'
+import { GetConstantsService } from '#services/constant/getConstantsService'
+import idriveService from '#services/idrive.service'
 
 export class GetAnatomyQuizzesService extends BaseService {
   static async call(filters = {}) {

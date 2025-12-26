@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { getVectorDB } from '#vectorDB/vectorDBFactory.js'
+import { getVectorDB } from '#services/vectorDB/vectorDBFactory'
 import MarkdownChunker from '#services/embedding/markdownChunker'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)

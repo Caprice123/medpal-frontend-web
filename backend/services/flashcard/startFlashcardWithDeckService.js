@@ -1,7 +1,7 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
-import { GetConstantsService } from '#constant/getConstantsService.js'
+import { GetConstantsService } from '#services/constant/getConstantsService'
 
 export class StartFlashcardWithDeckService extends BaseService {
   static async call({ userLearningSessionId, flashcardDeckId, userId }) {

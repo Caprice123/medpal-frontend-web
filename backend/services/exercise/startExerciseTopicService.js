@@ -1,7 +1,7 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
-import { HasActiveSubscriptionService } from '#pricing/getUserStatusService.js'
+import { HasActiveSubscriptionService } from '#services/pricing/getUserStatusService'
 
 export class StartExerciseTopicService extends BaseService {
   static async call({ exerciseTopicId, userId }) {

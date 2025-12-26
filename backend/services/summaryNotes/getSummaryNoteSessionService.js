@@ -1,5 +1,5 @@
 import prisma from '#prisma/client'
-import { BaseService } from '#baseService.js'
+import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
 
 export class GetSummaryNoteSessionService extends BaseService {
