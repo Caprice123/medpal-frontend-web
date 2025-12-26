@@ -1,25 +1,33 @@
-import { ValidationError } from '../errors/validationError.js'
-import { NotFoundError } from '../errors/notFoundError.js'
+import { ValidationError } from '#errors/validationError'
+import { NotFoundError } from '#errors/notFoundError'
 
 /**
  * Global error handling middleware
  * Catches all errors thrown in controllers and services
  */
 export const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err)
+  // Log error for debugging (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error:', err)
+  } else {
+    // In production, only log error type and message (not full stack)
+    console.error('Error:', {
+      type: err.constructor.name,
+      message: err.message,
+      code: err.code
+    })
+  }
 
-  // Handle ValidationError (400 Bad Request)
+  // Handle ValidationError (400 Bad Request) - returns custom message
   if (err instanceof ValidationError) {
     return res.status(400).json({
-      success: false,
       error: err.message
     })
   }
 
-  // Handle NotFoundError (404 Not Found)
+  // Handle NotFoundError (404 Not Found) - returns custom message
   if (err instanceof NotFoundError) {
     return res.status(404).json({
-      success: false,
       error: err.message
     })
   }
@@ -27,24 +35,22 @@ export const errorHandler = (err, req, res, next) => {
   // Handle custom errors with statusCode property
   if (err.statusCode) {
     return res.status(err.statusCode).json({
-      success: false,
       error: err.message || 'An error occurred'
     })
   }
 
-  // Handle Prisma errors
+  // Handle Prisma errors (hide details in production)
   if (err.code && err.code.startsWith('P')) {
     return res.status(400).json({
-      success: false,
-      error: 'Database error',
-      message: err.message
+      error: process.env.NODE_ENV === 'development'
+        ? `Database error: ${err.message}`
+        : 'Database error occurred'
     })
   }
 
   // Default to 500 Internal Server Error
+  // In production, hide error details for security
   return res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: 'Internal server error'
   })
 }
