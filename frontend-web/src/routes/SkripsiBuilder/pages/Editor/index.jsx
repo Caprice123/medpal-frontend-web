@@ -8,6 +8,10 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
+import Image from '@tiptap/extension-image'
+import Endpoints from '@config/endpoint'
+import { postWithToken } from '@utils/requestUtils'
+import { convertHtmlToDocxReliable } from '@utils/htmlToDocx'
 import { Container, EditorArea, LoadingState } from './Editor.styles'
 import TopBar from './components/TopBar'
 import TabBar from './components/TabBar'
@@ -25,6 +29,26 @@ const SkripsiEditor = () => {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
+  // Image upload handler
+  const handleImageUpload = async (file) => {
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      formData.append('type', 'skripsi-editor')
+
+      const response = await postWithToken(Endpoints.api.uploadImage, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      return response.data.data.url
+    } catch (error) {
+      console.error('Image upload failed:', error)
+      throw error
+    }
+  }
+
   // Initialize TipTap editor
   const editor = useEditor({
     extensions: [
@@ -35,6 +59,10 @@ const SkripsiEditor = () => {
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
+      }),
+      Image.configure({
+        inline: true,
+        allowBase64: false,
       }),
     ],
     content: '',
@@ -120,96 +148,15 @@ const SkripsiEditor = () => {
     if (!editor || !currentSet) return
 
     try {
-      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = await import('docx')
-      const { saveAs } = await import('file-saver')
-
-      // Get HTML content and parse it
       const htmlContent = editor.getHTML()
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(htmlContent, 'text/html')
+      const fileName = currentSet.title.replace(/[^a-z0-9]/gi, '_')
 
-      // Convert HTML to docx paragraphs
-      const paragraphs = []
+      await convertHtmlToDocxReliable(htmlContent, fileName)
 
-      const processNode = (node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const text = node.textContent.trim()
-          if (text) {
-            return new TextRun({ text })
-          }
-          return null
-        }
-
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const tagName = node.tagName.toLowerCase()
-          const children = Array.from(node.childNodes)
-
-          if (tagName === 'p') {
-            const textRuns = children.map(processNode).filter(Boolean)
-            const alignment = node.style.textAlign === 'center' ? AlignmentType.CENTER :
-                            node.style.textAlign === 'right' ? AlignmentType.RIGHT :
-                            AlignmentType.LEFT
-            paragraphs.push(new Paragraph({ children: textRuns, alignment }))
-          } else if (tagName === 'h1') {
-            const textRuns = children.map(processNode).filter(Boolean)
-            paragraphs.push(new Paragraph({
-              children: textRuns,
-              heading: HeadingLevel.HEADING_1
-            }))
-          } else if (tagName === 'h2') {
-            const textRuns = children.map(processNode).filter(Boolean)
-            paragraphs.push(new Paragraph({
-              children: textRuns,
-              heading: HeadingLevel.HEADING_2
-            }))
-          } else if (tagName === 'h3') {
-            const textRuns = children.map(processNode).filter(Boolean)
-            paragraphs.push(new Paragraph({
-              children: textRuns,
-              heading: HeadingLevel.HEADING_3
-            }))
-          } else if (tagName === 'li') {
-            const textRuns = children.map(processNode).filter(Boolean)
-            paragraphs.push(new Paragraph({
-              children: textRuns,
-              bullet: { level: 0 }
-            }))
-          } else if (tagName === 'strong' || tagName === 'b') {
-            const text = node.textContent
-            return new TextRun({ text, bold: true })
-          } else if (tagName === 'em' || tagName === 'i') {
-            const text = node.textContent
-            return new TextRun({ text, italics: true })
-          } else if (tagName === 'u') {
-            const text = node.textContent
-            return new TextRun({ text, underline: {} })
-          } else {
-            children.forEach(processNode)
-          }
-        }
-        return null
-      }
-
-      // Process all nodes
-      Array.from(doc.body.childNodes).forEach(processNode)
-
-      // Create document
-      const wordDoc = new Document({
-        sections: [{
-          properties: {},
-          children: paragraphs.length > 0 ? paragraphs : [
-            new Paragraph({ children: [new TextRun({ text: 'Dokumen kosong' })] })
-          ]
-        }]
-      })
-
-      // Generate and save
-      const blob = await Packer.toBlob(wordDoc)
-      const fileName = `${currentSet.title.replace(/[^a-z0-9]/gi, '_')}.docx`
-      saveAs(blob, fileName)
+      alert('Berhasil mengekspor ke Word!')
     } catch (error) {
       console.error('Failed to export Word:', error)
-      alert('Gagal mengekspor ke Word')
+      alert(`Gagal mengekspor ke Word: ${error.message}`)
     }
   }, [editor, currentSet])
 
@@ -251,7 +198,7 @@ const SkripsiEditor = () => {
           isSendingMessage={isSendingMessage}
         />
 
-        <EditorPanel editor={editor} />
+        <EditorPanel editor={editor} onImageUpload={handleImageUpload} />
       </EditorArea>
     </Container>
   )

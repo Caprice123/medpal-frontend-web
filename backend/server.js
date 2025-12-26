@@ -34,6 +34,8 @@ import chatbotRoutes from './routes/api/v1/chatbot.routes.js';
 import adminChatbotRoutes from './routes/admin/v1/chatbot.routes.js';
 import skripsiRoutes from './routes/api/v1/skripsi.routes.js';
 import adminSkripsiRoutes from './routes/admin/v1/skripsi.routes.js';
+import uploadRoutes from './routes/api/v1/upload.routes.js';
+import htmlToDocxRoutes from './routes/api/v1/htmlToDocx.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 dotenv.config();
@@ -73,7 +75,9 @@ app.use('/api/v1/calculators', calculatorRoutes);
 app.use('/api/v1/anatomy', anatomyRoutes);
 app.use('/api/v1/mcq', mcqRoutes);
 app.use('/api/v1/chatbot', chatbotRoutes);
+app.use('/api/v1', uploadRoutes);
 app.use('/api/v1', skripsiRoutes);
+app.use('/api/v1/html-to-docx', htmlToDocxRoutes);
 
 // Admin Routes
 app.use('/admin/v1/credit-plans', adminCreditPlanRoutes);

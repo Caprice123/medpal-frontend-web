@@ -26,6 +26,7 @@ export default {
         calculators: "/api/v1/calculators",
         flashcards: "/api/v1/flashcards",
         anatomy: "/api/v1/anatomy",
+        uploadImage: `/api/v1/upload/image`,
     },
     tagGroups: "/admin/v1/tag-groups",
     users: "/admin/v1/users",
@@ -180,6 +181,7 @@ export default {
         sets: `${API_BASE_URL}/api/v1/skripsi/sets`,
         set: (id) => `${API_BASE_URL}/api/v1/skripsi/sets/${id}`,
         updateSetContent: (id) => `${API_BASE_URL}/api/v1/skripsi/sets/${id}/content`,
+        exportWord: `${API_BASE_URL}/api/v1/skripsi/export-word`,
 
         // Tabs endpoints
         // updateTab: (id) => `${API_BASE_URL}/api/v1/skripsi/tabs/${id}`, // Deprecated

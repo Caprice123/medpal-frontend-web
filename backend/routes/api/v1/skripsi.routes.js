@@ -9,6 +9,7 @@ const router = express.Router()
 // Skripsi Sets - all under /skripsi/sets
 router.get('/skripsi/sets', authenticateToken, asyncHandler(SkripsiSetsController.getSets))
 router.post('/skripsi/sets', authenticateToken, asyncHandler(SkripsiSetsController.createSet))
+router.post('/skripsi/export-word', authenticateToken, asyncHandler(SkripsiSetsController.exportToWord))
 router.get('/skripsi/sets/:id', authenticateToken, asyncHandler(SkripsiSetsController.getSet))
 router.put('/skripsi/sets/:id', authenticateToken, asyncHandler(SkripsiSetsController.updateSet))
 router.put('/skripsi/sets/:id/content', authenticateToken, asyncHandler(SkripsiSetsController.updateContent))

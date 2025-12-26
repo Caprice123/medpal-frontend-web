@@ -4,6 +4,7 @@ import { GetSkripsiSetService } from '../../../services/skripsi/getSkripsiSetSer
 import { UpdateSkripsiSetService } from '../../../services/skripsi/updateSkripsiSetService.js'
 import { UpdateSetContentService } from '../../../services/skripsi/updateSetContentService.js'
 import { DeleteSkripsiSetService } from '../../../services/skripsi/deleteSkripsiSetService.js'
+import { convertHtmlToDocxWithImages } from './htmlToDocx.controller.js'
 
 class SkripsiSetsController {
   // Get all skripsi sets for a user
@@ -111,6 +112,13 @@ class SkripsiSetsController {
       success: true,
       ...result
     })
+  }
+
+  // Export set to Word document
+  async exportToWord(req, res) {
+    // Use the new reliable docx implementation
+    req.body.fileName = req.body.title || 'document'
+    return convertHtmlToDocxWithImages(req, res)
   }
 }
 

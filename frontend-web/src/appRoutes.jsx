@@ -6,6 +6,7 @@ import SessionDetail from '@routes/SessionDetail';
 import ExercisePage from '@routes/Exercise';
 import UITest from '@routes/UITest';
 import EditorTest from '@routes/EditorTest';
+import HtmlToDocxExample from '@components/HtmlToDocxExample';
 import PrivateRoute from '@middleware/PrivateRoute';
 import { AuthRoute } from './routes/Auth/routes';
 import { calculatorRoutes } from './routes/Calculator/routes';
@@ -21,6 +22,7 @@ const appRoutes = [
     { path: AuthRoute.signInRoute, element: <Login /> },
     { path: '/ui-test', element: <UITest /> },
     { path: '/editor-test', element: <EditorTest /> },
+    { path: '/docx-test', element: <HtmlToDocxExample /> },
     {
         path: "/",
         element: <PrivateRoute />,
