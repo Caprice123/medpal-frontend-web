@@ -1,6 +1,6 @@
-import { ValidationError } from "../../errors/validationError.js";
-import prisma from "../../prisma/client.js";
-import { ValidatePaginationUtils } from "../../utils/validatePaginationUtils.js";
+import { ValidationError } from '#errors/validationError';
+import prisma from '#prisma/client';
+import { ValidatePaginationUtils } from '#utils/validatePaginationUtils';
 import { BaseService } from "../baseService.js";
 import moment from "moment-timezone";
 

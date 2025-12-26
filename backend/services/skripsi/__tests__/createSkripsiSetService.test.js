@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import createSkripsiSetService from '../createSkripsiSetService.js'
-import prisma from '../../../config/database.js'
+import createSkripsiSetService from '#createSkripsiSetService.js'
+import prisma from '#config/database'
 
 describe('createSkripsiSetService', () => {
   beforeEach(() => {

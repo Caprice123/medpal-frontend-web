@@ -1,6 +1,6 @@
 import express from 'express'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import statisticController from '../../../controllers/api/v1/statistic.controller.js'
+import { asyncHandler } from '#utils/asyncHandler'
+import statisticController from '#controllers/api/v1/statistic.controller'
 
 const router = express.Router()
 

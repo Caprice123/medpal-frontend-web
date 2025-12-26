@@ -7,9 +7,9 @@ import {
   deductCredits,
   addBonusCredits,
   getAllCreditTransactions
-} from '../controllers/credit.controller.js'
-import { authenticateToken, requireAdmin } from '../middleware/auth.middleware.js'
-import { asyncHandler } from '../utils/asyncHandler.js'
+} from '#controllers/credit.controller'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

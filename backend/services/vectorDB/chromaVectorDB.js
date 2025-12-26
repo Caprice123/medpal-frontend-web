@@ -1,5 +1,5 @@
 import { ChromaClient } from 'chromadb'
-import { BaseVectorDB } from './baseVectorDB.js'
+import { BaseVectorDB } from '#services/vectorDB/baseVectorDB'
 
 /**
  * ChromaDB Client-Server Implementation

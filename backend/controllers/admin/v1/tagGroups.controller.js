@@ -1,6 +1,6 @@
-import { ValidationUtils } from '../../../utils/validationUtils.js'
-import { GetTagGroupsService } from '../../../services/tagGroup/getTagGroupsService.js'
-import { TagGroupSerializer } from '../../../serializers/admin/v1/tagGroupSerializer.js'
+import { ValidationUtils } from '#utils/validationUtils'
+import { GetTagGroupsService } from '#services/tagGroup/getTagGroupsService'
+import { TagGroupSerializer } from '#serializers/admin/v1/tagGroupSerializer'
 
 class TagGroupsController {
   async index(req, res) {

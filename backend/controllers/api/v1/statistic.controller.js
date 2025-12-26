@@ -1,5 +1,5 @@
-import { GetStatisticsService } from '../../../services/statistic/getStatisticsService.js'
-import { UpdateStatisticService } from '../../../services/statistic/updateStatisticService.js'
+import { GetStatisticsService } from '#services/statistic/getStatisticsService'
+import { UpdateStatisticService } from '#services/statistic/updateStatisticService'
 
 class StatisticController {
   /**

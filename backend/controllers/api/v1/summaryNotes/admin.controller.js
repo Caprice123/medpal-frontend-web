@@ -1,10 +1,10 @@
-import { CreateSummaryNoteService } from '../../../../services/summaryNotes/admin/createSummaryNoteService.js'
-import { UpdateSummaryNoteService } from '../../../../services/summaryNotes/admin/updateSummaryNoteService.js'
-import { GetSummaryNotesListService } from '../../../../services/summaryNotes/admin/getSummaryNotesListService.js'
-import { GetSummaryNoteDetailService } from '../../../../services/summaryNotes/admin/getSummaryNoteDetailService.js'
-import { DeleteSummaryNoteService } from '../../../../services/summaryNotes/admin/deleteSummaryNoteService.js'
-import { GenerateSummaryFromDocumentService } from '../../../../services/summaryNotes/admin/generateSummaryFromDocumentService.js'
-import { GetEmbeddingsService } from '../../../../services/embedding/getEmbeddingsService.js'
+import { CreateSummaryNoteService } from '#services/summaryNotes/admin/createSummaryNoteService'
+import { UpdateSummaryNoteService } from '#services/summaryNotes/admin/updateSummaryNoteService'
+import { GetSummaryNotesListService } from '#services/summaryNotes/admin/getSummaryNotesListService'
+import { GetSummaryNoteDetailService } from '#services/summaryNotes/admin/getSummaryNoteDetailService'
+import { DeleteSummaryNoteService } from '#services/summaryNotes/admin/deleteSummaryNoteService'
+import { GenerateSummaryFromDocumentService } from '#services/summaryNotes/admin/generateSummaryFromDocumentService'
+import { GetEmbeddingsService } from '#services/embedding/getEmbeddingsService'
 
 class SummaryNotesAdminController {
   // List all summary notes (with pagination)

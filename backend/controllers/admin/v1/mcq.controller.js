@@ -1,12 +1,12 @@
-import { CreateMcqTopicService } from '../../../services/mcq/admin/createMcqTopicService.js'
-import { UpdateMcqTopicService } from '../../../services/mcq/admin/updateMcqTopicService.js'
-import { DeleteMcqTopicService } from '../../../services/mcq/admin/deleteMcqTopicService.js'
-import { GetMcqTopicsService } from '../../../services/mcq/admin/getMcqTopicsService.js'
-import { GetMcqTopicDetailService } from '../../../services/mcq/admin/getMcqTopicDetailService.js'
-import { GetMcqConstantsService } from '../../../services/mcq/admin/getMcqConstantsService.js'
-import { UpdateMcqConstantsService } from '../../../services/mcq/admin/updateMcqConstantsService.js'
-import { GenerateMcqQuestionsService } from '../../../services/mcq/admin/generateMcqQuestionsService.js'
-import idriveService from '../../../services/idrive.service.js'
+import { CreateMcqTopicService } from '#services/mcq/admin/createMcqTopicService'
+import { UpdateMcqTopicService } from '#services/mcq/admin/updateMcqTopicService'
+import { DeleteMcqTopicService } from '#services/mcq/admin/deleteMcqTopicService'
+import { GetMcqTopicsService } from '#services/mcq/admin/getMcqTopicsService'
+import { GetMcqTopicDetailService } from '#services/mcq/admin/getMcqTopicDetailService'
+import { GetMcqConstantsService } from '#services/mcq/admin/getMcqConstantsService'
+import { UpdateMcqConstantsService } from '#services/mcq/admin/updateMcqConstantsService'
+import { GenerateMcqQuestionsService } from '#services/mcq/admin/generateMcqQuestionsService'
+import idriveService from '#services/idrive.service'
 
 class McqController {
   /**

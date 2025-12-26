@@ -1,5 +1,5 @@
-import { ChromaVectorDB } from './chromaVectorDB.js'
-import { QdrantVectorDB } from './qdrantVectorDB.js'
+import { ChromaVectorDB } from '#services/vectorDB/chromaVectorDB'
+import { QdrantVectorDB } from '#services/vectorDB/qdrantVectorDB'
 
 /**
  * Vector Database Factory

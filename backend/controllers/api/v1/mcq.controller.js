@@ -1,9 +1,9 @@
-import { GetMcqTopicsService } from '../../../services/mcq/getMcqTopicsService.js'
-import { GetMcqTopicByIdService } from '../../../services/mcq/getMcqTopicByIdService.js'
-import { GetMcqTopicSessionService } from '../../../services/mcq/getMcqTopicSessionService.js'
-import { SubmitMcqAnswersService } from '../../../services/mcq/submitMcqAnswersService.js'
-import { CheckMcqAnswersService } from '../../../services/mcq/checkMcqAnswersService.js'
-import { GetMcqConstantsService } from '../../../services/mcq/admin/getMcqConstantsService.js'
+import { GetMcqTopicsService } from '#services/mcq/getMcqTopicsService'
+import { GetMcqTopicByIdService } from '#services/mcq/getMcqTopicByIdService'
+import { GetMcqTopicSessionService } from '#services/mcq/getMcqTopicSessionService'
+import { SubmitMcqAnswersService } from '#services/mcq/submitMcqAnswersService'
+import { CheckMcqAnswersService } from '#services/mcq/checkMcqAnswersService'
+import { GetMcqConstantsService } from '#services/mcq/admin/getMcqConstantsService'
 
 class McqController {
   /**

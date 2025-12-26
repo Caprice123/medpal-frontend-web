@@ -1,7 +1,7 @@
-import prisma from '../../../prisma/client.js'
-import { BaseService } from '../../baseService.js'
-import { ValidationError } from '../../../errors/validationError.js'
-import embeddingService from '../../embedding/embeddingService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import embeddingService from '#embedding/embeddingService.js'
 
 export class DeleteSummaryNoteService extends BaseService {
   static async call({ id }) {

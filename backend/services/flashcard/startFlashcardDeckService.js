@@ -1,8 +1,8 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { HasActiveSubscriptionService } from '../pricing/getUserStatusService.js'
-import idriveService from '../idrive.service.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import { HasActiveSubscriptionService } from '#pricing/getUserStatusService.js'
+import idriveService from '#idrive.service.js'
 
 export class StartFlashcardDeckService extends BaseService {
   static async call({ flashcardDeckId, userId }) {

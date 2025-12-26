@@ -1,7 +1,7 @@
-import { GetTagsService } from '../../../services/tag/getTagsService.js'
-import { CreateTagService } from '../../../services/tag/createTagService.js'
-import { UpdateTagService } from '../../../services/tag/updateTagService.js'
-import { DeleteTagService } from '../../../services/tag/deleteTagService.js'
+import { GetTagsService } from '#services/tag/getTagsService'
+import { CreateTagService } from '#services/tag/createTagService'
+import { UpdateTagService } from '#services/tag/updateTagService'
+import { DeleteTagService } from '#services/tag/deleteTagService'
 
 class TagController {
   /**

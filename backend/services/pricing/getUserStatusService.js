@@ -1,5 +1,5 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
 import moment from 'moment-timezone'
 
 /**

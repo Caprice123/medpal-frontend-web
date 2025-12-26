@@ -1,5 +1,5 @@
 import express from 'express';
-import { convertHtmlToDocxWithImages } from '../../../controllers/api/v1/htmlToDocx.controller.js';
+import { convertHtmlToDocxWithImages } from '#controllers/api/v1/htmlToDocx.controller';
 
 const router = express.Router();
 

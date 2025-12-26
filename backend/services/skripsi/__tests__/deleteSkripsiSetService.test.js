@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import deleteSkripsiSetService from '../deleteSkripsiSetService.js'
-import prisma from '../../../config/database.js'
+import deleteSkripsiSetService from '#deleteSkripsiSetService.js'
+import prisma from '#config/database'
 
 describe('deleteSkripsiSetService', () => {
   beforeEach(() => {

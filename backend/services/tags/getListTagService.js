@@ -1,5 +1,5 @@
 
-import prisma from "../../prisma/client.js";
+import prisma from '#prisma/client';
 import { BaseService } from "../baseService.js";
 
 export class GetListTagService extends BaseService {

@@ -1,4 +1,4 @@
-import loginService from './auth/loginService.js';
+import loginService from '#services/auth/loginService';
 
 
 // Re-export all methods from loginService

@@ -1,7 +1,7 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { NotFoundError } from '../../errors/notFoundError.js'
-import { ValidationError } from '../../errors/validationError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { NotFoundError } from '#errors/notFoundError'
+import { ValidationError } from '#errors/validationError'
 
 export class SubmitMcqAnswersService extends BaseService {
   static async call({ topicId, answers, userId }) {

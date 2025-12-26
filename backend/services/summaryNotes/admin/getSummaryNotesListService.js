@@ -1,5 +1,5 @@
-import prisma from '../../../prisma/client.js'
-import { BaseService } from '../../baseService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
 
 export class GetSummaryNotesListService extends BaseService {
   static async call({ page = 1, perPage = 30, status, search, university, semester }) {

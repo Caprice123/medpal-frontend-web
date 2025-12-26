@@ -1,4 +1,4 @@
-import prisma from '../../../prisma/client.js'
+import prisma from '#prisma/client'
 
 const getSkripsiConstantsService = async () => {
   const constants = await prisma.skripsi_constants.findMany({

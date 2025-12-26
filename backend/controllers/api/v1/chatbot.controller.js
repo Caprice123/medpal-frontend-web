@@ -1,12 +1,12 @@
-import { GetConversationsService } from '../../../services/chatbot/getConversationsService.js'
-import { CreateConversationService } from '../../../services/chatbot/createConversationService.js'
-import { GetConversationService } from '../../../services/chatbot/getConversationService.js'
-import { UpdateConversationService } from '../../../services/chatbot/updateConversationService.js'
-import { DeleteConversationService } from '../../../services/chatbot/deleteConversationService.js'
-import { GetMessagesService } from '../../../services/chatbot/getMessagesService.js'
-import { SendMessageService } from '../../../services/chatbot/sendMessageService.js'
-import { SubmitFeedbackService } from '../../../services/chatbot/submitFeedbackService.js'
-import { GetChatbotConfigService } from '../../../services/chatbot/getChatbotConfigService.js'
+import { GetConversationsService } from '#services/chatbot/getConversationsService'
+import { CreateConversationService } from '#services/chatbot/createConversationService'
+import { GetConversationService } from '#services/chatbot/getConversationService'
+import { UpdateConversationService } from '#services/chatbot/updateConversationService'
+import { DeleteConversationService } from '#services/chatbot/deleteConversationService'
+import { GetMessagesService } from '#services/chatbot/getMessagesService'
+import { SendMessageService } from '#services/chatbot/sendMessageService'
+import { SubmitFeedbackService } from '#services/chatbot/submitFeedbackService'
+import { GetChatbotConfigService } from '#services/chatbot/getChatbotConfigService'
 
 class ChatbotController {
   // Get user's conversations

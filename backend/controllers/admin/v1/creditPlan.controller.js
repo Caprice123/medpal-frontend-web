@@ -1,10 +1,10 @@
-import { GetDetailCreditPlanService } from '../../../services/creditPlan/getDetailCreditPlanService.js'
-import { CreditPlanDetailSerializer } from '../../../serializers/admin/v1/creditPlanDetailSerializer.js'
-import { CreditPlanSerializer } from '../../../serializers/admin/v1/creditPlanSerializer.js'
-import { GetListCreditsService } from '../../../services/creditPlan/getListCreditsService.js'
-import { CreateCreditPlanService } from '../../../services/creditPlan/createCreditPlanService.js'
-import { updateCreditPlanService } from '../../../services/creditPlan/updateCreditplanService.js'
-import { ToggleCreditPlanService } from '../../../services/creditPlan/toggleCreditPlanService.js'
+import { GetDetailCreditPlanService } from '#services/creditPlan/getDetailCreditPlanService'
+import { CreditPlanDetailSerializer } from '#serializers/admin/v1/creditPlanDetailSerializer'
+import { CreditPlanSerializer } from '#serializers/admin/v1/creditPlanSerializer'
+import { GetListCreditsService } from '#services/creditPlan/getListCreditsService'
+import { CreateCreditPlanService } from '#services/creditPlan/createCreditPlanService'
+import { updateCreditPlanService } from '#services/creditPlan/updateCreditplanService'
+import { ToggleCreditPlanService } from '#services/creditPlan/toggleCreditPlanService'
 
 class CreditPlanController {
     async index(req, res) {

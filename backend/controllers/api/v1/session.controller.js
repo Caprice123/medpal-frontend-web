@@ -1,9 +1,9 @@
-import { GetUserSessionsService } from '../../../services/session/getUserSessionsService.js'
-import { CreateSessionService } from '../../../services/session/createSessionService.js'
-import { UserLearningSessionSerializer } from '../../../serializers/api/v1/userSessionLearningSerializer.js'
-import { GetSessionDetailService } from '../../../services/session/getSessionDetailService.js'
-import { StartFlashcardWithDeckService } from '../../../services/flashcard/startFlashcardWithDeckService.js'
-import { SubmitFlashcardAnswersService } from '../../../services/flashcard/submitFlashcardAnswersService.js'
+import { GetUserSessionsService } from '#services/session/getUserSessionsService'
+import { CreateSessionService } from '#services/session/createSessionService'
+import { UserLearningSessionSerializer } from '#serializers/api/v1/userSessionLearningSerializer'
+import { GetSessionDetailService } from '#services/session/getSessionDetailService'
+import { StartFlashcardWithDeckService } from '#services/flashcard/startFlashcardWithDeckService'
+import { SubmitFlashcardAnswersService } from '#services/flashcard/submitFlashcardAnswersService'
 
 class SessionController {
   // Get user's session history

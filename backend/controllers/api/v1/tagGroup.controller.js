@@ -1,4 +1,4 @@
-import { GetTagGroupsService } from '../../../services/tagGroup/getTagGroupsService.js'
+import { GetTagGroupsService } from '#services/tagGroup/getTagGroupsService'
 
 class TagGroupController {
   /**

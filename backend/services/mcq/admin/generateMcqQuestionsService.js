@@ -1,6 +1,6 @@
-import { ValidationError } from '../../../errors/validationError.js'
-import { BaseService } from '../../baseService.js'
-import geminiService from '../../gemini.service.js'
+import { ValidationError } from '#errors/validationError'
+import { BaseService } from '#baseService.js'
+import geminiService from '#gemini.service.js'
 import fs from 'fs'
 
 export class GenerateMcqQuestionsService extends BaseService {

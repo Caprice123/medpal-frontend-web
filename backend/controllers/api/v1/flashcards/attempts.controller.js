@@ -1,6 +1,6 @@
-import { CompleteFlashcardAttemptService } from "../../../../services/flashcard/attempts/completeFlashcardAttemptService.js"
-import { GetFlashcardAttemptDetailService } from "../../../../services/flashcard/attempts/getFlashcardAttemptDetailService.js"
-import { StartFlashcardWithDeckService } from "../../../../services/flashcard/startFlashcardWithDeckService.js"
+import { CompleteFlashcardAttemptService } from "#services/flashcard/attempts/completeFlashcardAttemptService"
+import { GetFlashcardAttemptDetailService } from "#services/flashcard/attempts/getFlashcardAttemptDetailService"
+import { StartFlashcardWithDeckService } from "#services/flashcard/startFlashcardWithDeckService"
 
 class FlashcardAttemptsController {
   async detail(req, res) {

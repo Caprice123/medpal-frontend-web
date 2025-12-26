@@ -1,7 +1,7 @@
 import express from 'express'
-import SummaryNoteController from '../../../controllers/api/v1/summaryNote.controller.js'
-import { authenticateToken } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
+import SummaryNoteController from '#controllers/api/v1/summaryNote.controller'
+import { authenticateToken } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

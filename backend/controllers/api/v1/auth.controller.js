@@ -1,5 +1,5 @@
-import { ValidationError } from '../../../errors/validationError.js';
-import authService from '../../../services/auth.service.js';
+import { ValidationError } from '#errors/validationError';
+import authService from '#services/auth.service';
 
 class AuthController {
   async login(req, res) {

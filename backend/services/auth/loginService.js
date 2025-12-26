@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import prisma from '../../prisma/client.js';
-import { ValidationError } from '../../errors/validationError.js';
-import { AuthorizationError } from '../../errors/authorizationError.js';
-import { verifyGoogleToken } from '../../utils/googleAuth.js';
-import { UpdateStatisticService, STAT_KEYS } from '../statistic/updateStatisticService.js';
+import prisma from '#prisma/client';
+import { ValidationError } from '#errors/validationError';
+import { AuthorizationError } from '#errors/authorizationError';
+import { verifyGoogleToken } from '#utils/googleAuth';
+import { UpdateStatisticService, STAT_KEYS } from '#services/statistic/updateStatisticService';
 
 
 

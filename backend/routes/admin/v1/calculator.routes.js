@@ -1,8 +1,8 @@
 import express from 'express'
-import calculatorController from '../../../controllers/admin/v1/calculator.controller.js'
+import calculatorController from '#controllers/admin/v1/calculator.controller'
 import constantRoutes from './constant.routes.js'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

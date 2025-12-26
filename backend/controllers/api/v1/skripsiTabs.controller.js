@@ -1,5 +1,5 @@
-import { GetTabMessagesService } from '../../../services/skripsi/getTabMessagesService.js'
-import { SendMessageService } from '../../../services/skripsi/sendMessageService.js'
+import { GetTabMessagesService } from '#services/skripsi/getTabMessagesService'
+import { SendMessageService } from '#services/skripsi/sendMessageService'
 
 class SkripsiTabsController {
   // Get messages for a tab with pagination

@@ -1,7 +1,7 @@
 import express from 'express'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import tagGroupsController from '../../../controllers/admin/v1/tagGroups.controller.js'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import tagGroupsController from '#controllers/admin/v1/tagGroups.controller'
 
 const router = express.Router()
 

@@ -32,6 +32,6 @@ main()
     process.exit(1)
   })
   .finally(async () => {
-    const { default: prisma } = await import('../prisma/client.js')
+    const { default: prisma } = await import('#prisma/client.js')
     await prisma.$disconnect()
   })

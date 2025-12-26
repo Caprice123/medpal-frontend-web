@@ -1,6 +1,6 @@
-import { CompleteExerciseAttemptService } from "../../../../services/exercise/attempts/completeExerciseAttemptService.js"
-import { GetAttemptDetailService } from "../../../../services/exercise/attempts/getAttemptDetailService.js"
-import { StartExerciseWithTopicService } from "../../../../services/exercise/startExerciseWithTopicService.js"
+import { CompleteExerciseAttemptService } from "#services/exercise/attempts/completeExerciseAttemptService"
+import { GetAttemptDetailService } from "#services/exercise/attempts/getAttemptDetailService"
+import { StartExerciseWithTopicService } from "#services/exercise/startExerciseWithTopicService"
 
 class ExerciseAttemptsController {
   async detail(req, res) {

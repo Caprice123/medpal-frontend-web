@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { verifyWebhookToken } from '../services/xendit.service.js'
+import { verifyWebhookToken } from '#services/xendit.service'
 
 const prisma = new PrismaClient()
 

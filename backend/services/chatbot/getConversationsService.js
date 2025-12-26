@@ -1,6 +1,6 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
 
 export class GetConversationsService extends BaseService {
   static async call({ userId, page = 1, perPage = 20, search }) {

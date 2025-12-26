@@ -1,8 +1,8 @@
-import { GetConversationsService } from '../../../../services/chatbot/getConversationsService.js'
-import { CreateConversationService } from '../../../../services/chatbot/createConversationService.js'
-import { GetConversationService } from '../../../../services/chatbot/getConversationService.js'
-import { UpdateConversationService } from '../../../../services/chatbot/updateConversationService.js'
-import { DeleteConversationService } from '../../../../services/chatbot/deleteConversationService.js'
+import { GetConversationsService } from '#services/chatbot/getConversationsService'
+import { CreateConversationService } from '#services/chatbot/createConversationService'
+import { GetConversationService } from '#services/chatbot/getConversationService'
+import { UpdateConversationService } from '#services/chatbot/updateConversationService'
+import { DeleteConversationService } from '#services/chatbot/deleteConversationService'
 
 class ConversationController {
   // Get user's conversations

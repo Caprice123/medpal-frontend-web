@@ -1,4 +1,4 @@
-import prisma from '../../../prisma/client.js'
+import prisma from '#prisma/client'
 
 const updateSkripsiConstantService = async (key, value) => {
   // Validate based on key type

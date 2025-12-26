@@ -1,7 +1,7 @@
 import express from 'express'
-import { authenticateToken } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import anatomyController from '../../../controllers/api/v1/anatomy.controller.js'
+import { authenticateToken } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import anatomyController from '#controllers/api/v1/anatomy.controller'
 
 const router = express.Router()
 

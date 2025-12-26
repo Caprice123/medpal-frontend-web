@@ -1,7 +1,7 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { HasActiveSubscriptionService } from '../pricing/getUserStatusService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import { HasActiveSubscriptionService } from '#pricing/getUserStatusService.js'
 
 export class StartAnatomyQuizService extends BaseService {
   static async call({ quizId, userId }) {

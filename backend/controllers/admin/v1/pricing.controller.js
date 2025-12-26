@@ -1,8 +1,8 @@
-import { GetListPricingPlansService } from '../../../services/pricing/admin/getListPricingPlansService.js'
-import { GetDetailPricingPlanService } from '../../../services/pricing/admin/getDetailPricingPlanService.js'
-import { CreatePricingPlanService } from '../../../services/pricing/admin/createPricingPlanService.js'
-import { UpdatePricingPlanService } from '../../../services/pricing/admin/updatePricingPlanService.js'
-import { TogglePricingPlanService } from '../../../services/pricing/admin/togglePricingPlanService.js'
+import { GetListPricingPlansService } from '#services/pricing/admin/getListPricingPlansService'
+import { GetDetailPricingPlanService } from '#services/pricing/admin/getDetailPricingPlanService'
+import { CreatePricingPlanService } from '#services/pricing/admin/createPricingPlanService'
+import { UpdatePricingPlanService } from '#services/pricing/admin/updatePricingPlanService'
+import { TogglePricingPlanService } from '#services/pricing/admin/togglePricingPlanService'
 
 class PricingPlanController {
   async index(req, res) {

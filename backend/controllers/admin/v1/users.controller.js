@@ -1,8 +1,8 @@
-import { ValidationUtils } from "../../../utils/validationUtils.js";
-import { GetListUsersService } from "../../../services/users/getListUsersService.js";
-import { AddCreditService } from "../../../services/users/addCreditService.js";
-import { AddSubscriptionService } from "../../../services/users/addSubscriptionService.js";
-import { UserSerializer } from "../../../serializers/admin/v1/userSerializer.js";
+import { ValidationUtils } from "#utils/validationUtils";
+import { GetListUsersService } from "#services/users/getListUsersService";
+import { AddCreditService } from "#services/users/addCreditService";
+import { AddSubscriptionService } from "#services/users/addSubscriptionService";
+import { UserSerializer } from "#serializers/admin/v1/userSerializer";
 
 class UsersController {
   async index(req, res) {

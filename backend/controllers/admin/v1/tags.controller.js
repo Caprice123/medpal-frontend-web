@@ -1,9 +1,9 @@
-import { ValidationUtils } from '../../../utils/validationUtils.js'
-import { GetListTagService } from '../../../services/tags/getListTagService.js'
-import { CreateTagService } from '../../../services/tags/createTagService.js'
-import { UpdateTagService } from '../../../services/tags/updateTagService.js'
-import { TagSerializer } from '../../../serializers/admin/v1/tagSerializer.js' 
-import { TagGroupSerializer } from '../../../serializers/admin/v1/tagGroupSerializer.js'
+import { ValidationUtils } from '#utils/validationUtils'
+import { GetListTagService } from '#services/tags/getListTagService'
+import { CreateTagService } from '#services/tags/createTagService'
+import { UpdateTagService } from '#services/tags/updateTagService'
+import { TagSerializer } from '#serializers/admin/v1/tagSerializer'
+import { TagGroupSerializer } from '#serializers/admin/v1/tagGroupSerializer'
 
 class TagsController {
   async index(req, res) {

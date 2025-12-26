@@ -1,6 +1,6 @@
-import { GetAnatomyQuizzesService } from '../../../services/anatomy/getAnatomyQuizzesService.js'
-import { GetAnatomyQuizDetailService } from '../../../services/anatomy/admin/getAnatomyQuizDetailService.js'
-import prisma from '../../../prisma/client.js'
+import { GetAnatomyQuizzesService } from '#services/anatomy/getAnatomyQuizzesService'
+import { GetAnatomyQuizDetailService } from '#services/anatomy/admin/getAnatomyQuizDetailService'
+import prisma from '#prisma/client'
 
 class AnatomyController {
   async index(req, res) {

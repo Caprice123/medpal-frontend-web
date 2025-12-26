@@ -1,7 +1,7 @@
-import { ValidationError } from '../../../errors/validationError.js'
-import prisma from '../../../prisma/client.js'
-import { BaseService } from '../../baseService.js'
-import idriveService from '../../idrive.service.js'
+import { ValidationError } from '#errors/validationError'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import idriveService from '#idrive.service.js'
 
 export class GetAnatomyQuizzesService extends BaseService {
   static async call(filters = {}) {

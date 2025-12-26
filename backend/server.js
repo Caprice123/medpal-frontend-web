@@ -1,47 +1,57 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { startCronJobs } from './jobs/cron.js';
-import { errorHandler } from './middleware/errorHandler.middleware.js';
-import authRoutes from './routes/api/v1/auth.routes.js';
-import creditRoutes from './routes/credit.routes.js';
-import creditPlanRoutes from './routes/api/v1/creditPlan.routes.js';
-import exerciseRoutes from './routes/api/v1/exercise.routes.js';
-import flashcardRoutes from './routes/api/v1/flashcard.routes.js';
-import summaryNoteRoutes from './routes/api/v1/summaryNote.routes.js';
-import tagRoutes from './routes/api/v1/tag.routes.js';
-import tagGroupRoutes from './routes/api/v1/tagGroup.routes.js';
-import sessionRoutes from './routes/api/v1/session.routes.js';
-import featureRoutes from './routes/api/v1/feature.routes.js';
-import statisticRoutes from './routes/api/v1/statistic.routes.js';
-import pricingRoutes from './routes/api/v1/pricing.routes.js';
-import adminCreditPlanRoutes from './routes/admin/v1/creditPlan.routes.js';
-import adminPricingRoutes from './routes/admin/v1/pricing.routes.js';
-import adminExerciseRoutes from './routes/admin/v1/exercise.routes.js';
-import adminFlashcardRoutes from './routes/admin/v1/flashcard.routes.js';
-import adminSummaryNoteRoutes from './routes/admin/v1/summaryNote.routes.js';
-import adminConstantRoutes from './routes/admin/v1/constant.routes.js';
-import calculatorRoutes from './routes/api/v1/calculator.routes.js';
-import anatomyRoutes from './routes/api/v1/anatomy.routes.js';
-import mcqRoutes from './routes/api/v1/mcq.routes.js';
-import adminCalculatorRoutes from './routes/admin/v1/calculator.routes.js';
-import adminTagsRoutes from './routes/admin/v1/tag.routes.js';
-import adminTagGroupsRoutes from './routes/admin/v1/tagGroup.routes.js';
-import adminUsersRoutes from './routes/admin/v1/users.routes.js';
-import adminAnatomyRoutes from './routes/admin/v1/anatomy.routes.js';
-import adminMcqRoutes from './routes/admin/v1/mcq.routes.js';
-import chatbotRoutes from './routes/api/v1/chatbot.routes.js';
-import adminChatbotRoutes from './routes/admin/v1/chatbot.routes.js';
-import skripsiRoutes from './routes/api/v1/skripsi.routes.js';
-import adminSkripsiRoutes from './routes/admin/v1/skripsi.routes.js';
-import uploadRoutes from './routes/api/v1/upload.routes.js';
-import htmlToDocxRoutes from './routes/api/v1/htmlToDocx.routes.js';
-import webhookRoutes from './routes/webhook.routes.js';
+import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from '#config/sentry';
+import { startCronJobs } from '#jobs/cron';
+import { errorHandler } from '#middleware/errorHandler.middleware';
+import authRoutes from '#routes/api/v1/auth.routes';
+import creditRoutes from '#routes/credit.routes';
+import creditPlanRoutes from '#routes/api/v1/creditPlan.routes';
+import exerciseRoutes from '#routes/api/v1/exercise.routes';
+import flashcardRoutes from '#routes/api/v1/flashcard.routes';
+import summaryNoteRoutes from '#routes/api/v1/summaryNote.routes';
+import tagRoutes from '#routes/api/v1/tag.routes';
+import tagGroupRoutes from '#routes/api/v1/tagGroup.routes';
+import sessionRoutes from '#routes/api/v1/session.routes';
+import featureRoutes from '#routes/api/v1/feature.routes';
+import statisticRoutes from '#routes/api/v1/statistic.routes';
+import pricingRoutes from '#routes/api/v1/pricing.routes';
+import adminCreditPlanRoutes from '#routes/admin/v1/creditPlan.routes';
+import adminPricingRoutes from '#routes/admin/v1/pricing.routes';
+import adminExerciseRoutes from '#routes/admin/v1/exercise.routes';
+import adminFlashcardRoutes from '#routes/admin/v1/flashcard.routes';
+import adminSummaryNoteRoutes from '#routes/admin/v1/summaryNote.routes';
+import adminConstantRoutes from '#routes/admin/v1/constant.routes';
+import calculatorRoutes from '#routes/api/v1/calculator.routes';
+import anatomyRoutes from '#routes/api/v1/anatomy.routes';
+import mcqRoutes from '#routes/api/v1/mcq.routes';
+import adminCalculatorRoutes from '#routes/admin/v1/calculator.routes';
+import adminTagsRoutes from '#routes/admin/v1/tag.routes';
+import adminTagGroupsRoutes from '#routes/admin/v1/tagGroup.routes';
+import adminUsersRoutes from '#routes/admin/v1/users.routes';
+import adminAnatomyRoutes from '#routes/admin/v1/anatomy.routes';
+import adminMcqRoutes from '#routes/admin/v1/mcq.routes';
+import chatbotRoutes from '#routes/api/v1/chatbot.routes';
+import adminChatbotRoutes from '#routes/admin/v1/chatbot.routes';
+import skripsiRoutes from '#routes/api/v1/skripsi.routes';
+import adminSkripsiRoutes from '#routes/admin/v1/skripsi.routes';
+import uploadRoutes from '#routes/api/v1/upload.routes';
+import htmlToDocxRoutes from '#routes/api/v1/htmlToDocx.routes';
+import webhookRoutes from '#routes/webhook.routes';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Initialize Sentry (must be first)
+initSentry(app);
+
+// Sentry request handler (must be the first middleware)
+app.use(sentryRequestHandler());
+
+// Sentry tracing handler (must be after request handler)
+app.use(sentryTracingHandler());
 
 // Middleware
 app.use(cors());
@@ -95,7 +105,10 @@ app.use('/admin/v1/mcq', adminMcqRoutes);
 app.use('/admin/v1/chatbot', adminChatbotRoutes);
 app.use('/admin/v1', adminSkripsiRoutes);
 
-// Error handling middleware (must be last)
+// Sentry error handler (must be before other error handlers)
+app.use(sentryErrorHandler());
+
+// Custom error handling middleware (must be last)
 app.use(errorHandler);
 
 app.listen(PORT, () => {

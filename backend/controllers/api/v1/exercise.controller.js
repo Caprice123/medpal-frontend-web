@@ -1,8 +1,8 @@
-import { GetExerciseTopicsService } from '../../../services/exercise/getExerciseTopicsService.js'
-import { GetListAttemptsService } from '../../../services/exercise/attempts/getListAttemptsService.js'
-import { CreateNewAttemptService } from '../../../services/exercise/attempts/createNewAttemptService.js'
-import { StartExerciseTopicService } from '../../../services/exercise/startExerciseTopicService.js'
-import { SubmitExerciseProgressService } from '../../../services/exercise/submitExerciseProgressService.js'
+import { GetExerciseTopicsService } from '#services/exercise/getExerciseTopicsService'
+import { GetListAttemptsService } from '#services/exercise/attempts/getListAttemptsService'
+import { CreateNewAttemptService } from '#services/exercise/attempts/createNewAttemptService'
+import { StartExerciseTopicService } from '#services/exercise/startExerciseTopicService'
+import { SubmitExerciseProgressService } from '#services/exercise/submitExerciseProgressService'
 
 class ExerciseController {
   async getTopics(req, res) {

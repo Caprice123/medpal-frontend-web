@@ -1,7 +1,7 @@
 import express from 'express'
-import calculatorController from '../../../controllers/api/v1/calculator.controller.js'
-import { authenticateToken } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
+import calculatorController from '#controllers/api/v1/calculator.controller'
+import { authenticateToken } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

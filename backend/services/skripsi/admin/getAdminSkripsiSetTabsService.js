@@ -1,4 +1,4 @@
-import prisma from '../../../prisma/client.js'
+import prisma from '#prisma/client'
 
 const getAdminSkripsiSetTabsService = async (setId) => {
   // First verify the set exists

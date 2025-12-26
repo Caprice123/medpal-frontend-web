@@ -1,7 +1,7 @@
-import { GetSummaryNotesService } from '../../../services/summaryNotes/getSummaryNotesService.js'
-import { GetSummaryNoteByIdService } from '../../../services/summaryNotes/getSummaryNoteByIdService.js'
-import { StartSummaryNoteSessionService } from '../../../services/summaryNotes/startSummaryNoteSessionService.js'
-import { GetSummaryNoteSessionService } from '../../../services/summaryNotes/getSummaryNoteSessionService.js'
+import { GetSummaryNotesService } from '#services/summaryNotes/getSummaryNotesService'
+import { GetSummaryNoteByIdService } from '#services/summaryNotes/getSummaryNoteByIdService'
+import { StartSummaryNoteSessionService } from '#services/summaryNotes/startSummaryNoteSessionService'
+import { GetSummaryNoteSessionService } from '#services/summaryNotes/getSummaryNoteSessionService'
 
 class SummaryNoteController {
   // Get all available summary notes for users

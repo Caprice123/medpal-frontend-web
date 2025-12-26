@@ -1,6 +1,6 @@
-import prisma from '../../../prisma/client.js'
-import { BaseService } from '../../baseService.js'
-import { ValidationError } from '../../../errors/validationError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
 
 export class GetListFlashcardAttemptsService extends BaseService {
   static async call({ userLearningSessionId, userId, page = 1, perPage = 30 }) {

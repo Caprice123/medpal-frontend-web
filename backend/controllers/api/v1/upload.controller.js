@@ -1,4 +1,4 @@
-import IDriveService from '../../../services/idrive.service.js'
+import IDriveService from '#services/idrive.service'
 import fs from 'fs'
 
 class UploadController {

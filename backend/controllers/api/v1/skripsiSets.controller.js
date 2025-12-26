@@ -1,9 +1,9 @@
-import { GetSkripsiSetsService } from '../../../services/skripsi/getSkripsiSetsService.js'
-import { CreateSkripsiSetService } from '../../../services/skripsi/createSkripsiSetService.js'
-import { GetSkripsiSetService } from '../../../services/skripsi/getSkripsiSetService.js'
-import { UpdateSkripsiSetService } from '../../../services/skripsi/updateSkripsiSetService.js'
-import { UpdateSetContentService } from '../../../services/skripsi/updateSetContentService.js'
-import { DeleteSkripsiSetService } from '../../../services/skripsi/deleteSkripsiSetService.js'
+import { GetSkripsiSetsService } from '#services/skripsi/getSkripsiSetsService'
+import { CreateSkripsiSetService } from '#services/skripsi/createSkripsiSetService'
+import { GetSkripsiSetService } from '#services/skripsi/getSkripsiSetService'
+import { UpdateSkripsiSetService } from '#services/skripsi/updateSkripsiSetService'
+import { UpdateSetContentService } from '#services/skripsi/updateSetContentService'
+import { DeleteSkripsiSetService } from '#services/skripsi/deleteSkripsiSetService'
 import { convertHtmlToDocxWithImages } from './htmlToDocx.controller.js'
 
 class SkripsiSetsController {

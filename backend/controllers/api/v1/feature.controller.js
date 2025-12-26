@@ -1,4 +1,4 @@
-import { GetActiveFeaturesService } from '../../../services/feature/getActiveFeatures.js'
+import { GetActiveFeaturesService } from '#services/feature/getActiveFeatures'
 
 class FeatureController {
   /**

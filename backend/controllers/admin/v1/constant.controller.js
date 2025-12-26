@@ -1,5 +1,5 @@
-import { GetConstantsService } from '../../../services/constant/getConstantsService.js'
-import { UpdateConstantsService } from '../../../services/constant/updateConstantsService.js'
+import { GetConstantsService } from '#services/constant/getConstantsService'
+import { UpdateConstantsService } from '#services/constant/updateConstantsService'
 
 class ConstantController {
   async index(req, res) {

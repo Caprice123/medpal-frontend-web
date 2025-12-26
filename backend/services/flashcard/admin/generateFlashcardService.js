@@ -1,5 +1,5 @@
-import { ValidationError } from "../../../errors/validationError.js"
-import prisma from "../../../prisma/client.js"
+import { ValidationError } from '#errors/validationError'
+import prisma from '#prisma/client'
 import { BaseService } from "../../baseService.js"
 import geminiService from "../../gemini.service.js"
 import fs from 'fs'

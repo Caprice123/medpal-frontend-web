@@ -1,9 +1,9 @@
 import express from 'express'
-import exerciseController from '../../../controllers/admin/v1/exercise.controller.js'
+import exerciseController from '#controllers/admin/v1/exercise.controller'
 import constantRoutes from './constant.routes.js'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import { uploadPDF } from '../../../middlewares/uploadPDF.js'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import { uploadPDF } from '#middlewares/uploadPDF'
 
 const router = express.Router()
 

@@ -1,5 +1,5 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
 
 export class PurchasePricingPlanService extends BaseService {
   static async call(userId, pricingPlanId, paymentMethod = 'manual') {

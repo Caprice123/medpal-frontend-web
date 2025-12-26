@@ -1,7 +1,7 @@
 import express from 'express'
-import { authenticateToken } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import flashcardController from '../../../controllers/api/v1/flashcard.controller.js'
+import { authenticateToken } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import flashcardController from '#controllers/api/v1/flashcard.controller'
 
 const router = express.Router()
 

@@ -1,6 +1,6 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { STAT_KEYS } from './updateStatisticService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { STAT_KEYS } from '#services/statistic/updateStatisticService'
 
 export class GetStatisticsService extends BaseService {
   static async call() {

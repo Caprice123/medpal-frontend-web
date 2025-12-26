@@ -1,8 +1,8 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { NotFoundError } from '../../errors/notFoundError.js'
-import { AuthorizationError } from '../../errors/authorizationError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import { NotFoundError } from '#errors/notFoundError'
+import { AuthorizationError } from '#errors/authorizationError'
 
 export class UpdateConversationService extends BaseService {
   static async call({ userId, conversationId, topic }) {

@@ -1,7 +1,7 @@
-import { GetActivePricingPlansService } from '../../../services/pricing/getActivePricingPlansService.js'
-import { PurchasePricingPlanService } from '../../../services/pricing/purchasePricingPlanService.js'
-import { GetUserStatusService, HasActiveSubscriptionService, GetUserCreditBalanceService } from '../../../services/pricing/getUserStatusService.js'
-import { GetUserPurchaseHistoryService } from '../../../services/pricing/getUserPurchaseHistoryService.js'
+import { GetActivePricingPlansService } from '#services/pricing/getActivePricingPlansService'
+import { PurchasePricingPlanService } from '#services/pricing/purchasePricingPlanService'
+import { GetUserStatusService, HasActiveSubscriptionService, GetUserCreditBalanceService } from '#services/pricing/getUserStatusService'
+import { GetUserPurchaseHistoryService } from '#services/pricing/getUserPurchaseHistoryService'
 
 class PricingController {
   /**

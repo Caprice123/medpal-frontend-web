@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { createInvoice } from '../services/xendit.service.js'
+import { createInvoice } from '#services/xendit.service'
 
 
 

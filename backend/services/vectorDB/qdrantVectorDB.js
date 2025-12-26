@@ -1,5 +1,5 @@
 // import { QdrantClient } from '@qdrant/js-client-rest'
-import { BaseVectorDB } from './baseVectorDB.js'
+import { BaseVectorDB } from '#services/vectorDB/baseVectorDB'
 
 /**
  * Qdrant Implementation

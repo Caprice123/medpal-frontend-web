@@ -13,7 +13,10 @@
     "#prisma/*": "./prisma/*.js",
     "#errors/*": "./errors/*.js",
     "#routes/*": "./routes/*.js",
-    "#config/*": "./config/*.js"
+    "#config/*": "./config/*.js",
+    "#jobs/*": "./jobs/*.js",
+    "#serializers/*": "./serializers/*.js",
+    "#scripts/*": "./scripts/*.js"
   },
   "scripts": {
     "start": "node server.js",
@@ -42,6 +45,8 @@
     "@google/generative-ai": "^0.24.1",
     "@perplexity-ai/perplexity_ai": "^0.18.1",
     "@prisma/client": "^6.19.0",
+    "@sentry/node": "^10.32.1",
+    "@sentry/profiling-node": "^10.32.1",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "chromadb": "^3.1.8",

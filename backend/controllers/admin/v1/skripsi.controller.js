@@ -1,9 +1,9 @@
-import getSkripsiConstantsService from '../../../services/skripsi/admin/getSkripsiConstantsService.js'
-import updateSkripsiConstantService from '../../../services/skripsi/admin/updateSkripsiConstantService.js'
-import { GetAdminSkripsiSetsService } from '../../../services/skripsi/admin/getAdminSkripsiSetsService.js'
-import getAdminSkripsiSetService from '../../../services/skripsi/admin/getAdminSkripsiSetService.js'
-import getAdminSkripsiSetTabsService from '../../../services/skripsi/admin/getAdminSkripsiSetTabsService.js'
-import deleteAdminSkripsiSetService from '../../../services/skripsi/admin/deleteAdminSkripsiSetService.js'
+import getSkripsiConstantsService from '#services/skripsi/admin/getSkripsiConstantsService'
+import updateSkripsiConstantService from '#services/skripsi/admin/updateSkripsiConstantService'
+import { GetAdminSkripsiSetsService } from '#services/skripsi/admin/getAdminSkripsiSetsService'
+import getAdminSkripsiSetService from '#services/skripsi/admin/getAdminSkripsiSetService'
+import getAdminSkripsiSetTabsService from '#services/skripsi/admin/getAdminSkripsiSetTabsService'
+import deleteAdminSkripsiSetService from '#services/skripsi/admin/deleteAdminSkripsiSetService'
 
 export const getConstants = async (req, res) => {
   try {

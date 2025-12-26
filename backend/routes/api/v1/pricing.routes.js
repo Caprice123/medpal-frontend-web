@@ -1,7 +1,7 @@
 import express from 'express'
-import { authenticateToken } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import pricingController from '../../../controllers/api/v1/pricing.controller.js'
+import { authenticateToken } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import pricingController from '#controllers/api/v1/pricing.controller'
 
 const router = express.Router()
 

@@ -1,5 +1,5 @@
-import { NotFoundError } from "../../errors/notFoundError.js"
-import prisma from "../../prisma/client.js"
+import { NotFoundError } from '#errors/notFoundError'
+import prisma from '#prisma/client'
 import { BaseService } from "../baseService.js"
 
 export class GetCalculatorTopicDetailService extends BaseService {

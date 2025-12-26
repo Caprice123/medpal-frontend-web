@@ -1,5 +1,5 @@
-import { BaseService } from '../baseService.js'
-import { GetConstantsService } from '../constant/getConstantsService.js'
+import { BaseService } from '#baseService.js'
+import { GetConstantsService } from '#constant/getConstantsService.js'
 
 export class GetChatbotConfigService extends BaseService {
   static async call() {

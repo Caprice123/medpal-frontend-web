@@ -1,10 +1,10 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { NormalModeAIService } from './ai/normalModeAIService.js'
-import { ValidatedSearchModeAIService } from './ai/validatedSearchModeAIService.js'
-import { ResearchModeAIService } from './ai/researchModeAIService.js'
-import { HasActiveSubscriptionService } from '../pricing/getUserStatusService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import { NormalModeAIService } from '#services/chatbot/ai/normalModeAIService'
+import { ValidatedSearchModeAIService } from '#services/chatbot/ai/validatedSearchModeAIService'
+import { ResearchModeAIService } from '#services/chatbot/ai/researchModeAIService'
+import { HasActiveSubscriptionService } from '#pricing/getUserStatusService.js'
 
 export class SendMessageService extends BaseService {
   static async call({ userId, conversationId, message, mode, onStream, onComplete, onError }) {

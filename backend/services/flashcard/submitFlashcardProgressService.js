@@ -1,6 +1,6 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
 
 // Calculate similarity between two strings (case-insensitive)
 function calculateSimilarity(str1, str2) {

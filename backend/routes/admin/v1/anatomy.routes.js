@@ -1,8 +1,8 @@
 import express from 'express'
-import anatomyController from '../../../controllers/admin/v1/anatomy.controller.js'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import { uploadImage } from '../../../middlewares/uploadImage.js'
+import anatomyController from '#controllers/admin/v1/anatomy.controller'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import { uploadImage } from '#middlewares/uploadImage'
 
 const router = express.Router()
 

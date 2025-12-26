@@ -1,5 +1,5 @@
 import { BaseService } from "../baseService.js";
-import prisma from '../../prisma/client.js';
+import prisma from '#prisma/client';
 
 export class GetListCreditsService extends BaseService {
     static async call(req) {

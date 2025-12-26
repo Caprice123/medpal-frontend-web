@@ -1,6 +1,6 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { NotFoundError } from '../../errors/notFoundError.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { NotFoundError } from '#errors/notFoundError'
 
 export class UpdateTabService extends BaseService {
   static async call({ tabId, userId, editorContent }) {

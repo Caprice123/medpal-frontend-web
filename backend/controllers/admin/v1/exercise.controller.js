@@ -1,11 +1,11 @@
-import { GenerateQuestionService } from '../../../services/exercise/admin/generateQuestionService.js'
-import { QuestionSerializer } from '../../../serializers/admin/v1/questionSerializer.js'
-import { CreateExerciseTopicService } from '../../../services/exercise/admin/createExerciseTopicService.js'
-import { ExerciseTopicSerializer } from '../../../serializers/admin/v1/exerciseTopicSerializer.js'
-import { GetExerciseTopicsService } from '../../../services/exercise/getExerciseTopicsService.js'
-import { GetExerciseTopicDetailService } from '../../../services/exercise/admin/getExerciseTopicDetailService.js'
-import { UpdateExerciseQuestionsService } from '../../../services/exercise/admin/updateExerciseQuestionsService.js'
-import idriveService from '../../../services/idrive.service.js'
+import { GenerateQuestionService } from '#services/exercise/admin/generateQuestionService'
+import { QuestionSerializer } from '#serializers/admin/v1/questionSerializer'
+import { CreateExerciseTopicService } from '#services/exercise/admin/createExerciseTopicService'
+import { ExerciseTopicSerializer } from '#serializers/admin/v1/exerciseTopicSerializer'
+import { GetExerciseTopicsService } from '#services/exercise/getExerciseTopicsService'
+import { GetExerciseTopicDetailService } from '#services/exercise/admin/getExerciseTopicDetailService'
+import { UpdateExerciseQuestionsService } from '#services/exercise/admin/updateExerciseQuestionsService'
+import idriveService from '#services/idrive.service'
 
 class ExerciseController {
   async generateQuestions(req, res) {

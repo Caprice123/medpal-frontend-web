@@ -1,5 +1,5 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
 
 export class GetMcqTopicsService extends BaseService {
   static async call({ page = 1, limit = 30, filters = {} }) {

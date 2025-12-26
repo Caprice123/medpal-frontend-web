@@ -1,6 +1,6 @@
-import { GetFlashcardDecksService } from '../../../services/flashcard/getFlashcardDecksService.js'
-import { StartFlashcardDeckService } from '../../../services/flashcard/startFlashcardDeckService.js'
-import { SubmitFlashcardProgressService } from '../../../services/flashcard/submitFlashcardProgressService.js'
+import { GetFlashcardDecksService } from '#services/flashcard/getFlashcardDecksService'
+import { StartFlashcardDeckService } from '#services/flashcard/startFlashcardDeckService'
+import { SubmitFlashcardProgressService } from '#services/flashcard/submitFlashcardProgressService'
 
 class FlashcardController {
   async getDecks(req, res) {

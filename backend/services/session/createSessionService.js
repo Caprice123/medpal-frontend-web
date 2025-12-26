@@ -1,7 +1,7 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { UpdateStatisticService, STAT_KEYS } from '../statistic/updateStatisticService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { ValidationError } from '#errors/validationError'
+import { UpdateStatisticService, STAT_KEYS } from '#statistic/updateStatisticService.js'
 
 export class CreateSessionService extends BaseService {
   static async call({ userId, sessionType = 'exercise' }) {

@@ -1,12 +1,12 @@
-import { GenerateAnatomyQuestionsService } from '../../../services/anatomy/admin/generateAnatomyQuestionsService.js'
-import { CreateAnatomyQuizService } from '../../../services/anatomy/admin/createAnatomyQuizService.js'
-import { GetAnatomyQuizzesService } from '../../../services/anatomy/admin/getAnatomyQuizzesService.js'
-import { GetAnatomyQuizDetailService } from '../../../services/anatomy/admin/getAnatomyQuizDetailService.js'
-import { UpdateAnatomyQuizService } from '../../../services/anatomy/admin/updateAnatomyQuizService.js'
-import { DeleteAnatomyQuizService } from '../../../services/anatomy/admin/deleteAnatomyQuizService.js'
-import { AnatomyQuizSerializer } from '../../../serializers/admin/v1/anatomyQuizSerializer.js'
-import { AnatomyQuestionSerializer } from '../../../serializers/admin/v1/anatomyQuestionSerializer.js'
-import idriveService from '../../../services/idrive.service.js'
+import { GenerateAnatomyQuestionsService } from '#services/anatomy/admin/generateAnatomyQuestionsService'
+import { CreateAnatomyQuizService } from '#services/anatomy/admin/createAnatomyQuizService'
+import { GetAnatomyQuizzesService } from '#services/anatomy/admin/getAnatomyQuizzesService'
+import { GetAnatomyQuizDetailService } from '#services/anatomy/admin/getAnatomyQuizDetailService'
+import { UpdateAnatomyQuizService } from '#services/anatomy/admin/updateAnatomyQuizService'
+import { DeleteAnatomyQuizService } from '#services/anatomy/admin/deleteAnatomyQuizService'
+import { AnatomyQuizSerializer } from '#serializers/admin/v1/anatomyQuizSerializer'
+import { AnatomyQuestionSerializer } from '#serializers/admin/v1/anatomyQuestionSerializer'
+import idriveService from '#services/idrive.service'
 
 class AnatomyController {
   async index(req, res) {

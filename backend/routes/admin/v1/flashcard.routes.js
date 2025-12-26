@@ -1,9 +1,9 @@
 import express from 'express'
-import flashcardController from '../../../controllers/admin/v1/flashcard.controller.js'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import { uploadPDF } from '../../../middlewares/uploadPDF.js'
-import { uploadSingleImage } from '../../../middlewares/uploadSingleImage.js'
+import flashcardController from '#controllers/admin/v1/flashcard.controller'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
+import { uploadPDF } from '#middlewares/uploadPDF'
+import { uploadSingleImage } from '#middlewares/uploadSingleImage'
 
 const router = express.Router()
 

@@ -1,6 +1,6 @@
-import { GetMessagesService } from '../../../../services/chatbot/getMessagesService.js'
-import { SendMessageService } from '../../../../services/chatbot/sendMessageService.js'
-import { SubmitFeedbackService } from '../../../../services/chatbot/submitFeedbackService.js'
+import { GetMessagesService } from '#services/chatbot/getMessagesService'
+import { SendMessageService } from '#services/chatbot/sendMessageService'
+import { SubmitFeedbackService } from '#services/chatbot/submitFeedbackService'
 
 class MessageController {
   // Get messages for a conversation

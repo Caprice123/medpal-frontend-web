@@ -1,9 +1,9 @@
-import { GetAdminConversationsService } from '../../../services/chatbot/admin/getAdminConversationsService.js'
-import { GetAdminConversationService } from '../../../services/chatbot/admin/getAdminConversationService.js'
-import { GetAdminConversationMessagesService } from '../../../services/chatbot/admin/getAdminConversationMessagesService.js'
-import { DeleteAdminConversationService } from '../../../services/chatbot/admin/deleteAdminConversationService.js'
-import { GetChatbotConstantsService } from '../../../services/chatbot/admin/getChatbotConstantsService.js'
-import { UpdateChatbotConstantsService } from '../../../services/chatbot/admin/updateChatbotConstantsService.js'
+import { GetAdminConversationsService } from '#services/chatbot/admin/getAdminConversationsService'
+import { GetAdminConversationService } from '#services/chatbot/admin/getAdminConversationService'
+import { GetAdminConversationMessagesService } from '#services/chatbot/admin/getAdminConversationMessagesService'
+import { DeleteAdminConversationService } from '#services/chatbot/admin/deleteAdminConversationService'
+import { GetChatbotConstantsService } from '#services/chatbot/admin/getChatbotConstantsService'
+import { UpdateChatbotConstantsService } from '#services/chatbot/admin/updateChatbotConstantsService'
 
 class ChatbotAdminController {
   // Get all conversations with filters

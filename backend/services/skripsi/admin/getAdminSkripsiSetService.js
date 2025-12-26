@@ -1,4 +1,4 @@
-import prisma from '../../../prisma/client.js'
+import prisma from '#prisma/client'
 
 const getAdminSkripsiSetService = async (setId) => {
   const set = await prisma.skripsi_sets.findFirst({

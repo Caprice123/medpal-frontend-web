@@ -1,6 +1,6 @@
-import { GetCalculatorTopicsService } from '../../../services/calculator/getCalculatorTopicsService.js'
-import { CalculateResultService } from '../../../services/calculator/calculateResultService.js'
-import prisma from '../../../prisma/client.js'
+import { GetCalculatorTopicsService } from '#services/calculator/getCalculatorTopicsService'
+import { CalculateResultService } from '#services/calculator/calculateResultService'
+import prisma from '#prisma/client'
 
 class CalculatorController {
   /**

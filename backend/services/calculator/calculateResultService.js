@@ -1,6 +1,6 @@
-import { NotFoundError } from "../../errors/notFoundError.js"
-import { ValidationError } from "../../errors/validationError.js"
-import prisma from "../../prisma/client.js"
+import { NotFoundError } from '#errors/notFoundError'
+import { ValidationError } from '#errors/validationError'
+import prisma from '#prisma/client'
 import { BaseService } from "../baseService.js"
 
 export class CalculateResultService extends BaseService {

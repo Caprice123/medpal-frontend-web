@@ -1,5 +1,5 @@
-import { getVectorDB } from '../vectorDB/vectorDBFactory.js'
-import embeddingService from './embeddingService.js'
+import { getVectorDB } from '#vectorDB/vectorDBFactory.js'
+import embeddingService from '#services/embedding/embeddingService'
 
 export class GetEmbeddingsService {
   /**

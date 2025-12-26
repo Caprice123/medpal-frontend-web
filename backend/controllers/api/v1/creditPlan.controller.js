@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { CreditPlanSerializer } from '../../../serializers/api/v1/creditPlanSerializer.js';
+import { CreditPlanSerializer } from '#serializers/api/v1/creditPlanSerializer';
 
 const prisma = new PrismaClient()
 

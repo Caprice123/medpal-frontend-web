@@ -1,7 +1,7 @@
 import express from 'express'
-import ChatbotAdminController from '../../../controllers/admin/v1/chatbot.controller.js'
-import { authenticateToken, requireAdmin } from '../../../middleware/auth.middleware.js'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
+import ChatbotAdminController from '#controllers/admin/v1/chatbot.controller'
+import { authenticateToken, requireAdmin } from '#middleware/auth.middleware'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

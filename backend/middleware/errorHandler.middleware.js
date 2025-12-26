@@ -1,5 +1,6 @@
 import { ValidationError } from '#errors/validationError'
 import { NotFoundError } from '#errors/notFoundError'
+import { captureException } from '#config/sentry'
 
 /**
  * Global error handling middleware
@@ -17,6 +18,14 @@ export const errorHandler = (err, req, res, next) => {
       code: err.code
     })
   }
+
+  // Capture exception in Sentry (with context)
+  captureException(err, {
+    url: req.originalUrl,
+    method: req.method,
+    userId: req.user?.id,
+    body: req.body,
+  })
 
   // Handle ValidationError (400 Bad Request) - returns custom message
   if (err instanceof ValidationError) {

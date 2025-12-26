@@ -1,9 +1,9 @@
-import prisma from '../../prisma/client.js'
-import { BaseService } from '../baseService.js'
-import { NotFoundError } from '../../errors/notFoundError.js'
-import { ValidationError } from '../../errors/validationError.js'
-import { SkripsiAIService } from './ai/skripsiAIService.js'
-import { HasActiveSubscriptionService } from '../pricing/getUserStatusService.js'
+import prisma from '#prisma/client'
+import { BaseService } from '#baseService.js'
+import { NotFoundError } from '#errors/notFoundError'
+import { ValidationError } from '#errors/validationError'
+import { SkripsiAIService } from '#services/skripsi/ai/skripsiAIService'
+import { HasActiveSubscriptionService } from '#pricing/getUserStatusService.js'
 
 export class SendMessageService extends BaseService {
   static async call({ tabId, userId, message, onStream, onComplete, onError }) {

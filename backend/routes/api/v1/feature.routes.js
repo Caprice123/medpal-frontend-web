@@ -1,6 +1,6 @@
 import express from 'express'
-import { asyncHandler } from '../../../utils/asyncHandler.js'
-import featureController from '../../../controllers/api/v1/feature.controller.js'
+import { asyncHandler } from '#utils/asyncHandler'
+import featureController from '#controllers/api/v1/feature.controller'
 
 const router = express.Router()
 

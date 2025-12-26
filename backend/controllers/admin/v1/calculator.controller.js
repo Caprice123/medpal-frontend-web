@@ -1,8 +1,8 @@
-import { GetCalculatorTopicsService } from '../../../services/calculator/getCalculatorTopicsService.js'
-import { GetCalculatorTopicDetailService } from '../../../services/calculator/getCalculatorTopicDetailService.js'
-import { CreateCalculatorTopicService } from '../../../services/calculator/createCalculatorTopicService.js'
-import { UpdateCalculatorTopicService } from '../../../services/calculator/updateCalculatorTopicService.js'
-import { DeleteCalculatorTopicService } from '../../../services/calculator/deleteCalculatorTopicService.js'
+import { GetCalculatorTopicsService } from '#services/calculator/getCalculatorTopicsService'
+import { GetCalculatorTopicDetailService } from '#services/calculator/getCalculatorTopicDetailService'
+import { CreateCalculatorTopicService } from '#services/calculator/createCalculatorTopicService'
+import { UpdateCalculatorTopicService } from '#services/calculator/updateCalculatorTopicService'
+import { DeleteCalculatorTopicService } from '#services/calculator/deleteCalculatorTopicService'
 
 class CalculatorController {
   /**

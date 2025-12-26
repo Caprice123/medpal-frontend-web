@@ -2,8 +2,8 @@ import express from 'express'
 import {
   handleXenditInvoiceWebhook,
   handleXenditVAWebhook
-} from '../controllers/webhook.controller.js'
-import { asyncHandler } from '../utils/asyncHandler.js'
+} from '#controllers/webhook.controller'
+import { asyncHandler } from '#utils/asyncHandler'
 
 const router = express.Router()
 

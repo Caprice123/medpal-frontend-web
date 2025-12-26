@@ -1,5 +1,5 @@
-import { getVectorDB } from '../vectorDB/vectorDBFactory.js'
-import EmbeddingService from '../embedding/embeddingService.js'
+import { getVectorDB } from '#vectorDB/vectorDBFactory.js'
+import EmbeddingService from '#embedding/embeddingService.js'
 
 class RAGService {
   /**
