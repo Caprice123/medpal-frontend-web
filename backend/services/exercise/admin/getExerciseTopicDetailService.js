@@ -1,6 +1,7 @@
 import { ValidationError } from '#errors/validationError'
 import prisma from '#prisma/client'
 import { BaseService } from "../../baseService.js"
+import IDriveService from '#services/idrive.service'
 
 export class GetExerciseTopicDetailService extends BaseService {
     static async call(topicId) {
@@ -24,9 +25,34 @@ export class GetExerciseTopicDetailService extends BaseService {
             throw new ValidationError('Topic not found')
         }
 
-        // Transform tags to simpler format
+        // Fetch PDF attachment if exists
+        const attachment = await prisma.attachments.findFirst({
+            where: {
+                recordType: 'exercise_topic',
+                recordId: topic.id,
+                name: 'pdf'
+            },
+            include: {
+                blob: true
+            }
+        })
+
+        // Generate presigned URL if blob exists
+        let pdfUrl = null
+        if (attachment?.blob) {
+            pdfUrl = await IDriveService.getSignedUrl(attachment.blob.key, 7 * 24 * 60 * 60)
+        }
+
+        // Transform with blob data
         const transformedTopic = {
             ...topic,
+            blob: attachment ? {
+                id: attachment.blobId,
+                url: pdfUrl,
+                key: attachment.blob.key,
+                filename: attachment.blob.filename,
+                size: attachment.blob.byteSize
+            } : null,
             tags: topic.exercise_topic_tags.map(t => ({
                 id: t.tags.id,
                 name: t.tags.name,

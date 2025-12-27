@@ -1,11 +1,12 @@
 import { ValidationError } from '#errors/validationError'
 import prisma from '#prisma/client'
 import { BaseService } from "../../baseService.js"
+import attachmentService from '#services/attachment/attachmentService'
 
 export class CreateExerciseTopicService extends BaseService {
-    static async call({ title, description, content_type, content, pdf_url, pdf_key, pdf_filename, tags, questions, created_by }) {
+    static async call({ title, description, content_type, content, blobId, tags, questions, created_by }) {
         // Validate inputs
-        await this.validate({ title, description, content_type, content, pdf_url, tags, questions })
+        await this.validate({ title, description, content_type, content, blobId, tags, questions })
 
         // Create topic with questions and tags
         const topic = await prisma.exercise_topics.create({
@@ -14,9 +15,6 @@ export class CreateExerciseTopicService extends BaseService {
                 description: description || '',
                 content_type,
                 content: content_type === 'text' ? content : null,
-                pdf_url: content_type === 'pdf' ? pdf_url : null,
-                pdf_key: content_type === 'pdf' ? pdf_key : null,
-                pdf_filename: content_type === 'pdf' ? pdf_filename : null,
                 status: 'ready',
                 created_by: created_by,
                 exercise_questions: {
@@ -45,10 +43,20 @@ export class CreateExerciseTopicService extends BaseService {
             }
         })
 
+        // Create attachment if blobId is provided (for PDF content)
+        if (blobId && content_type === 'pdf') {
+            await attachmentService.createAttachment({
+                name: 'pdf',
+                recordType: 'exercise_topic',
+                recordId: topic.id,
+                blobId: blobId
+            })
+        }
+
         return topic
     }
 
-    static async validate({ title, content_type, content, pdf_url, tags, questions }) {
+    static async validate({ title, content_type, content, blobId, tags, questions }) {
         // Validate required fields
         if (!title) {
             throw new ValidationError('Title is required')
@@ -62,7 +70,9 @@ export class CreateExerciseTopicService extends BaseService {
             throw new ValidationError('Content is required for text type')
         }
 
-        // PDF URL is optional - questions are pre-generated from PDF
+        if (content_type === 'pdf' && !blobId) {
+            throw new ValidationError('Blob ID is required for PDF type')
+        }
 
         if (!tags || tags.length === 0) {
             throw new ValidationError('At least one tag is required')
@@ -83,6 +93,16 @@ export class CreateExerciseTopicService extends BaseService {
 
         if (existingTags.length !== tagIds.length) {
             throw new ValidationError('Some tags are invalid or inactive')
+        }
+
+        // Validate blob exists if provided
+        if (blobId) {
+            const blob = await prisma.blobs.findUnique({
+                where: { id: blobId }
+            })
+            if (!blob) {
+                throw new ValidationError('Invalid blob ID')
+            }
         }
     }
 }

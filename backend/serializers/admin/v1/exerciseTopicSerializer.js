@@ -11,7 +11,9 @@ export class ExerciseTopicSerializer {
             type: topic.content_type,
             content_type: topic.content_type,
             content: topic.content,
-            pdf_url: topic.pdf_url,
+            // Support both blob object (new) and pdf_url (legacy)
+            blob: topic.blob || null,
+            pdf_url: topic.pdf_url || topic.blob?.url || null, // Backward compatibility
             tags: topicTags.map(tag => ({
                 id: tag.tags ? tag.tags.id : (tag.tag ? tag.tag.id : tag.id),
                 name: tag.tags ? tag.tags.name : (tag.tag ? tag.tag.name : tag.name),

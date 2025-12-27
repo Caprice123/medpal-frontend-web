@@ -22,23 +22,18 @@ export const Header = styled.div`
 `
 
 export const BackButton = styled.button`
-  background: transparent;
-  color: #6b7280;
-  border: 2px solid #e5e7eb;
-  padding: 0.625rem;
-  border-radius: 8px;
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  width: 40px;
-  height: 40px;
+  font-size: 0.875rem;
+  font-weight: 500;
 
   &:hover {
-    background: #f3f4f6;
-    border-color: #8b5cf6;
-    color: #8b5cf6;
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 `
 
@@ -68,13 +63,30 @@ export const IconLarge = styled.div`
 `
 
 export const Title = styled.h2`
-  font-size: 1.75rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
+`
+
+export const Actions = styled.div`
+  display: flex;
+  gap: 0.75rem;
+`
+
+export const ActionButton = styled.button`
+  background: ${props => props.secondary ? 'white' : '#3b82f6'};
+  color: ${props => props.secondary ? '#374151' : 'white'};
+  border: 1px solid ${props => props.secondary ? '#d1d5db' : '#3b82f6'};
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    background: ${props => props.secondary ? '#f9fafb' : '#2563eb'};
+  }
 `
 
 export const AddTopicButton = styled.button`

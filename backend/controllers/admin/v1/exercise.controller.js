@@ -21,9 +21,13 @@ class ExerciseController {
   /**
    * Generate questions from uploaded PDF (preview mode)
    * POST /admin/v1/exercises/generate-from-pdf
+   *
+   * Note: This now uses the centralized upload endpoint
+   * Frontend should call /api/v1/upload/image with type=exercise to get blobId
+   * Then pass that blobId along with the PDF file path for question generation
    */
   async generateQuestionsFromPDF(req, res) {
-    const { questionCount = 10 } = req.body
+    const { questionCount = 10, blobId } = req.body
 
     // Check if file was uploaded
     if (!req.file) {
@@ -33,12 +37,6 @@ class ExerciseController {
       })
     }
 
-    // Upload PDF to iDrive E2 cloud storage
-    const uploadResult = await idriveService.uploadExercisePDF(
-      req.file.path,
-      req.file.originalname.replace('.pdf', '')
-    )
-
     // Generate questions from the uploaded PDF
     const questions = await GenerateQuestionService.call({
       pdfFilePath: req.file.path,
@@ -46,14 +44,19 @@ class ExerciseController {
       questionCount: parseInt(questionCount) || 10
     })
 
+    // If blobId was provided from centralized upload, return it
+    // Otherwise, fallback to old behavior for backward compatibility
+    let responseData = {
+      questions: QuestionSerializer.serialize(questions)
+    }
+
+    if (blobId) {
+      responseData.blobId = blobId
+    }
+
     return res.status(200).json({
       success: true,
-      data: {
-        questions: QuestionSerializer.serialize(questions),
-        pdf_url: uploadResult.url,
-        pdf_key: uploadResult.key,
-        pdf_filename: uploadResult.fileName
-      }
+      data: responseData
     })
   }
 
@@ -69,9 +72,7 @@ class ExerciseController {
       description,
       content_type,
       content,
-      pdf_url,
-      pdf_key,
-      pdf_filename,
+      blobId,
       tags,
       questions
     } = req.body
@@ -81,9 +82,7 @@ class ExerciseController {
       description,
       content_type,
       content,
-      pdf_url,
-      pdf_key,
-      pdf_filename,
+      blobId,
       tags,
       questions,
       created_by: req.user.id
