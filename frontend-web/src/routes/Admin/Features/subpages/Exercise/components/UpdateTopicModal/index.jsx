@@ -2,6 +2,7 @@ import { memo, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
+import FileUpload from '@components/common/FileUpload'
 import { DndContext, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -14,10 +15,6 @@ import {
   Textarea,
   ContentTypeButtons,
   ContentTypeButton,
-  UploadSection,
-  UploadArea,
-  UploadIcon,
-  UploadText,
   ExistingFileInfo,
   FileIcon,
   FileName,
@@ -331,7 +328,7 @@ const UpdateTopicModal = ({ topicToEdit, onClose }) => {
         </ContentTypeButtons>
 
         {contentType === 'document' ? (
-          <UploadSection>
+          <>
             {/* Show existing PDF info if topic was created from PDF */}
             {pdfInfo && !pdfFile && (
               <ExistingFileInfo style={{ marginBottom: '1rem', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd' }}>
@@ -345,38 +342,22 @@ const UpdateTopicModal = ({ topicToEdit, onClose }) => {
               </ExistingFileInfo>
             )}
 
-            {!pdfFile ? (
-              <UploadArea onClick={() => document.getElementById('pdf-upload-update').click()}>
-                <input
-                  id="pdf-upload-update"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <UploadIcon>📤</UploadIcon>
-                <UploadText>
-                  {isGenerating ? 'Uploading...' : pdfInfo ? 'Upload PDF baru untuk re-generate' : 'Klik untuk upload PDF'}
-                </UploadText>
-                <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  PDF file (max 20MB)
-                </UploadText>
-              </UploadArea>
-            ) : (
-              <ExistingFileInfo>
-                <FileIcon>📕</FileIcon>
-                <div style={{ flex: 1 }}>
-                  <FileName>{pdfFile.name}</FileName>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    Siap untuk di-generate menjadi soal
-                  </div>
-                </div>
-                <RemoveFileButton onClick={() => setPdfFile(null)}>
-                  Hapus
-                </RemoveFileButton>
-              </ExistingFileInfo>
-            )}
-          </UploadSection>
+            <FileUpload
+              file={pdfFile ? {
+                name: pdfFile.name,
+                type: pdfFile.type,
+                size: pdfFile.size
+              } : null}
+              onFileSelect={handleFileSelect}
+              onRemove={() => setPdfFile(null)}
+              isUploading={isGenerating}
+              acceptedTypes={['application/pdf']}
+              acceptedTypesLabel="PDF file"
+              maxSizeMB={20}
+              uploadText={pdfInfo ? 'Upload PDF baru untuk re-generate' : 'Klik untuk upload PDF'}
+              actions={<></>}
+            />
+          </>
         ) : (
           <FormSection>
             <Textarea

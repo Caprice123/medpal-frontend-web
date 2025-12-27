@@ -2,27 +2,19 @@ import { useMemo } from 'react'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
 import BlockNoteEditor from '@components/BlockNoteEditor'
-import { formatFileSize, getFileIcon } from '@utils/fileUtils'
+import FileUpload from '@components/common/FileUpload'
 import {
   FormSection,
   Label,
   Input,
   Textarea,
-  UploadSection,
-  UploadArea,
-  UploadIcon,
-  UploadText,
-  FileName,
   GenerateButton,
-  RemoveFileButton,
   ErrorText,
   StatusToggle,
   StatusOption,
   Button,
   EditorContainer,
-  EditorHint,
-  ExistingFileInfo,
-  FileIcon
+  EditorHint
 } from './UpdateNoteModal.styles'
 import { useSelector } from 'react-redux'
 import { useUpdateNote } from '../../hooks/subhooks/useUpdateNote'
@@ -113,31 +105,32 @@ const UpdateNoteModal = ({ onClose }) => {
       {sourceFileInfo && !uploadedFile && (
         <FormSection>
           <Label>Dokumen Sumber</Label>
-          <ExistingFileInfo>
-            <FileIcon>{getFileIcon(sourceFileInfo.type)}</FileIcon>
-            <div style={{ flex: 1 }}>
-              <strong>{sourceFileInfo.filename}</strong>
-              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                Dokumen yang digunakan untuk generate ringkasan ini
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {sourceFileInfo.url && (
-                <GenerateButton
-                  as="a"
-                  href={sourceFileInfo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Lihat
-                </GenerateButton>
-              )}
-              <RemoveFileButton onClick={handleRemoveSourceFile}>
-                Hapus
-              </RemoveFileButton>
-            </div>
-          </ExistingFileInfo>
+          <FileUpload
+            file={{
+              name: sourceFileInfo.filename,
+              type: sourceFileInfo.type,
+              size: sourceFileInfo.size
+            }}
+            onRemove={handleRemoveSourceFile}
+            actions={
+              <>
+                {sourceFileInfo.url && (
+                  <GenerateButton
+                    as="a"
+                    href={sourceFileInfo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Lihat
+                  </GenerateButton>
+                )}
+              </>
+            }
+          />
+          <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.5rem' }}>
+            Dokumen yang digunakan untuk generate ringkasan ini
+          </div>
         </FormSection>
       )}
 
@@ -145,57 +138,36 @@ const UpdateNoteModal = ({ onClose }) => {
       {!sourceFileInfo && (
         <FormSection>
           <Label>Generate Ulang dari Dokumen (Opsional)</Label>
-          <UploadSection>
-            {!uploadedFile ? (
-              <UploadArea onClick={() => document.getElementById('document-upload').click()}>
-                <input
-                  id="document-upload"
-                  type="file"
-                  accept=".pdf,.pptx,.docx"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <UploadIcon>📤</UploadIcon>
-                <UploadText>
-                  {loading.isGenerating ? 'Uploading...' : 'Klik untuk upload dokumen'}
-                </UploadText>
-                <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  PDF, PPTX, atau DOCX (max 50MB)
-                </UploadText>
-              </UploadArea>
-            ) : (
-              <ExistingFileInfo>
-                <FileIcon>{getFileIcon(uploadedFile.type)}</FileIcon>
-                <div style={{ flex: 1 }}>
-                  <FileName>{uploadedFile.name}</FileName>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    {formatFileSize(uploadedFile.size)}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {uploadedFile.url && (
-                    <GenerateButton
-                      as="a"
-                      href={uploadedFile.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Lihat
-                    </GenerateButton>
-                  )}
+          <FileUpload
+            file={uploadedFile}
+            onFileSelect={handleFileSelect}
+            onRemove={handleRemoveFile}
+            isUploading={loading.isUploading}
+            acceptedTypes={['.pdf', '.pptx', '.docx']}
+            acceptedTypesLabel="PDF, PPTX, atau DOCX"
+            maxSizeMB={50}
+            uploadText="Klik untuk upload dokumen"
+            actions={
+              <>
+                {uploadedFile?.url && (
                   <GenerateButton
-                    onClick={handleGenerate}
-                    disabled={loading.isGenerating}
+                    as="a"
+                    href={uploadedFile.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    {loading.isGenerating ? 'Generating...' : '✨ Generate'}
+                    Lihat
                   </GenerateButton>
-                  <RemoveFileButton onClick={handleRemoveFile}>
-                    Hapus
-                  </RemoveFileButton>
-                </div>
-              </ExistingFileInfo>
-            )}
-          </UploadSection>
+                )}
+                <GenerateButton
+                  onClick={handleGenerate}
+                  disabled={loading.isGenerating}
+                >
+                  {loading.isGenerating ? 'Generating...' : '✨ Generate'}
+                </GenerateButton>
+              </>
+            }
+          />
         </FormSection>
       )}
 

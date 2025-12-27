@@ -142,7 +142,8 @@ export const useUpdateNote = (onClose) => {
           blobId: selectedNote.blobId,
           url: selectedNote.sourceUrl,
           filename: selectedNote.sourceFilename,
-          type: selectedNote.sourceContentType
+          type: selectedNote.sourceContentType,
+          size: selectedNote.sourceByteSize
         })
       } else {
         setBlobId(null)

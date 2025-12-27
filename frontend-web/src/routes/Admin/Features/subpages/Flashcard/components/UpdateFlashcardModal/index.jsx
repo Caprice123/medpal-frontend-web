@@ -2,12 +2,13 @@ import { memo, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
+import FileUpload from '@components/common/FileUpload'
 import { DndContext, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useUpdateFlashcard } from '../../hooks/subhooks/useUpdateFlashcard'
 import { useGenerateFlashcard } from '../../hooks/subhooks/useGenerateFlashcard'
-import { formatFileSize } from '@utils/formatUtils'
+import { formatFileSize } from '@utils/fileUtils'
 import {
   FormSection,
   FormRow,
@@ -16,13 +17,6 @@ import {
   Textarea,
   ContentTypeButtons,
   ContentTypeButton,
-  UploadSection,
-  UploadArea,
-  UploadIcon,
-  UploadText,
-  ExistingFileInfo,
-  FileIcon,
-  FileName,
   RemoveFileButton,
   CardsSection,
   CardsSectionHeader,
@@ -94,39 +88,29 @@ const SortableCard = memo(function SortableCard({ card, index, form, handleRemov
       {/* Front Image Upload */}
       <FormSection>
         <Label>Image (Optional)</Label>
-        {!card.image?.key ? (
-          <UploadArea onClick={() => document.getElementById(`card-image-${card.tempId}`).click()}>
-            <input
-              id={`card-image-${card.tempId}`}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              style={{ display: 'none' }}
-            />
-            <UploadIcon>🖼️</UploadIcon>
-            <UploadText>Klik untuk upload gambar</UploadText>
-            <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-              PNG, JPG, GIF (max 5MB)
-            </UploadText>
-          </UploadArea>
-        ) : (
-          <ExistingFileInfo>
-            <FileIcon>🖼️</FileIcon>
-            <div style={{ flex: 1 }}>
-              <FileName>
-                {card.image?.filename || 'Image'}
-              </FileName>
-              <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                {formatFileSize(card.image.byteSize)}
-              </div>
-            </div>
-            <RemoveFileButton onClick={() => {
-              form.setFieldValue(`cards.${index}.image`, null)  
-            }}>
-              Hapus
-            </RemoveFileButton>
-          </ExistingFileInfo>
-        )}
+        <FileUpload
+          file={card.image?.key ? {
+            name: card.image?.filename || 'Image',
+            type: 'image/*',
+            size: card.image?.byteSize
+          } : null}
+          onFileSelect={(e) => {
+            const file = e.target?.files?.[0] || e
+            if (file) {
+              if (file.type.startsWith('image/')) {
+                handleImageUpload(index, file)
+              } else {
+                alert('Please select an image file')
+              }
+            }
+          }}
+          onRemove={() => form.setFieldValue(`cards.${index}.image`, null)}
+          acceptedTypes={['image/*']}
+          acceptedTypesLabel="PNG, JPG, GIF"
+          maxSizeMB={5}
+          uploadText="Klik untuk upload gambar"
+          actions={<></>}
+        />
       </FormSection>
 
       <FormSection>
@@ -199,9 +183,6 @@ const UpdateFlashcardModal = ({ onClose }) => {
   const handleModalClose = () => {
     if (onClose) onClose()
   }
-
-  console.log('UpdateFlashcardModal - pdfInfo:', pdfInfo)
-  console.log('UpdateFlashcardModal - contentType:', contentType)
 
   return (
     <Modal
@@ -287,55 +268,42 @@ const UpdateFlashcardModal = ({ onClose }) => {
         </ContentTypeButtons>
 
         {contentType === 'document' ? (
-          <UploadSection>
-            {!pdfFile && !pdfInfo ? (
-              <UploadArea onClick={() => document.getElementById('pdf-upload-update').click()}>
-                <input
-                  id="pdf-upload-update"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <UploadIcon>📤</UploadIcon>
-                <UploadText>
-                  {isGenerating ? 'Uploading...' : 'Klik untuk upload PDF'}
-                </UploadText>
-                <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  PDF file (max 20MB)
-                </UploadText>
-              </UploadArea>
-            ) : (
-              <ExistingFileInfo>
-                <FileIcon>📕</FileIcon>
-                <div style={{ flex: 1 }}>
-                  <FileName>{pdfFile ? pdfFile.name : (pdfInfo?.pdf_filename || 'Existing PDF')}</FileName>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    Siap untuk di-generate menjadi flashcard
-                  </div>
-                </div>
-                <RemoveFileButton
-                  onClick={() => {
-                    if (pdfFile) {
-                      const url = URL.createObjectURL(pdfFile)
-                      window.open(url, '_blank')
-                    } else if (pdfInfo?.pdf_url) {
-                      window.open(pdfInfo.pdf_url, '_blank')
-                    }
-                  }}
-                  style={{ marginRight: '0.5rem', backgroundColor: '#3b82f6', color: 'white' }}
-                >
-                  Lihat
-                </RemoveFileButton>
-                <RemoveFileButton onClick={() => {
-                  setPdfFile(null)
-                  setPdfInfo(null)
-                }}>
-                  Hapus
-                </RemoveFileButton>
-              </ExistingFileInfo>
-            )}
-          </UploadSection>
+          <FileUpload
+            file={pdfFile || pdfInfo ? {
+              name: pdfFile ? pdfFile.name : (pdfInfo?.pdf_filename || 'Existing PDF'),
+              type: pdfFile ? pdfFile.type : 'application/pdf',
+              size: pdfFile?.size
+            } : null}
+            onFileSelect={handleFileSelect}
+            onRemove={() => {
+              setPdfFile(null)
+              setPdfInfo(null)
+            }}
+            isUploading={isGenerating}
+            acceptedTypes={['application/pdf']}
+            acceptedTypesLabel="PDF file"
+            maxSizeMB={20}
+            uploadText="Klik untuk upload PDF"
+            actions={
+              <>
+                {(pdfFile || pdfInfo) && (
+                  <RemoveFileButton
+                    onClick={() => {
+                      if (pdfFile) {
+                        const url = URL.createObjectURL(pdfFile)
+                        window.open(url, '_blank')
+                      } else if (pdfInfo?.pdf_url) {
+                        window.open(pdfInfo.pdf_url, '_blank')
+                      }
+                    }}
+                    style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                  >
+                    Lihat
+                  </RemoveFileButton>
+                )}
+              </>
+            }
+          />
         ) : (
           <FormSection>
             <Textarea

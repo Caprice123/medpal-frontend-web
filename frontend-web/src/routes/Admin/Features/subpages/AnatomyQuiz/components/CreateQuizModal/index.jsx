@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
-import { formatFileSize } from '@utils/formatUtils'
+import FileUpload from '@components/common/FileUpload'
+import { formatFileSize } from '@utils/fileUtils'
 import { PhotoProvider, PhotoView } from 'react-photo-view'
 import 'react-photo-view/dist/react-photo-view.css'
 import {
@@ -9,16 +10,7 @@ import {
   Label,
   Input,
   Textarea,
-  ImageUploadArea,
-  ImageUploadIcon,
-  ImageUploadText,
-  ImageUploadHint,
-  ExistingFileInfo,
-  FileIcon,
-  FileName,
-  FileActions,
   PreviewButton,
-  RemoveFileButton,
   QuestionsSection,
   QuestionsSectionHeader,
   QuestionsSectionTitle,
@@ -108,56 +100,40 @@ const CreateQuizModal = ({ onClose }) => {
 
         <FormSection>
           <Label>Upload Image *</Label>
-          {!form.values.blob.id ? (
-            <ImageUploadArea onClick={() => document.getElementById('image-upload').click()}>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handleImageSelect}
-                style={{ display: 'none' }}
-              />
-              <ImageUploadIcon>🖼️</ImageUploadIcon>
-              <ImageUploadText>
-                {loading.isUploadingImage ? 'Uploading...' : 'Klik untuk upload gambar'}
-              </ImageUploadText>
-              <ImageUploadHint>JPEG atau PNG, max 5MB</ImageUploadHint>
-            </ImageUploadArea>
-          ) : (
-            <PhotoProvider>
-              <ExistingFileInfo>
-                <FileIcon>🖼️</FileIcon>
-                <div style={{ flex: 1 }}>
-                  <FileName>
-                    {form.values.blob.filename || 'File name'}
-                  </FileName>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    {form.values.blob.size ? formatFileSize(form.values.blob.size) : 'File size'}
-                  </div>
-                </div>
-                <FileActions>
-                  <PhotoView src={form.values.blob.url}>
-                    <PreviewButton type="button">
-                      👁️ Preview
-                    </PreviewButton>
-                  </PhotoView>
-                  <RemoveFileButton
-                    type="button"
-                    onClick={() => {
-                      form.setFieldValue('blob', {
-                        id: null,
-                        url: '',
-                        filename: '',
-                        size: null
-                      })
-                    }}
-                  >
-                    Hapus
-                  </RemoveFileButton>
-                </FileActions>
-              </ExistingFileInfo>
-            </PhotoProvider>
-          )}
+          <PhotoProvider>
+            <FileUpload
+              file={form.values.blob.id ? {
+                name: form.values.blob.filename || 'File name',
+                type: 'image/*',
+                size: form.values.blob.size
+              } : null}
+              onFileSelect={handleImageSelect}
+              onRemove={() => {
+                form.setFieldValue('blob', {
+                  id: null,
+                  url: '',
+                  filename: '',
+                  size: null
+                })
+              }}
+              isUploading={loading.isUploadingImage}
+              acceptedTypes={['image/jpeg', 'image/jpg', 'image/png']}
+              acceptedTypesLabel="JPEG atau PNG"
+              maxSizeMB={5}
+              uploadText="Klik untuk upload gambar"
+              actions={
+                <>
+                  {form.values.blob.url && (
+                    <PhotoView src={form.values.blob.url}>
+                      <PreviewButton type="button">
+                        👁️ Preview
+                      </PreviewButton>
+                    </PhotoView>
+                  )}
+                </>
+              }
+            />
+          </PhotoProvider>
           {form.errors.blob && <ErrorText>{form.errors.blob}</ErrorText>}
         </FormSection>
 

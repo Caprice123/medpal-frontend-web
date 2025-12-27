@@ -2,30 +2,23 @@ import { useMemo } from 'react'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
 import BlockNoteEditor from '@components/BlockNoteEditor'
-import { formatFileSize, getFileIcon } from '@utils/fileUtils'
+import FileUpload from '@components/common/FileUpload'
 import {
   FormSection,
   Label,
   Input,
   Textarea,
-  UploadSection,
-  UploadArea,
-  UploadIcon,
-  UploadText,
   ErrorText,
   StatusToggle,
   StatusOption,
   Button,
   EditorContainer,
   EditorHint,
-  ExistingFileInfo,
-  FileIcon,
-  FileName,
-  GenerateButton,
-  RemoveFileButton
+  GenerateButton
 } from './CreateNoteModal.styles'
 import { useSelector } from 'react-redux'
 import { useCreateNote } from '../../hooks/subhooks/useCreateNote'
+import { formatFileSize, getFileIcon } from '@utils/fileUtils'
 
 const CreateNoteModal = ({ onClose }) => {
   const { loading } = useSelector(state => state.summaryNotes)
@@ -65,15 +58,6 @@ const CreateNoteModal = ({ onClose }) => {
 
   const handleContentChange = (blocks) => {
     form.setFieldValue('content', blocks)
-  }
-
-  // Debug logging
-  console.log('CreateNoteModal - uploadedFile:', uploadedFile)
-  if (uploadedFile) {
-    console.log('uploadedFile.name:', uploadedFile.name)
-    console.log('uploadedFile.type:', uploadedFile.type)
-    console.log('uploadedFile.size:', uploadedFile.size)
-    console.log('File icon:', getFileIcon(uploadedFile.type))
   }
 
   return (
@@ -119,58 +103,37 @@ const CreateNoteModal = ({ onClose }) => {
       {/* Upload Document Section */}
       <FormSection>
         <Label>Generate dari Dokumen (Opsional)</Label>
-        <UploadSection>
-          {!uploadedFile ? (
-            <UploadArea onClick={() => document.getElementById('document-upload').click()}>
-              <input
-                id="document-upload"
-                type="file"
-                accept=".pdf,.pptx,.docx"
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
-              <UploadIcon>📤</UploadIcon>
-              <UploadText>
-                {loading.isUploading ? 'Uploading...' : 'Klik untuk upload dokumen'}
-              </UploadText>
-              <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                PDF, PPTX, atau DOCX (max 50MB)
-              </UploadText>
-            </UploadArea>
-          ) : (
-            <ExistingFileInfo>
-              <FileIcon>{getFileIcon(uploadedFile.type)}</FileIcon>
-              <div style={{ flex: 1 }}>
-                <FileName>{uploadedFile.name}</FileName>
-                <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                  {formatFileSize(uploadedFile.size)}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {uploadedFile.url && (
-                  <GenerateButton
-                    as="a"
-                    href={uploadedFile.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Lihat
-                  </GenerateButton>
-                )}
+        <FileUpload
+          file={uploadedFile}
+          onFileSelect={handleFileSelect}
+          onRemove={handleRemoveFile}
+          isUploading={loading.isUploading}
+          acceptedTypes={['.pdf', '.pptx', '.docx']}
+          acceptedTypesLabel="PDF, PPTX, atau DOCX"
+          maxSizeMB={50}
+          uploadText="Klik untuk upload dokumen"
+          actions={
+            <>
+              {uploadedFile?.url && (
                 <GenerateButton
-                  onClick={handleGenerate}
-                  disabled={loading.isGenerating}
+                  as="a"
+                  href={uploadedFile.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {loading.isGenerating ? 'Generating...' : '✨ Generate'}
+                  Lihat
                 </GenerateButton>
-                <RemoveFileButton onClick={handleRemoveFile}>
-                  Hapus
-                </RemoveFileButton>
-              </div>
-            </ExistingFileInfo>
-          )}
-        </UploadSection>
+              )}
+              <GenerateButton
+                onClick={handleGenerate}
+                disabled={loading.isGenerating}
+              >
+                {loading.isGenerating ? 'Generating...' : '✨ Generate'}
+              </GenerateButton>
+            </>
+          }
+        />
       </FormSection>
 
       {/* Content Editor */}

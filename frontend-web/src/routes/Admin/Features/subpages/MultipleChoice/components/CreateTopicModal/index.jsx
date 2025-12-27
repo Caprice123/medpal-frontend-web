@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Modal from '@components/common/Modal'
 import TagSelector from '@components/common/TagSelector'
+import FileUpload from '@components/common/FileUpload'
 import { generateMcqQuestions } from '@store/mcq/action'
 import {
   FormSection,
@@ -37,14 +38,6 @@ import {
   StatusOption,
   Button,
   HelpText,
-  UploadSection,
-  UploadArea,
-  UploadIcon,
-  UploadText,
-  ExistingFileInfo,
-  FileIcon,
-  FileName,
-  GenerateButton,
   RemoveFileButton,
   ContentTypeButtons,
   ContentTypeButton
@@ -232,39 +225,21 @@ const CreateTopicModal = ({ onClose }) => {
         </ContentTypeButtons>
 
         {contentType === 'document' ? (
-          <UploadSection>
-            {!generationFile ? (
-              <UploadArea onClick={() => document.getElementById('pdf-upload').click()}>
-                <input
-                  id="pdf-upload"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <UploadIcon>📤</UploadIcon>
-                <UploadText>
-                  {loading.isGenerating ? 'Uploading...' : 'Klik untuk upload PDF'}
-                </UploadText>
-                <UploadText style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  PDF file (max 20MB)
-                </UploadText>
-              </UploadArea>
-            ) : (
-              <ExistingFileInfo>
-                <FileIcon>📕</FileIcon>
-                <div style={{ flex: 1 }}>
-                  <FileName>{generationFile.name}</FileName>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    Siap untuk di-generate menjadi soal
-                  </div>
-                </div>
-                <RemoveFileButton onClick={() => setGenerationFile(null)}>
-                  Hapus
-                </RemoveFileButton>
-              </ExistingFileInfo>
-            )}
-          </UploadSection>
+          <FileUpload
+            file={generationFile ? {
+              name: generationFile.name,
+              type: generationFile.type,
+              size: generationFile.size
+            } : null}
+            onFileSelect={handleFileSelect}
+            onRemove={() => setGenerationFile(null)}
+            isUploading={loading.isGenerating}
+            acceptedTypes={['application/pdf']}
+            acceptedTypesLabel="PDF file"
+            maxSizeMB={20}
+            uploadText="Klik untuk upload PDF"
+            actions={<></>}
+          />
         ) : (
           <FormSection>
             <Textarea

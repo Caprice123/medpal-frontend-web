@@ -55,10 +55,12 @@ export class GetSummaryNoteDetailService extends BaseService {
     let sourceUrl = null
     let sourceFilename = null
     let sourceContentType = null
+    let sourceByteSize = null
     if (sourceAttachment?.blob) {
       sourceUrl = await idriveService.getSignedUrl(sourceAttachment.blob.key)
       sourceFilename = sourceAttachment.blob.filename
       sourceContentType = sourceAttachment.blob.contentType
+      sourceByteSize = sourceAttachment.blob.byteSize
     }
 
     return {
@@ -70,6 +72,7 @@ export class GetSummaryNoteDetailService extends BaseService {
       sourceUrl,
       sourceFilename,
       sourceContentType,
+      sourceByteSize,
       status: summaryNote.status,
       is_active: summaryNote.is_active,
       created_by: summaryNote.created_by,

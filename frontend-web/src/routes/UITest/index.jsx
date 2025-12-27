@@ -5,6 +5,9 @@ import TextInput from '@components/common/TextInput'
 import CurrencyInput from '@components/common/CurrencyInput'
 import Textarea from '@components/common/Textarea'
 import Table from '@components/common/Table'
+import FileUpload from '@components/common/FileUpload'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
+import 'react-photo-view/dist/react-photo-view.css'
 import {
   Container,
   Header,
@@ -33,6 +36,65 @@ function UITest() {
   const [passwordValue, setPasswordValue] = useState('')
   const [currencyValue, setCurrencyValue] = useState('')
   const [textareaValue, setTextareaValue] = useState('')
+
+  // File upload states
+  const [pdfFile, setPdfFile] = useState(null)
+  const [imageFile, setImageFile] = useState(null)
+  const [documentFile, setDocumentFile] = useState(null)
+  const [uploadedWithActions, setUploadedWithActions] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  // File upload handlers
+  const handlePdfSelect = (e) => {
+    const file = e.target?.files?.[0] || e
+    if (file) {
+      setPdfFile({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      })
+    }
+  }
+
+  const handleImageSelect = (e) => {
+    const file = e.target?.files?.[0] || e
+    if (file) {
+      setImageFile({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file) // For preview
+      })
+    }
+  }
+
+  const handleDocumentSelect = (e) => {
+    const file = e.target?.files?.[0] || e
+    if (file) {
+      setIsUploading(true)
+      // Simulate upload
+      setTimeout(() => {
+        setDocumentFile({
+          name: file.name,
+          type: file.type,
+          size: file.size
+        })
+        setIsUploading(false)
+      }, 1500)
+    }
+  }
+
+  const handleActionFileSelect = (e) => {
+    const file = e.target?.files?.[0] || e
+    if (file) {
+      setUploadedWithActions({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file)
+      })
+    }
+  }
 
   // Table data
   const tableColumns = [
@@ -338,6 +400,329 @@ function UITest() {
                 value="This textarea is disabled"
                 rows={3}
               />
+            </ComponentDemo>
+          </ComponentCard>
+        </ComponentGrid>
+      </Section>
+
+      {/* File Upload Section */}
+      <Section>
+        <SectionTitle>File Upload</SectionTitle>
+        <ComponentGrid>
+          <ComponentCard>
+            <ComponentLabel>Basic PDF Upload</ComponentLabel>
+            <ComponentDemo>
+              <StateLabel>Simple upload without actions</StateLabel>
+              <FileUpload
+                file={pdfFile}
+                onFileSelect={handlePdfSelect}
+                onRemove={() => setPdfFile(null)}
+                acceptedTypes={['application/pdf']}
+                acceptedTypesLabel="PDF file"
+                maxSizeMB={20}
+                uploadText="Click to upload PDF"
+                actions={<></>}
+              />
+            </ComponentDemo>
+            <ComponentDemo>
+              <StateLabel>Code Example</StateLabel>
+              <pre style={{
+                background: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                overflow: 'auto'
+              }}>
+{`<FileUpload
+  file={pdfFile}
+  onFileSelect={handlePdfSelect}
+  onRemove={() => setPdfFile(null)}
+  acceptedTypes={['application/pdf']}
+  acceptedTypesLabel="PDF file"
+  maxSizeMB={20}
+  uploadText="Click to upload PDF"
+  actions={<></>}
+/>`}
+              </pre>
+            </ComponentDemo>
+          </ComponentCard>
+
+          <ComponentCard>
+            <ComponentLabel>Document Upload with Loading</ComponentLabel>
+            <ComponentDemo>
+              <StateLabel>Shows loading state during upload</StateLabel>
+              <FileUpload
+                file={documentFile}
+                onFileSelect={handleDocumentSelect}
+                onRemove={() => setDocumentFile(null)}
+                isUploading={isUploading}
+                acceptedTypes={['.pdf', '.pptx', '.docx']}
+                acceptedTypesLabel="PDF, PPTX, DOCX"
+                maxSizeMB={50}
+                uploadText="Upload document"
+                actions={<></>}
+              />
+            </ComponentDemo>
+            <ComponentDemo>
+              <StateLabel>Code Example</StateLabel>
+              <pre style={{
+                background: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                overflow: 'auto'
+              }}>
+{`<FileUpload
+  file={documentFile}
+  onFileSelect={handleDocumentSelect}
+  onRemove={() => setDocumentFile(null)}
+  isUploading={isUploading}
+  acceptedTypes={['.pdf', '.pptx', '.docx']}
+  acceptedTypesLabel="PDF, PPTX, DOCX"
+  maxSizeMB={50}
+  uploadText="Upload document"
+  actions={<></>}
+/>`}
+              </pre>
+            </ComponentDemo>
+          </ComponentCard>
+
+          <ComponentCard>
+            <ComponentLabel>Image Upload with Preview</ComponentLabel>
+            <ComponentDemo>
+              <StateLabel>With PhotoView integration</StateLabel>
+              <PhotoProvider>
+                <FileUpload
+                  file={imageFile}
+                  onFileSelect={handleImageSelect}
+                  onRemove={() => setImageFile(null)}
+                  acceptedTypes={['image/jpeg', 'image/jpg', 'image/png']}
+                  acceptedTypesLabel="JPEG, PNG"
+                  maxSizeMB={5}
+                  uploadText="Upload image"
+                  actions={
+                    <>
+                      {imageFile?.url && (
+                        <PhotoView src={imageFile.url}>
+                          <Button size="small" variant="primary">
+                            👁️ Preview
+                          </Button>
+                        </PhotoView>
+                      )}
+                    </>
+                  }
+                />
+              </PhotoProvider>
+            </ComponentDemo>
+            <ComponentDemo>
+              <StateLabel>Code Example</StateLabel>
+              <pre style={{
+                background: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                overflow: 'auto'
+              }}>
+{`<PhotoProvider>
+  <FileUpload
+    file={imageFile}
+    onFileSelect={handleImageSelect}
+    onRemove={() => setImageFile(null)}
+    acceptedTypes={['image/jpeg', 'image/jpg', 'image/png']}
+    acceptedTypesLabel="JPEG, PNG"
+    maxSizeMB={5}
+    uploadText="Upload image"
+    actions={
+      <>
+        {imageFile?.url && (
+          <PhotoView src={imageFile.url}>
+            <Button size="small">👁️ Preview</Button>
+          </PhotoView>
+        )}
+      </>
+    }
+  />
+</PhotoProvider>`}
+              </pre>
+            </ComponentDemo>
+          </ComponentCard>
+
+          <ComponentCard>
+            <ComponentLabel>Upload with Custom Actions</ComponentLabel>
+            <ComponentDemo>
+              <StateLabel>View and Generate buttons</StateLabel>
+              <FileUpload
+                file={uploadedWithActions}
+                onFileSelect={handleActionFileSelect}
+                onRemove={() => setUploadedWithActions(null)}
+                acceptedTypes={['.pdf']}
+                acceptedTypesLabel="PDF file"
+                maxSizeMB={20}
+                uploadText="Upload for generation"
+                actions={
+                  <>
+                    {uploadedWithActions?.url && (
+                      <Button
+                        as="a"
+                        href={uploadedWithActions.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        variant="secondary"
+                      >
+                        View
+                      </Button>
+                    )}
+                    {uploadedWithActions && (
+                      <Button
+                        size="small"
+                        variant="success"
+                        onClick={() => alert('Generate triggered!')}
+                      >
+                        ✨ Generate
+                      </Button>
+                    )}
+                  </>
+                }
+              />
+            </ComponentDemo>
+            <ComponentDemo>
+              <StateLabel>Code Example</StateLabel>
+              <pre style={{
+                background: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                overflow: 'auto'
+              }}>
+{`<FileUpload
+  file={uploadedWithActions}
+  onFileSelect={handleActionFileSelect}
+  onRemove={() => setUploadedWithActions(null)}
+  acceptedTypes={['.pdf']}
+  acceptedTypesLabel="PDF file"
+  maxSizeMB={20}
+  uploadText="Upload for generation"
+  actions={
+    <>
+      {uploadedWithActions?.url && (
+        <Button
+          as="a"
+          href={uploadedWithActions.url}
+          target="_blank"
+          size="small"
+        >
+          View
+        </Button>
+      )}
+      {uploadedWithActions && (
+        <Button
+          size="small"
+          variant="success"
+          onClick={() => alert('Generate!')}
+        >
+          ✨ Generate
+        </Button>
+      )}
+    </>
+  }
+/>`}
+              </pre>
+            </ComponentDemo>
+          </ComponentCard>
+
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Component Props Documentation</ComponentLabel>
+            <ComponentDemo>
+              <div style={{
+                background: '#f9fafb',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                fontSize: '0.875rem'
+              }}>
+                <h4 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                  FileUpload Component Props
+                </h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Prop</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Required</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>file</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                        Object | null
+                      </td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>
+                        File object with name, type, size properties
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>onFileSelect</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Function</td>
+                      <td style={{ padding: '0.5rem' }}>Yes</td>
+                      <td style={{ padding: '0.5rem' }}>Callback when file is selected</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>onRemove</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Function</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Callback to remove file</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>actions</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>ReactNode</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Custom action buttons (View, Generate, etc.)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>acceptedTypes</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Array</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Array of accepted file types/extensions</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>acceptedTypesLabel</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Label for accepted types (e.g., "PDF, PPTX")</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>maxSizeMB</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Number</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Maximum file size in MB (default: 50)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>isUploading</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Upload loading state (default: false)</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>uploadText</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>No</td>
+                      <td style={{ padding: '0.5rem' }}>Custom upload area text</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                  <strong style={{ color: '#1e40af' }}>💡 Usage Tips:</strong>
+                  <ul style={{ marginTop: '0.5rem', marginBottom: 0, paddingLeft: '1.5rem', color: '#1e3a8a' }}>
+                    <li>Pass action buttons as React components in the <code>actions</code> prop</li>
+                    <li>Use PhotoProvider wrapper for image preview functionality</li>
+                    <li>The component handles file size formatting and icons automatically</li>
+                    <li>Used across: Summary Notes, Flashcards, Exercises, MCQ, Anatomy Quiz</li>
+                  </ul>
+                </div>
+              </div>
             </ComponentDemo>
           </ComponentCard>
         </ComponentGrid>
