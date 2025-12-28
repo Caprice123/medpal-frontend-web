@@ -19,7 +19,6 @@ const TagSelector = memo(function TagSelector({
   placeholder = "-- Select --",
   helpText
 }) {
-    console.log("first")
   // Convert tags to react-select format
   const options = allTags.map(tag => ({
     value: tag.id,

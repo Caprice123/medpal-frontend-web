@@ -15,7 +15,7 @@ const {
 export const fetchStatistics = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingStatistics', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getPublic(Endpoints.statistics.list)
 

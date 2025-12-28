@@ -1,21 +1,19 @@
 import { useSelector } from 'react-redux'
+import { Card, CardHeader, CardBody } from '@components/common/Card'
+import Button from '@components/common/Button'
 import {
   LoadingOverlay,
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
   DeckGrid,
-  DeckCard,
-  DeckCardHeader,
-  DeckCardTitle,
   DeckDescription,
   TagList,
   Tag,
   DeckStats,
   StatItem,
   StatLabel,
-  StatValue,
-  StartButton
+  StatValue
 } from './DeckList.styles'
 import { generatePath, useNavigate } from 'react-router-dom'
 import { FlashcardRoute } from '../../../../routes'
@@ -59,54 +57,56 @@ function DeckList() {
         const semesterTags = deck.tags?.filter(tag => tag.tag_group?.name === 'semester') || []
 
         return (
-          <DeckCard key={deck.id}>
-            <DeckCardHeader>
-              <DeckCardTitle>{deck.title}</DeckCardTitle>
-            </DeckCardHeader>
+          <Card key={deck.id} shadow hoverable>
+            <CardHeader title={deck.title} divider={false} />
 
-            <DeckDescription>
-              {deck.description || 'Tidak ada deskripsi'}
-            </DeckDescription>
+            <CardBody padding="0 1.25rem 1.25rem 1.25rem">
+              <DeckDescription>
+                {deck.description || 'Tidak ada deskripsi'}
+              </DeckDescription>
 
-            {/* University Tags */}
-            {universityTags.length > 0 && (
-              <TagList>
-                {universityTags.map((tag) => (
-                  <Tag key={tag.id} university>
-                    🏛️ {tag.name}
-                  </Tag>
-                ))}
-              </TagList>
-            )}
+              {/* University Tags */}
+              {universityTags.length > 0 && (
+                <TagList>
+                  {universityTags.map((tag) => (
+                    <Tag key={tag.id} university>
+                      🏛️ {tag.name}
+                    </Tag>
+                  ))}
+                </TagList>
+              )}
 
-            {/* Semester Tags */}
-            {semesterTags.length > 0 && (
-              <TagList>
-                {semesterTags.map((tag) => (
-                  <Tag key={tag.id} semester>
-                    📚 {tag.name}
-                  </Tag>
-                ))}
-              </TagList>
-            )}
+              {/* Semester Tags */}
+              {semesterTags.length > 0 && (
+                <TagList>
+                  {semesterTags.map((tag) => (
+                    <Tag key={tag.id} semester>
+                      📚 {tag.name}
+                    </Tag>
+                  ))}
+                </TagList>
+              )}
 
-            <div style={{ flex: '1' }}></div>
+              <DeckStats>
+                <StatItem>
+                  <StatLabel>Kartu</StatLabel>
+                  <StatValue>{deck.cardCount || deck.cards?.length || 0}</StatValue>
+                </StatItem>
+                <StatItem>
+                  <StatLabel>Diperbarui</StatLabel>
+                  <StatValue>{formatDate(deck.updated_at || deck.updatedAt)}</StatValue>
+                </StatItem>
+              </DeckStats>
 
-            <DeckStats>
-              <StatItem>
-                <StatLabel>Kartu</StatLabel>
-                <StatValue>{deck.cardCount || deck.cards?.length || 0}</StatValue>
-              </StatItem>
-              <StatItem>
-                <StatLabel>Diperbarui</StatLabel>
-                <StatValue>{formatDate(deck.updated_at || deck.updatedAt)}</StatValue>
-              </StatItem>
-            </DeckStats>
-
-            <StartButton onClick={() => navigate(generatePath(FlashcardRoute.detailRoute, { id: deck.id }))}>
-              Mulai Belajar
-            </StartButton>
-          </DeckCard>
+              <Button
+                variant="outline"
+                onClick={() => navigate(generatePath(FlashcardRoute.detailRoute, { id: deck.id }))}
+                style={{ width: '100%' }}
+              >
+                Mulai Belajar
+              </Button>
+            </CardBody>
+          </Card>
         )
       })}
     </DeckGrid>

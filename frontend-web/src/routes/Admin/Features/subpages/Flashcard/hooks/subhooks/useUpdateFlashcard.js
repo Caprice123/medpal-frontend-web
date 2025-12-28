@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useFormik } from 'formik'
 import {
   updateFlashcardDeck,
-  fetchAdminFlashcardDecks,
-  uploadCardImage
+  fetchAdminFlashcardDecks
 } from '@store/flashcard/adminAction'
+import { upload } from '@store/common/action'
 import { KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { updateFlashcardSchema } from '../../validationSchema/createFlashcardSchema'
@@ -177,7 +177,7 @@ export const useUpdateFlashcard = (onClose) => {
   const handleImageUpload = async (cardIndex, file) => {
     try {
       // Upload image to centralized endpoint
-      const result = await dispatch(uploadCardImage(file))
+      const result = await dispatch(upload(file, 'flashcard'))
       console.log(file)
       form.setFieldValue(`cards.${cardIndex}.image`, {
         url: result.url, // Temporary presigned URL for preview

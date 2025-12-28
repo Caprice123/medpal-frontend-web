@@ -177,35 +177,3 @@ export const deleteFlashcardDeck = (deckId) => async (dispatch) => {
     dispatch(setLoading({ key: 'isDeletingDeck', value: false }))
   }
 }
-
-/**
- * Upload card image (admin only)
- * Uses centralized upload endpoint
- * Returns the uploaded image data with blobId
- */
-export const uploadCardImage = (imageFile) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUploadingImage', value: true }))
-
-    const formData = new FormData()
-    formData.append('file', imageFile) // Changed from 'image' to 'file'
-    formData.append('type', 'flashcard_card') // Specify type for blob categorization
-
-    const route = Endpoints.api.uploadImage // Use centralized upload endpoint
-    const response = await postWithToken(route, formData)
-
-    const data = response.data.data
-    return {
-      url: data.url, // Presigned URL for preview
-      key: data.key, // Blob key for backend reference
-      filename: data.filename,
-      contentType: data.contentType,
-      byteSize: data.byteSize
-    }
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isUploadingImage', value: false }))
-  }
-}

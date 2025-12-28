@@ -1,30 +1,20 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchExerciseTopics, startExerciseTopic, submitExerciseProgress } from '@store/exercise/action'
-import TopicList from './components/TopicList'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { startExerciseTopic, submitExerciseProgress } from '@store/exercise/action'
+import ExerciseListPage from './pages/List'
 import ExercisePlayer from './components/ExercisePlayer'
 import {
   PageContainer,
   LoadingContainer,
   LoadingSpinner
 } from './Exercise.styles'
-import { fetchTags } from '@store/tags/action'
-import { actions as tagActions } from '@store/tags/reducer'
 
 function ExercisePage() {
   const dispatch = useDispatch()
 
-  const { topics, loading } = useSelector(state => state.exercise)
   const [currentTopicId, setCurrentTopicId] = useState(null)
   const [topicSnapshot, setTopicSnapshot] = useState(null)
   const [isStarting, setIsStarting] = useState(false)
-
-  // Fetch topics when component mounts
-  useEffect(() => {
-    dispatch(fetchExerciseTopics())
-    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
-    dispatch(fetchTags())
-  }, [dispatch])
 
   const handleStartTopic = async (topic) => {
     try {
@@ -65,20 +55,6 @@ function ExercisePage() {
     setTopicSnapshot(null)
   }
 
-  // Show loading state
-  if (loading.isTopicsLoading) {
-    return (
-      <PageContainer>
-        <LoadingContainer>
-          <LoadingSpinner />
-          <div style={{ marginTop: '1rem', color: '#6b7280' }}>
-            Memuat daftar topik latihan...
-          </div>
-        </LoadingContainer>
-      </PageContainer>
-    )
-  }
-
   // If starting a topic, show loading
   if (isStarting) {
     return (
@@ -108,12 +84,7 @@ function ExercisePage() {
 
   // Show topic selection
   return (
-    <PageContainer>
-      <TopicList
-        topics={topics}
-        onSelectTopic={handleStartTopic}
-      />
-    </PageContainer>
+    <ExerciseListPage onSelectTopic={handleStartTopic} />
   )
 }
 

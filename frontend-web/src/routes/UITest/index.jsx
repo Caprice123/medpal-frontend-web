@@ -6,6 +6,7 @@ import CurrencyInput from '@components/common/CurrencyInput'
 import Textarea from '@components/common/Textarea'
 import Table from '@components/common/Table'
 import FileUpload from '@components/common/FileUpload'
+import { Card, CardHeader, CardBody, CardFooter } from '@components/common/Card'
 import { PhotoProvider, PhotoView } from 'react-photo-view'
 import 'react-photo-view/dist/react-photo-view.css'
 import {
@@ -720,6 +721,421 @@ function UITest() {
                     <li>Use PhotoProvider wrapper for image preview functionality</li>
                     <li>The component handles file size formatting and icons automatically</li>
                     <li>Used across: Summary Notes, Flashcards, Exercises, MCQ, Anatomy Quiz</li>
+                  </ul>
+                </div>
+              </div>
+            </ComponentDemo>
+          </ComponentCard>
+        </ComponentGrid>
+      </Section>
+
+      {/* Card Component Section */}
+      <Section>
+        <SectionTitle>Card Component</SectionTitle>
+        <ComponentGrid>
+          {/* Basic Card */}
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Basic Card with Header, Body, Footer</ComponentLabel>
+            <ComponentDemo>
+              <Card>
+                <CardHeader
+                  title="Card Title"
+                  actions={
+                    <>
+                      <Button size="sm" variant="ghost">Action 1</Button>
+                      <Button size="sm" variant="primary">Action 2</Button>
+                    </>
+                  }
+                />
+                <CardBody>
+                  <p style={{ margin: 0 }}>
+                    This is the card body. It can contain any content like text, images, forms, or other components.
+                  </p>
+                </CardBody>
+                <CardFooter align="right">
+                  <Button variant="ghost">Cancel</Button>
+                  <Button variant="primary">Save</Button>
+                </CardFooter>
+              </Card>
+
+              <div style={{
+                marginTop: '1rem',
+                background: '#1f2937',
+                color: '#e5e7eb',
+                padding: '1rem',
+                borderRadius: '6px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem',
+                whiteSpace: 'pre-wrap'
+              }}>
+{`<Card>
+  <CardHeader
+    title="Card Title"
+    actions={
+      <>
+        <Button size="sm" variant="ghost">Action 1</Button>
+        <Button size="sm" variant="primary">Action 2</Button>
+      </>
+    }
+  />
+  <CardBody>
+    <p>Card content goes here...</p>
+  </CardBody>
+  <CardFooter align="right">
+    <Button variant="ghost">Cancel</Button>
+    <Button variant="primary">Save</Button>
+  </CardFooter>
+</Card>`}
+              </div>
+            </ComponentDemo>
+          </ComponentCard>
+
+          {/* Card Variants */}
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Card Variants</ComponentLabel>
+            <ComponentDemo>
+              <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                <Card variant="primary">
+                  <CardHeader title="Primary Card" divider={true} />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Blue variant - great for highlighting important information or primary actions.</p>
+                  </CardBody>
+                </Card>
+
+                <Card variant="success">
+                  <CardHeader title="Success Card" divider={true} />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Green variant - perfect for success messages or completed states.</p>
+                  </CardBody>
+                </Card>
+
+                <Card variant="warning">
+                  <CardHeader title="Warning Card" divider={true} />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Yellow variant - ideal for warnings or important notices.</p>
+                  </CardBody>
+                </Card>
+
+                <Card variant="danger">
+                  <CardHeader title="Danger Card" divider={true} />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Red variant - use for errors or destructive actions.</p>
+                  </CardBody>
+                </Card>
+              </div>
+
+              <div style={{
+                marginTop: '1rem',
+                background: '#1f2937',
+                color: '#e5e7eb',
+                padding: '1rem',
+                borderRadius: '6px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem'
+              }}>
+{`<Card variant="primary">...</Card>
+<Card variant="success">...</Card>
+<Card variant="warning">...</Card>
+<Card variant="danger">...</Card>`}
+              </div>
+            </ComponentDemo>
+          </ComponentCard>
+
+          {/* Footer Alignment Options */}
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Footer Alignment Options</ComponentLabel>
+            <ComponentDemo>
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                <Card>
+                  <CardHeader title="Left Aligned Footer" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Footer actions aligned to the left.</p>
+                  </CardBody>
+                  <CardFooter align="left">
+                    <Button variant="primary">Left Action</Button>
+                    <Button variant="ghost">Secondary</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader title="Center Aligned Footer" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Footer actions centered.</p>
+                  </CardBody>
+                  <CardFooter align="center">
+                    <Button variant="primary">Center Action</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader title="Space Between Footer" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Footer actions with space between.</p>
+                  </CardBody>
+                  <CardFooter align="between">
+                    <Button variant="ghost">Back</Button>
+                    <Button variant="primary">Next</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader title="Right Aligned Footer (Default)" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Footer actions aligned to the right (default).</p>
+                  </CardBody>
+                  <CardFooter align="right">
+                    <Button variant="ghost">Cancel</Button>
+                    <Button variant="primary">Save</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+
+              <div style={{
+                marginTop: '1rem',
+                background: '#1f2937',
+                color: '#e5e7eb',
+                padding: '1rem',
+                borderRadius: '6px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem'
+              }}>
+{`<CardFooter align="left">...</CardFooter>
+<CardFooter align="center">...</CardFooter>
+<CardFooter align="between">...</CardFooter>
+<CardFooter align="right">...</CardFooter> // default`}
+              </div>
+            </ComponentDemo>
+          </ComponentCard>
+
+          {/* Interactive Cards */}
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Interactive Cards</ComponentLabel>
+            <ComponentDemo>
+              <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <Card hoverable shadow>
+                  <CardHeader title="Hoverable Card" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Hover over me to see the effect!</p>
+                  </CardBody>
+                </Card>
+
+                <Card clickable hoverable shadow onClick={() => alert('Card clicked!')}>
+                  <CardHeader title="Clickable Card" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Click me to trigger an action!</p>
+                  </CardBody>
+                </Card>
+
+                <Card shadow={false}>
+                  <CardHeader title="No Shadow" />
+                  <CardBody>
+                    <p style={{ margin: 0 }}>Card without shadow.</p>
+                  </CardBody>
+                </Card>
+              </div>
+
+              <div style={{
+                marginTop: '1rem',
+                background: '#1f2937',
+                color: '#e5e7eb',
+                padding: '1rem',
+                borderRadius: '6px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem'
+              }}>
+{`<Card hoverable shadow>...</Card>
+<Card clickable hoverable shadow onClick={() => {...}}>...</Card>
+<Card shadow={false}>...</Card>`}
+              </div>
+            </ComponentDemo>
+          </ComponentCard>
+
+          {/* Card Props Documentation */}
+          <ComponentCard style={{ gridColumn: '1 / -1' }}>
+            <ComponentLabel>Component Props</ComponentLabel>
+            <ComponentDemo>
+              <div style={{
+                background: '#f9fafb',
+                border: '1px solid #e5e7eb',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                fontSize: '0.875rem'
+              }}>
+                <h4 style={{ marginTop: 0, marginBottom: '1rem', color: '#111827' }}>
+                  Card Component Props
+                </h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.5rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Prop</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Default</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>variant</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>default</td>
+                      <td style={{ padding: '0.5rem' }}>primary | success | warning | danger | default</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>rounded</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>md</td>
+                      <td style={{ padding: '0.5rem' }}>sm | md | lg - Border radius size</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>shadow</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>true</td>
+                      <td style={{ padding: '0.5rem' }}>Show box shadow</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>hoverable</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>false</td>
+                      <td style={{ padding: '0.5rem' }}>Enable hover effect</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>clickable</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>false</td>
+                      <td style={{ padding: '0.5rem' }}>Show pointer cursor</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>onClick</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Function</td>
+                      <td style={{ padding: '0.5rem' }}>-</td>
+                      <td style={{ padding: '0.5rem' }}>Click handler</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem', color: '#111827' }}>
+                  CardHeader Props
+                </h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.5rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Prop</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Default</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>title</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>-</td>
+                      <td style={{ padding: '0.5rem' }}>Header title text</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>actions</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>ReactNode</td>
+                      <td style={{ padding: '0.5rem' }}>-</td>
+                      <td style={{ padding: '0.5rem' }}>Action buttons or components</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>size</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>md</td>
+                      <td style={{ padding: '0.5rem' }}>sm | md | lg - Title size</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>divider</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>true</td>
+                      <td style={{ padding: '0.5rem' }}>Show bottom border</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>padding</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>1rem 1.5rem</td>
+                      <td style={{ padding: '0.5rem' }}>Custom padding</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>background</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>transparent</td>
+                      <td style={{ padding: '0.5rem' }}>Custom background color</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem', color: '#111827' }}>
+                  CardBody Props
+                </h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.5rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Prop</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Default</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>padding</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>1.5rem</td>
+                      <td style={{ padding: '0.5rem' }}>Custom padding</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem', color: '#111827' }}>
+                  CardFooter Props
+                </h4>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Prop</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Type</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Default</th>
+                      <th style={{ padding: '0.5rem', fontWeight: 600 }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>align</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>right</td>
+                      <td style={{ padding: '0.5rem' }}>left | center | between | right</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>divider</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>Boolean</td>
+                      <td style={{ padding: '0.5rem' }}>true</td>
+                      <td style={{ padding: '0.5rem' }}>Show top border</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>padding</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>1rem 1.5rem</td>
+                      <td style={{ padding: '0.5rem' }}>Custom padding</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: '#6366f1' }}>background</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>String</td>
+                      <td style={{ padding: '0.5rem' }}>transparent</td>
+                      <td style={{ padding: '0.5rem' }}>Custom background color</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                  <strong style={{ color: '#1e40af' }}>💡 Usage Tips:</strong>
+                  <ul style={{ marginTop: '0.5rem', marginBottom: 0, paddingLeft: '1.5rem', color: '#1e3a8a' }}>
+                    <li>Use Header, Body, Footer structure like Bootstrap for consistency</li>
+                    <li>Pass action buttons as React components in CardHeader actions prop</li>
+                    <li>Control footer alignment with the align prop: left, center, between, right</li>
+                    <li>Use variants to match card purpose: primary, success, warning, danger</li>
+                    <li>Combine hoverable + clickable for interactive cards</li>
+                    <li>Disable dividers with divider={'{'}false{'}'} for a cleaner look</li>
                   </ul>
                 </div>
               </div>

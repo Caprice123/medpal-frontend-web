@@ -1,18 +1,15 @@
 import { useSelector } from 'react-redux'
+import { Card, CardHeader, CardBody } from '@components/common/Card'
+import Button from '@components/common/Button'
 import {
   LoadingOverlay,
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
   NotesGrid,
-  NoteCard,
-  NoteCardHeader,
-  NoteCardTitle,
   NoteDescription,
   TagList,
   Tag,
-  CardActions,
-  CardActionButton,
   UpdatedText
 } from './NotesList.styles'
 import { generatePath, useNavigate } from 'react-router-dom'
@@ -41,53 +38,53 @@ function NotesList() {
   return (
     <NotesGrid>
       {notes.map(note => (
-        <NoteCard key={note.id}>
-          <NoteCardHeader>
-            <NoteCardTitle>{note.title}</NoteCardTitle>
-          </NoteCardHeader>
+        <Card key={note.id} shadow hoverable>
+          <CardHeader title={note.title} divider={false} />
 
-          <NoteDescription>
-            {note.description || 'Tidak ada deskripsi'}
-          </NoteDescription>
+          <CardBody padding="0 1.25rem 1.25rem 1.25rem">
+            <NoteDescription>
+              {note.description || 'Tidak ada deskripsi'}
+            </NoteDescription>
 
-          {/* University Tags */}
-          {note.universityTags && note.universityTags.length > 0 && (
-            <TagList>
-              {note.universityTags.map((tag) => (
-                <Tag key={tag.id} university>
-                  🏛️ {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
+            {/* University Tags */}
+            {note.universityTags && note.universityTags.length > 0 && (
+              <TagList>
+                {note.universityTags.map((tag) => (
+                  <Tag key={tag.id} university>
+                    🏛️ {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
 
-          {/* Semester Tags */}
-          {note.semesterTags && note.semesterTags.length > 0 && (
-            <TagList>
-              {note.semesterTags.map((tag) => (
-                <Tag key={tag.id} semester>
-                  📚 {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
+            {/* Semester Tags */}
+            {note.semesterTags && note.semesterTags.length > 0 && (
+              <TagList>
+                {note.semesterTags.map((tag) => (
+                  <Tag key={tag.id} semester>
+                    📚 {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
 
-          <UpdatedText>
-            Terakhir diperbarui: {new Date(note.updatedAt).toLocaleDateString("id-ID", {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            })}
-          </UpdatedText>
+            <UpdatedText>
+              Terakhir diperbarui: {new Date(note.updatedAt).toLocaleDateString("id-ID", {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </UpdatedText>
 
-          <div style={{flex: "1"}}></div>
-
-          <CardActions>
-            <CardActionButton onClick={() => navigate(generatePath(SummaryNotesRoute.detailRoute, { id: note.id }))}>
+            <Button
+              variant="outline"
+              onClick={() => navigate(generatePath(SummaryNotesRoute.detailRoute, { id: note.id }))}
+              style={{ width: '100%' }}
+            >
               Lihat Ringkasan
-            </CardActionButton>
-          </CardActions>
-        </NoteCard>
+            </Button>
+          </CardBody>
+        </Card>
       ))}
     </NotesGrid>
   )

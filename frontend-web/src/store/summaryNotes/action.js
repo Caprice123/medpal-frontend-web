@@ -26,7 +26,7 @@ const {
 export const fetchSummaryNotes = (filters, page, perPage) => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isNotesLoading', value: true }))
-    dispatch(clearError())
+    
 
     // If no parameters provided, get from state
     const state = getState().summaryNotes
@@ -56,7 +56,7 @@ export const fetchSummaryNotes = (filters, page, perPage) => async (dispatch, ge
 export const startSummaryNoteSession = (userLearningSessionId, summaryNoteId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isStartingSession', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.summaryNotes.start, {
       userLearningSessionId,
@@ -68,7 +68,6 @@ export const startSummaryNoteSession = (userLearningSessionId, summaryNoteId) =>
     return result
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isStartingSession', value: false }))
   }
@@ -77,7 +76,7 @@ export const startSummaryNoteSession = (userLearningSessionId, summaryNoteId) =>
 export const fetchSummaryNoteSession = (sessionId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSessionLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.summaryNotes.session(sessionId))
     const session = response.data.data
@@ -85,7 +84,6 @@ export const fetchSummaryNoteSession = (sessionId) => async (dispatch) => {
     return session
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSessionLoading', value: false }))
   }
@@ -96,7 +94,7 @@ export const fetchSummaryNoteSession = (sessionId) => async (dispatch) => {
 export const fetchAdminSummaryNotes = (filters, page, perPage) => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isAdminNotesLoading', value: true }))
-    dispatch(clearError())
+    
 
     // If no parameters provided, get from state
     const state = getState().summaryNotes
@@ -127,7 +125,7 @@ export const fetchAdminSummaryNotes = (filters, page, perPage) => async (dispatc
 export const fetchSummaryNoteDetail = (noteId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isNoteDetailLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.summaryNotes.admin.detail(noteId))
     const note = response.data.data
@@ -135,7 +133,6 @@ export const fetchSummaryNoteDetail = (noteId) => async (dispatch) => {
     return note
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isNoteDetailLoading', value: false }))
   }
@@ -144,7 +141,7 @@ export const fetchSummaryNoteDetail = (noteId) => async (dispatch) => {
 export const createSummaryNote = (noteData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreating', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.summaryNotes.admin.list, noteData)
     const note = response.data.data
@@ -152,7 +149,6 @@ export const createSummaryNote = (noteData) => async (dispatch) => {
     return note
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCreating', value: false }))
   }
@@ -161,7 +157,7 @@ export const createSummaryNote = (noteData) => async (dispatch) => {
 export const updateSummaryNote = (noteId, noteData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdating', value: true }))
-    dispatch(clearError())
+    
 
     const response = await putWithToken(Endpoints.summaryNotes.admin.detail(noteId), noteData)
     const note = response.data.data
@@ -169,7 +165,6 @@ export const updateSummaryNote = (noteId, noteData) => async (dispatch) => {
     return note
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isUpdating', value: false }))
   }
@@ -178,13 +173,12 @@ export const updateSummaryNote = (noteId, noteData) => async (dispatch) => {
 export const deleteSummaryNote = (noteId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeleting', value: true }))
-    dispatch(clearError())
+    
 
     await deleteWithToken(Endpoints.summaryNotes.admin.detail(noteId))
     dispatch(removeNote(noteId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isDeleting', value: false }))
   }
@@ -208,14 +202,13 @@ export const uploadDocument = (file) => async (dispatch) => {
     }
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
 export const generateSummaryFromDocument = (blobId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isGenerating', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.summaryNotes.admin.generate, { blobId })
     const result = response.data.data
@@ -223,7 +216,6 @@ export const generateSummaryFromDocument = (blobId) => async (dispatch) => {
     return result
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isGenerating', value: false }))
   }
@@ -238,7 +230,6 @@ export const fetchSummaryNotesConstants = (keys) => async (dispatch) => {
     return response.data.data || {}
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -251,7 +242,6 @@ export const updateSummaryNotesConstants = (settings) => async (dispatch) => {
     return response.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -260,7 +250,7 @@ export const updateSummaryNotesConstants = (settings) => async (dispatch) => {
 export const fetchEmbeddings = (page, perPage) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isEmbeddingsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const queryParams = {
       page: page || 1,
@@ -280,7 +270,7 @@ export const fetchEmbeddings = (page, perPage) => async (dispatch) => {
 export const fetchEmbeddingDetail = (embeddingId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isEmbeddingDetailLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.summaryNotes.admin.embeddingDetail(embeddingId))
     const embedding = response.data.data
@@ -288,7 +278,6 @@ export const fetchEmbeddingDetail = (embeddingId) => async (dispatch) => {
     return embedding
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isEmbeddingDetailLoading', value: false }))
   }

@@ -19,16 +19,12 @@ const {
   addConversation,
   updateConversation,
   removeConversation,
-  setError,
-  clearError
 } = actions
 
 // ============= Configuration =============
 
 export const fetchChatbotConfig = () => async (dispatch) => {
   try {
-    dispatch(clearError())
-
     const response = await getWithToken(Endpoints.chatbot.config)
     const config = response.data.data
 
@@ -38,7 +34,6 @@ export const fetchChatbotConfig = () => async (dispatch) => {
     return config
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -47,7 +42,6 @@ export const fetchChatbotConfig = () => async (dispatch) => {
 export const fetchConversations = (filters, page, perPage) => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
 
     // If no parameters provided, get from state
     const state = getState().chatbot
@@ -75,14 +69,12 @@ export const fetchConversations = (filters, page, perPage) => async (dispatch, g
 export const fetchConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: true }))
-    dispatch(clearError())
 
     const response = await getWithToken(Endpoints.chatbot.conversation(conversationId))
     dispatch(setCurrentConversation(response.data.data))
     return response.data.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: false }))
   }
@@ -91,7 +83,7 @@ export const fetchConversation = (conversationId) => async (dispatch) => {
 export const createConversation = (topic, mode = 'normal') => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.chatbot.conversations, {
       topic,
@@ -103,7 +95,6 @@ export const createConversation = (topic, mode = 'normal') => async (dispatch) =
     return conversation
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isConversationsLoading', value: false }))
   }
@@ -112,7 +103,7 @@ export const createConversation = (topic, mode = 'normal') => async (dispatch) =
 export const renameConversation = (conversationId, topic) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await putWithToken(Endpoints.chatbot.conversation(conversationId), {
       topic
@@ -124,7 +115,6 @@ export const renameConversation = (conversationId, topic) => async (dispatch) =>
     return conversation
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isConversationsLoading', value: false }))
   }
@@ -133,13 +123,12 @@ export const renameConversation = (conversationId, topic) => async (dispatch) =>
 export const deleteConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
+    
 
     await deleteWithToken(Endpoints.chatbot.conversation(conversationId))
     dispatch(removeConversation(conversationId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isConversationsLoading', value: false }))
   }
@@ -148,7 +137,7 @@ export const deleteConversation = (conversationId) => async (dispatch) => {
 export const fetchMessages = ({ conversationId, page = 1, perPage = 50, prepend = false }) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isMessagesLoading', value: true }))
-    dispatch(clearError())
+    
 
     const queryParams = { page, perPage }
     const response = await getWithToken(Endpoints.chatbot.messages(conversationId), queryParams)
@@ -176,7 +165,7 @@ export const fetchMessages = ({ conversationId, page = 1, perPage = 50, prepend 
 export const sendMessage = (conversationId, content, mode) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSendingMessage', value: true }))
-    dispatch(clearError())
+    
 
     // Add user message immediately (optimistic UI)
     const optimisticUserMessage = {
@@ -191,7 +180,6 @@ export const sendMessage = (conversationId, content, mode) => async (dispatch) =
     return await sendMessageStreaming(conversationId, content, mode, dispatch, optimisticUserMessage.id)
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSendingMessage', value: false }))
   }
@@ -380,7 +368,6 @@ export const submitFeedback = (messageId, feedbackType) => async (dispatch) => {
     })
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -389,7 +376,7 @@ export const submitFeedback = (messageId, feedbackType) => async (dispatch) => {
 export const fetchAdminConversations = (filters, page, perPage) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const queryParams = {
       page: page || 1,
@@ -413,14 +400,13 @@ export const fetchAdminConversations = (filters, page, perPage) => async (dispat
 export const fetchAdminConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.chatbot.admin.conversation(conversationId))
     dispatch(setCurrentConversation(response.data.data))
     return response.data.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: false }))
   }
@@ -429,13 +415,12 @@ export const fetchAdminConversation = (conversationId) => async (dispatch) => {
 export const deleteAdminConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    dispatch(clearError())
+    
 
     await deleteWithToken(Endpoints.chatbot.admin.conversation(conversationId))
     dispatch(removeConversation(conversationId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isConversationsLoading', value: false }))
   }
@@ -444,7 +429,7 @@ export const deleteAdminConversation = (conversationId) => async (dispatch) => {
 export const fetchAdminConversationMessages = ({ conversationId, page = 1, perPage = 50, prepend = false }) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isMessagesLoading', value: true }))
-    dispatch(clearError())
+    
 
     const queryParams = { page, perPage }
     const response = await getWithToken(Endpoints.chatbot.admin.messages(conversationId), queryParams)
@@ -465,40 +450,7 @@ export const fetchAdminConversationMessages = ({ conversationId, page = 1, perPa
     return messages
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isMessagesLoading', value: false }))
-  }
-}
-
-// ============= Constants Endpoints =============
-
-export const fetchChatbotConstants = (keys) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
-    const queryParams = { keys: keys.join(',') }
-    const response = await getWithToken(Endpoints.chatbot.admin.constants, queryParams)
-    return response.data.data || {}
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
-  }
-}
-
-export const updateChatbotConstants = (settings) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: true }))
-    const response = await putWithToken(
-      Endpoints.chatbot.admin.constants,
-      settings
-    )
-    return response.data
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: false }))
   }
 }

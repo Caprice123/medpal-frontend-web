@@ -9,7 +9,6 @@ const {
   setPlans,
   setTransactions,
   setPagination,
-  clearError,
   addTransaction,
   updatePlan,
   addPlan
@@ -23,7 +22,7 @@ const {
 export const fetchCreditBalance = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isBalanceLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(`${Endpoints.credits}/balance`)
 
@@ -42,7 +41,7 @@ export const fetchCreditTransactions = (params = {}) => async (dispatch) => {
 
   try {
     dispatch(setLoading({ key: 'isTransactionsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const { limit = 50, offset = 0, type } = params
 
@@ -71,7 +70,7 @@ export const fetchCreditTransactions = (params = {}) => async (dispatch) => {
 export const purchaseCredits = (creditPlanId, paymentMethod = 'xendit') => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPurchaseLoading', value: true }))
-    dispatch(clearError())
+    
 
     const requestBody = {
         creditPlanId,
@@ -95,7 +94,7 @@ export const purchaseCredits = (creditPlanId, paymentMethod = 'xendit') => async
 export const deductCredits = (amount, description, sessionId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeductLoading', value: true }))
-    dispatch(clearError())
+    
 
     const requestBody = {
         amount,
@@ -123,7 +122,7 @@ export const deductCredits = (amount, description, sessionId) => async (dispatch
 export const fetchAllCreditPlans = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(`${Endpoints.creditPlans}`)
 
@@ -141,7 +140,7 @@ export const fetchAllCreditPlans = () => async (dispatch) => {
 export const fetchActiveCreditPlans = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     // Use public endpoint for landing page (no auth required)
     const response = await getPublic(`${Endpoints.creditPlans}/active`)
@@ -161,7 +160,7 @@ export const fetchActiveCreditPlans = () => async (dispatch) => {
 export const createCreditPlan = (planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreatePlanLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(
       `${Endpoints.creditPlans}`,
@@ -183,7 +182,7 @@ export const createCreditPlan = (planData) => async (dispatch) => {
 export const updateCreditPlan = (planId, planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdatePlanLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await putWithToken(
       `${Endpoints.creditPlans}/${planId}`,
@@ -203,7 +202,7 @@ export const updateCreditPlan = (planId, planData) => async (dispatch) => {
  */
 export const toggleCreditPlanStatus = (planId) => async (dispatch) => {
   try {
-    dispatch(clearError())
+    
 
     const response = await patchWithToken(
       `${Endpoints.creditPlans}/${planId}/toggle`,
@@ -225,7 +224,7 @@ export const toggleCreditPlanStatus = (planId) => async (dispatch) => {
 export const fetchAllTransactions = (params = {}) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isTransactionsLoading', value: true }))
-    dispatch(clearError())
+    
 
     const { limit = 100, offset = 0, type, status } = params
 
@@ -255,7 +254,7 @@ export const fetchAllTransactions = (params = {}) => async (dispatch) => {
  */
 export const confirmPayment = (transactionId, status) => async (dispatch) => {
   try {
-    dispatch(clearError())
+    
 
     await postWithToken(
       `${Endpoints.credits}/confirm/${transactionId}`,
@@ -271,7 +270,7 @@ export const confirmPayment = (transactionId, status) => async (dispatch) => {
  */
 export const addBonusCredits = (userId, amount, description) => async (dispatch) => {
   try {
-    dispatch(clearError())
+    
 
     await postWithToken(
       `${Endpoints.credits}/bonus`,

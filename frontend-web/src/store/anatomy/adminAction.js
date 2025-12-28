@@ -51,37 +51,8 @@ export const fetchAdminAnatomyQuiz = (quizId, onSuccess) => async (dispatch) => 
     return quiz
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isGetDetailAnatomyQuizLoading', value: false }))
-  }
-}
-
-export const uploadAnatomyImage = (form, onSuccess) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUploadingImage', value: true }))
-
-    const formData = new FormData()
-    formData.append('file', form.file)
-    formData.append('type', 'anatomy')
-
-    const route = "/api/v1/upload/image"
-    const response = await postWithToken(route, formData)
-
-    const data = response.data.data
-    const imageInfo = {
-      blobId: data.blobId,
-      image_url: data.url,
-      fileName: data.fileName,
-      fileSize: data.byteSize
-    }
-
-    if (onSuccess) onSuccess(imageInfo)
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isUploadingImage', value: false }))
   }
 }
 
@@ -96,7 +67,6 @@ export const createAnatomyQuiz = (quizData, onSuccess) => async (dispatch) => {
     if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCreateAnatomyQuizLoading', value: false }))
   }
@@ -113,7 +83,6 @@ export const updateAnatomyQuiz = (quizId, quizData, onSuccess) => async (dispatc
     if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isUpdateAnatomyQuizLoading', value: false }))
   }
@@ -127,7 +96,6 @@ export const deleteAnatomyQuiz = (quizId) => async (dispatch) => {
     await deleteWithToken(route)
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isDeleteAnatomyQuizLoading', value: false }))
   }

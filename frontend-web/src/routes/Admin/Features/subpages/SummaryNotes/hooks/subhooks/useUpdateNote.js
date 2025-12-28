@@ -4,16 +4,16 @@ import { useFormik } from 'formik'
 import {
   updateSummaryNote,
   generateSummaryFromDocument,
-  fetchAdminSummaryNotes,
-  uploadDocument
+  fetchAdminSummaryNotes
 } from '@store/summaryNotes/action'
+import { upload } from '@store/common/action'
 import { actions } from '@store/summaryNotes/reducer'
 import { markdownToBlocks } from '@utils/markdownToBlocks'
 import { blocksToMarkdown } from '@utils/blocksToMarkdown'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
-const { clearGeneratedContent, setError, clearError, setLoading } = actions
+const { clearGeneratedContent, setError, clearError } = actions
 
 export const useUpdateNote = (onClose) => {
   const dispatch = useDispatch()
@@ -48,7 +48,7 @@ export const useUpdateNote = (onClose) => {
       if (!selectedNote) return
 
       try {
-        dispatch(clearError())
+        
 
         // Convert combined status to status + isActive
         let apiStatus = values.status
@@ -185,24 +185,19 @@ export const useUpdateNote = (onClose) => {
       }
 
       try {
-        dispatch(setLoading({ key: 'isUploading', value: true }))
-        dispatch(clearError())
-
         // Upload file immediately to get blobId
-        const result = await dispatch(uploadDocument(file))
+        const result = await dispatch(upload(file, 'summary-notes'))
 
         setBlobId(result.blobId)
         setUploadedFile({
-          name: result.fileName || file.name, // Backend returns fileName (camelCase)
-          type: file.type, // Get from original file object (backend doesn't return contentType)
+          name: result.filename || file.name,
+          type: result.contentType || file.type,
           size: result.byteSize,
           url: result.url // For viewing the uploaded file
         })
       } catch (error) {
         console.error('Failed to upload file:', error)
         dispatch(setError('Gagal upload file. Silakan coba lagi.'))
-      } finally {
-        dispatch(setLoading({ key: 'isUploading', value: false }))
       }
     }
   }
@@ -214,7 +209,7 @@ export const useUpdateNote = (onClose) => {
     }
 
     try {
-      dispatch(clearError())
+      
       await dispatch(generateSummaryFromDocument(blobId))
     } catch (err) {
       dispatch(setError('Gagal generate ringkasan. Silakan coba lagi.'))
@@ -247,7 +242,7 @@ export const useUpdateNote = (onClose) => {
       }
 
       // Upload image to blob storage
-      const result = await dispatch(uploadDocument(file))
+      const result = await dispatch(upload(file, 'summary-notes'))
 
       // Return permanent blob URL (never expires, generates fresh presigned URL on each request)
       return `${API_BASE_URL}/api/v1/blobs/${result.blobId}`

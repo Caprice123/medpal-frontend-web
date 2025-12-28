@@ -10,21 +10,8 @@ const {
   setSelectedTopic,
   setQuestions,
   setCurrentSession,
-  setUploadedQuestionImage,
-  setFilters,
-  clearFilters,
-  clearError,
-  addTopic,
-  updateTopic,
   removeTopic,
-  addQuestion,
-  updateQuestion,
-  removeQuestion,
   clearUploadedQuestionImage,
-  clearSelectedTopic,
-  clearCurrentSession,
-  nextPage,
-  previousPage,
   setPage
 } = actions
 
@@ -73,7 +60,6 @@ export const fetchMcqTopicById = (topicId) => async (dispatch) => {
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isTopicLoading', value: false }))
   }
@@ -92,7 +78,6 @@ export const submitMcqAnswers = (topicId, answers) => async (dispatch) => {
     return result
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoading', value: false }))
   }
@@ -112,7 +97,6 @@ export const fetchMcqTopicSession = (topicId, mode = 'learning') => async (dispa
     return session
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isTopicLoading', value: false }))
   }
@@ -132,7 +116,6 @@ export const checkMcqAnswers = (topicId, answers) => async (dispatch) => {
     return result
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isChecking', value: false }))
   }
@@ -184,39 +167,8 @@ export const fetchMcqTopicDetail = (topicId, onSuccess) => async (dispatch) => {
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isTopicLoading', value: false }))
-  }
-}
-
-/**
- * Upload question image (admin only)
- */
-export const uploadQuestionImage = (form, onSuccess) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUploadingImage', value: true }))
-
-    const formData = new FormData()
-    formData.append('file', form.file)
-
-    const response = await postWithToken(Endpoints.mcq.admin.uploadQuestionImage, formData)
-
-    const data = response.data.data
-    const imageInfo = {
-      image_url: data.image_url,
-      image_key: data.image_key,
-      image_filename: data.image_filename
-    }
-
-    dispatch(setUploadedQuestionImage(imageInfo))
-    if (onSuccess) onSuccess(imageInfo)
-    return imageInfo
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isUploadingImage', value: false }))
   }
 }
 
@@ -246,7 +198,6 @@ export const generateMcqQuestions = ({ content, file, type, questionCount }, onS
     return questions
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isGenerating', value: false }))
   }
@@ -269,7 +220,6 @@ export const createMcqTopic = (topicData) => async (dispatch) => {
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCreatingTopic', value: false }))
   }
@@ -288,7 +238,6 @@ export const updateMcqTopic = (topicId, topicData, onSuccess) => async (dispatch
     if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isUpdatingTopic', value: false }))
   }
@@ -306,101 +255,7 @@ export const deleteMcqTopic = (topicId) => async (dispatch) => {
     dispatch(removeTopic(topicId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isDeletingTopic', value: false }))
-  }
-}
-
-// ============= Filter Actions =============
-
-/**
- * Update filter
- */
-export const updateMcqFilter = (filter) => (dispatch) => {
-  dispatch(setFilters(filter))
-}
-
-/**
- * Clear all filters
- */
-export const clearMcqFilter = () => (dispatch) => {
-  dispatch(clearFilters())
-}
-
-/**
- * Clear selected topic and questions
- */
-export const clearMcqSelection = () => (dispatch) => {
-  dispatch(clearSelectedTopic())
-}
-
-/**
- * Clear current session (user side)
- */
-export const clearMcqCurrentSession = () => (dispatch) => {
-  dispatch(clearCurrentSession())
-}
-
-// ============= Constants Actions =============
-
-/**
- * Fetch MCQ constants (user side)
- */
-export const fetchMcqConstantsForUser = (keys = null) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
-
-    const queryParams = {}
-    if (keys && Array.isArray(keys)) {
-      queryParams.keys = keys.join(',')
-    }
-
-    const response = await getWithToken(Endpoints.mcq.constants, queryParams)
-
-    return response.data.data || {}
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
-  }
-}
-
-/**
- * Fetch MCQ constants (admin only)
- */
-export const fetchMcqConstants = (keys = null) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
-
-    const queryParams = {}
-    if (keys && Array.isArray(keys)) {
-      queryParams.keys = keys.join(',')
-    }
-
-    const response = await getWithToken(Endpoints.mcq.admin.constants, queryParams)
-
-    return response.data.data || {}
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
-  }
-}
-
-/**
- * Update MCQ constants (admin only)
- */
-export const updateMcqConstants = (constants, onSuccess) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: true }))
-
-    await putWithToken(Endpoints.mcq.admin.constants, constants)
-
-    if (onSuccess) onSuccess()
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: false }))
   }
 }

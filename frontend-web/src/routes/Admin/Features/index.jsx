@@ -124,15 +124,10 @@ function Features() {
   return (
     <Container>
       {!selectedFeature ? (
-        <>
-          <HeaderSection>
-            <SectionTitle>Kelola Fitur</SectionTitle>
-          </HeaderSection>
           <FeaturesList
             features={features}
             onFeatureClick={handleFeatureClick}
           />
-        </>
       ) : (
         renderFeaturePage()
       )}

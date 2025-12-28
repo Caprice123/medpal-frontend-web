@@ -43,7 +43,6 @@ function AnatomyQuiz({ onBack }) {
         })
     }))
   }
-  console.log(uiState)
 
   return (
     <Container>

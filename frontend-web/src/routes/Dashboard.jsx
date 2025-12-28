@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { createSession } from '@store/session/action'
+import { Card, CardBody } from '@components/common/Card'
+import Button from '@components/common/Button'
 import { fetchFeatures } from '@store/feature/action'
 import { getUserData } from '@utils/authToken'
 
@@ -45,22 +46,9 @@ const CatalogGrid = styled.div`
   margin-top: 2rem;
 `
 
-const CatalogCard = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+// Using common Card component - no custom card needed
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(6, 182, 212, 0.15);
-    border-color: #06b6d4;
-  }
-`
-
-const CardIcon = styled.div`
+const FeatureIcon = styled.div`
   width: 60px;
   height: 60px;
   background: rgba(6, 182, 212, 0.1);
@@ -72,26 +60,27 @@ const CardIcon = styled.div`
   margin-bottom: 1rem;
 `
 
-const CardTitle = styled.h3`
+const FeatureTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 600;
   color: #06b6d4;
   margin-bottom: 0.5rem;
 `
 
-const CardDescription = styled.p`
+const FeatureDescription = styled.p`
   color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 1rem;
   line-height: 1.6;
 `
 
-const CardFooter = styled.div`
+const FeatureFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
+  margin-top: auto;
 `
 
 const CreditCost = styled.span`
@@ -100,30 +89,6 @@ const CreditCost = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
-`
-
-const UseButton = styled.button`
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
-  }
-
-  &:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
 `
 
 const EmptyState = styled.div`
@@ -177,7 +142,6 @@ function Dashboard() {
   }
 
   const handleUseFeature = async (feature) => {
-    try {
       // Determine session type based on feature
       const sessionType = feature.sessionType
 
@@ -228,14 +192,6 @@ function Dashboard() {
         navigate('/calculators')
         return
       }
-
-      // For other session types, create session and navigate to session detail
-      const sessionData = await dispatch(createSession(sessionType))
-      navigate(`/session/${sessionData.id}`)
-    } catch (error) {
-      console.error('Failed to create session:', error)
-      alert('Gagal membuat sesi: ' + (error.message || 'Terjadi kesalahan'))
-    }
   }
 
   return (
@@ -252,32 +208,53 @@ function Dashboard() {
         ) : features.length > 0 ? (
           <CatalogGrid>
             {features.map((feature) => {
-              // Check if feature is subscription-based (flashcard or exercise)
-              const isSubscriptionBased = ['calculator', 'flashcard', 'exercise', 'anatomy', 'summary_notes', 'mcq', 'chatbot', 'skripsi_builder'].includes(feature.sessionType)
+              // Get access type color
+              const getAccessColor = (accessType) => {
+                switch (accessType) {
+                  case 'subscription': return '#10b981'
+                  case 'credits': return '#06b6d4'
+                  case 'subscription_and_credits': return '#f59e0b'
+                  case 'free': return '#6b7280'
+                  default: return '#06b6d4'
+                }
+              }
+
+              // Get icon based on access type
+              const getAccessIcon = (accessType) => {
+                switch (accessType) {
+                  case 'subscription': return '🎯'
+                  case 'credits': return '💎'
+                  case 'subscription_and_credits': return '🎯💎'
+                  case 'free': return '✨'
+                  default: return '💎'
+                }
+              }
+
+              const canUse = feature.accessType === 'subscription' ||
+                            feature.accessType === 'subscription_and_credits' ||
+                            feature.accessType === 'free' ||
+                            balance >= feature.cost
 
               return (
-                <CatalogCard key={feature.id}>
-                  <CardIcon>{feature.icon}</CardIcon>
-                  <CardTitle>{feature.name}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                  <CardFooter>
-                    {isSubscriptionBased ? (
-                      <CreditCost style={{ color: '#10b981' }}>
-                        🎯 Subscription Required
+                <Card key={feature.id} shadow hoverable>
+                  <CardBody>
+                    <FeatureIcon>{feature.icon}</FeatureIcon>
+                    <FeatureTitle>{feature.name}</FeatureTitle>
+                    <FeatureDescription>{feature.description}</FeatureDescription>
+                    <FeatureFooter>
+                      <CreditCost style={{ color: getAccessColor(feature.accessType) }}>
+                        {getAccessIcon(feature.accessType)} {feature.accessDescription || `${feature.cost} kredit`}
                       </CreditCost>
-                    ) : (
-                      <CreditCost>
-                        💎 {feature.cost} kredit
-                      </CreditCost>
-                    )}
-                    <UseButton
-                      onClick={() => handleUseFeature(feature)}
-                      disabled={!isSubscriptionBased && balance < feature.cost}
-                    >
-                      Gunakan Fitur
-                    </UseButton>
-                  </CardFooter>
-                </CatalogCard>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleUseFeature(feature)}
+                        disabled={!canUse}
+                      >
+                        Gunakan Fitur
+                      </Button>
+                    </FeatureFooter>
+                  </CardBody>
+                </Card>
               )
             })}
           </CatalogGrid>

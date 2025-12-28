@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { FaTrash } from 'react-icons/fa'
+import { Card, CardHeader, CardBody } from '@components/common/Card'
+import Button from '@components/common/Button'
 import Modal from '@components/common/Modal'
 import { useAppDispatch } from '@store/store'
 import { deleteSet } from '@store/skripsi/action'
@@ -11,12 +13,8 @@ import {
   EmptyStateIcon,
   EmptyStateText,
   SetsGrid,
-  SetCard,
-  SetCardHeader,
-  SetCardTitle,
   SetDescription,
   CardActions,
-  CardActionButton,
   DeleteButton,
   UpdatedText
 } from './SetsList.styles'
@@ -66,30 +64,32 @@ function SetsList() {
     <>
       <SetsGrid>
         {sets.map(set => (
-          <SetCard key={set.id}>
-            <SetCardHeader>
-              <SetCardTitle>{set.title}</SetCardTitle>
-            </SetCardHeader>
+          <Card key={set.id} shadow hoverable>
+            <CardHeader title={set.title} divider={false} />
 
-            <SetDescription>
-              {set.description || 'Tidak ada deskripsi'}
-            </SetDescription>
+            <CardBody padding="0 1.25rem 1.25rem 1.25rem">
+              <SetDescription>
+                {set.description || 'Tidak ada deskripsi'}
+              </SetDescription>
 
-            <UpdatedText>
-              Terakhir diperbarui: {formatDate(set.updated_at)}
-            </UpdatedText>
+              <UpdatedText>
+                Terakhir diperbarui: {formatDate(set.updated_at)}
+              </UpdatedText>
 
-            <div style={{flex: "1"}}></div>
-
-            <CardActions>
-              <CardActionButton onClick={() => navigate(`/skripsi/sets/${set.id}`)}>
-                Buka Set
-              </CardActionButton>
-              <DeleteButton onClick={() => setDeleteId(set.id)}>
-                <FaTrash />
-              </DeleteButton>
-            </CardActions>
-          </SetCard>
+              <CardActions>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/skripsi/sets/${set.id}`)}
+                  style={{ flex: 1 }}
+                >
+                  Buka Set
+                </Button>
+                <DeleteButton onClick={() => setDeleteId(set.id)}>
+                  <FaTrash />
+                </DeleteButton>
+              </CardActions>
+            </CardBody>
+          </Card>
         ))}
       </SetsGrid>
 

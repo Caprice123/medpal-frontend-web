@@ -1,7 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-    error: undefined
+    error: undefined,
+    loading: {
+        isUploading: false,
+    }
 }
 
 const { reducer, actions } = createSlice({
@@ -10,6 +13,10 @@ const { reducer, actions } = createSlice({
     reducers: {
         setError: (state, { payload } ) => {
             state.error = payload
+        },
+        setLoading: (state, action) => {
+            const { key, value } = action.payload
+            state.loading[key] = value
         },
         resetError: (state) => {
             state.error = initialState.error

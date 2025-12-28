@@ -84,7 +84,6 @@ export const generateQuestions = (content, type, questionCount = 10) => async (d
     return questions
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isGeneratingQuestions', value: false }))
   }
@@ -119,7 +118,6 @@ export const generateQuestionsFromPDF = (pdfFile, questionCount = 10) => async (
     return { questions, blobId }
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isGeneratingQuestions', value: false }))
   }
@@ -140,7 +138,6 @@ export const createExerciseTopic = (topicData) => async (dispatch) => {
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isCreatingTopic', value: false }))
   }
@@ -162,7 +159,6 @@ export const updateTopicQuestions = (topicId, questions) => async (dispatch) => 
     return topic
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isUpdatingTopic', value: false }))
   }
@@ -181,7 +177,6 @@ export const addManualQuestion = (topicId, questionData) => async (dispatch) => 
     return response.data.question
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -195,7 +190,6 @@ export const deleteExerciseTopic = (topicId) => async (dispatch) => {
     await deleteWithToken(Endpoints.exercises.admin.topic(topicId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isDeletingTopic', value: false }))
   }
@@ -220,48 +214,5 @@ export const fetchExerciseTags = (type = null) => async (dispatch) => {
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isTagsLoading', value: false }))
-  }
-}
-
-// ============= Constants Actions =============
-
-/**
- * Fetch exercise constants (admin only)
- */
-export const fetchExerciseConstants = (keys = null) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: true }))
-
-    const queryParams = {}
-    if (keys && Array.isArray(keys)) {
-      queryParams.keys = keys.join(',')
-    }
-
-    const response = await getWithToken(Endpoints.exercises.admin.constants, queryParams)
-
-    return response.data.data || {}
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isConstantsLoading', value: false }))
-  }
-}
-
-/**
- * Update exercise constants (admin only)
- */
-export const updateExerciseConstants = (constants) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: true }))
-
-    const response = await putWithToken(Endpoints.exercises.admin.constants, constants)
-
-    return response.data.data || {}
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  } finally {
-    dispatch(setLoading({ key: 'isUpdatingConstants', value: false }))
   }
 }

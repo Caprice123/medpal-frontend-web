@@ -5,6 +5,7 @@ const initialState = {
   topics: [],
   detail: null,
   filters: {
+    search: '',
     university: '',
     semester: '',
     status: ''
@@ -52,6 +53,7 @@ const { reducer, actions } = createSlice({
     },
     clearFilters: (state) => {
       state.filters = {
+        search: '',
         university: '',
         semester: '',
         status: ''

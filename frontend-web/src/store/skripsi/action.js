@@ -16,8 +16,6 @@ const {
   addMessage,
   setLoading,
   setPagination,
-  setError,
-  clearError
 } = actions
 
 // ============= Admin Sets Management =============
@@ -25,7 +23,6 @@ const {
 export const fetchAdminSets = (filters = {}, page = 1, perPage = 20) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetsLoading', value: true }))
-    dispatch(clearError())
 
     const params = {
       page: page.toString(),
@@ -41,7 +38,6 @@ export const fetchAdminSets = (filters = {}, page = 1, perPage = 20) => async (d
     return response.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSetsLoading', value: false }))
   }
@@ -50,7 +46,6 @@ export const fetchAdminSets = (filters = {}, page = 1, perPage = 20) => async (d
 export const fetchAdminSet = (setId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isAdminSetLoading', value: true }))
-    dispatch(clearError())
 
     const response = await getWithToken(Endpoints.skripsi.admin.set(setId))
     const set = response.data.data
@@ -58,7 +53,6 @@ export const fetchAdminSet = (setId) => async (dispatch) => {
     return set
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isAdminSetLoading', value: false }))
   }
@@ -66,14 +60,12 @@ export const fetchAdminSet = (setId) => async (dispatch) => {
 
 export const deleteAdminSet = (setId) => async (dispatch) => {
   try {
-    dispatch(clearError())
 
     await deleteWithToken(Endpoints.skripsi.admin.set(setId))
 
     dispatch(removeSet(setId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -82,7 +74,6 @@ export const deleteAdminSet = (setId) => async (dispatch) => {
 export const fetchSets = (page = 1, perPage = 20) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetsLoading', value: true }))
-    dispatch(clearError())
 
     const response = await getWithToken(Endpoints.skripsi.sets, { page, perPage })
 
@@ -92,7 +83,6 @@ export const fetchSets = (page = 1, perPage = 20) => async (dispatch) => {
     return response.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSetsLoading', value: false }))
   }
@@ -101,7 +91,6 @@ export const fetchSets = (page = 1, perPage = 20) => async (dispatch) => {
 export const createSet = (title, description) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetLoading', value: true }))
-    dispatch(clearError())
 
     const response = await postWithToken(Endpoints.skripsi.sets, { title, description })
     const newSet = response.data.data
@@ -111,7 +100,6 @@ export const createSet = (title, description) => async (dispatch) => {
     return newSet
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSetLoading', value: false }))
   }
@@ -120,7 +108,6 @@ export const createSet = (title, description) => async (dispatch) => {
 export const fetchSet = (setId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetLoading', value: true }))
-    dispatch(clearError())
 
     const response = await getWithToken(Endpoints.skripsi.set(setId))
     const set = response.data.data
@@ -133,7 +120,6 @@ export const fetchSet = (setId) => async (dispatch) => {
     return set
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSetLoading', value: false }))
   }
@@ -141,7 +127,6 @@ export const fetchSet = (setId) => async (dispatch) => {
 
 export const updateSetInfo = (setId, title, description) => async (dispatch) => {
   try {
-    dispatch(clearError())
 
     const response = await putWithToken(Endpoints.skripsi.set(setId), { title, description })
     const updatedSet = response.data.data
@@ -151,20 +136,17 @@ export const updateSetInfo = (setId, title, description) => async (dispatch) => 
     return updatedSet
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
 export const deleteSet = (setId) => async (dispatch) => {
   try {
-    dispatch(clearError())
 
     await deleteWithToken(Endpoints.skripsi.set(setId))
 
     dispatch(removeSet(setId))
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
@@ -174,31 +156,9 @@ export const switchTab = (tab) => (dispatch) => {
   dispatch(setCurrentTab(tab))
 }
 
-export const uploadImage = (file, type = 'skripsi-editor') => async (dispatch) => {
-  try {
-    dispatch(clearError())
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('type', type)
-
-    const response = await postWithToken(Endpoints.api.uploadImage, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-
-    return response.data.data.url
-  } catch (err) {
-    handleApiError(err, dispatch)
-    throw err
-  }
-}
-
 export const saveSetContent = (setId, editorContent) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSavingContent', value: true }))
-    dispatch(clearError())
 
     const response = await putWithToken(Endpoints.skripsi.updateSetContent(setId), { editorContent })
 
@@ -207,7 +167,6 @@ export const saveSetContent = (setId, editorContent) => async (dispatch) => {
     return response.data
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSavingContent', value: false }))
   }
@@ -229,21 +188,18 @@ export const loadOlderMessages = (tabId, beforeMessageId) => async (dispatch) =>
     }
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   }
 }
 
-export const sendMessage = (tabId, message, onStreamUpdate = null) => async (dispatch, getState) => {
+export const sendMessage = (tabId, message, onStreamUpdate = null) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSendingMessage', value: true }))
-    dispatch(clearError())
 
     // Use streaming for all messages
     const result = await sendMessageStreaming(tabId, message, dispatch, onStreamUpdate)
     return result
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isSendingMessage', value: false }))
   }
@@ -273,7 +229,7 @@ const ensureValidToken = async () => {
       const newToken = refreshResponse.data.data
       setToken(newToken)
       return newToken.accessToken
-    } catch (error) {
+    } catch (_e) {
       throw new Error('Failed to refresh token')
     }
   }

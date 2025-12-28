@@ -6,8 +6,6 @@ import { getPublic } from '@utils/requestUtils'
 const {
   setFeatures,
   setLoading,
-  setError,
-  clearError
 } = actions
 
 /**
@@ -16,7 +14,7 @@ const {
 export const fetchFeatures = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingFeatures', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getPublic(Endpoints.features.list)
 

@@ -152,7 +152,6 @@ export default {
         // Admin endpoints
         admin: {
             generate: `${API_BASE_URL}/admin/v1/mcq/generate`,
-            uploadQuestionImage: `${API_BASE_URL}/admin/v1/mcq/upload-question-image`,
             topics: `${API_BASE_URL}/admin/v1/mcq/topics`,
             topic: (id) => `${API_BASE_URL}/admin/v1/mcq/topics/${id}`,
             constants: `${API_BASE_URL}/admin/v1/mcq/constants`,

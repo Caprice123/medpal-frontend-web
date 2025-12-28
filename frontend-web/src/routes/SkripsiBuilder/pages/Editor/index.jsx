@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '@store/store'
 import { shallowEqual } from 'react-redux'
-import { fetchSet, switchTab, saveSetContent, uploadImage } from '@store/skripsi/action'
+import { fetchSet, switchTab, saveSetContent } from '@store/skripsi/action'
+import { upload } from '@store/common/action'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -30,8 +31,8 @@ const SkripsiEditor = () => {
   // Image upload handler
   const handleImageUpload = useCallback(async (file) => {
     try {
-      const url = await dispatch(uploadImage(file, 'skripsi-editor'))
-      return url
+      const result = await dispatch(upload(file, 'skripsi-editor'))
+      return result.url
     } catch (error) {
       console.error('Image upload failed:', error)
       throw error

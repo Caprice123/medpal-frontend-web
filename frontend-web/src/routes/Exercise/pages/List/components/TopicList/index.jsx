@@ -1,35 +1,41 @@
 import { useSelector } from 'react-redux'
+import { useMemo } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardBody } from '@components/common/Card'
 import Button from '@components/common/Button'
-import { MultipleChoiceRoute } from '../../../../routes'
+import { ExerciseRoute } from '../../../../routes'
 import {
   LoadingOverlay,
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
-  TopicsGrid,
+  TopicGrid,
   TopicDescription,
+  TagList,
+  Tag,
   TopicStats,
   StatItem,
   StatLabel,
-  StatValue,
-  TagList,
-  Tag,
-  ModeButtonContainer
+  StatValue
 } from './TopicList.styles'
 
-function TopicList({ topics }) {
-  const { loading } = useSelector((state) => state.mcq)
+function TopicList() {
+  const { topics, loading } = useSelector(state => state.exercise)
+  const { tags } = useSelector(state => state.tags)
   const navigate = useNavigate()
 
-  const handleSelectMode = (topicId, mode) => {
-    navigate(`${generatePath(MultipleChoiceRoute.detailRoute, { id: topicId })}?mode=${mode}`)
-  }
+  // Get tag group IDs
+  const universityGroupId = useMemo(() => {
+    return tags?.find(tag => tag.name === 'university')?.id
+  }, [tags])
+
+  const semesterGroupId = useMemo(() => {
+    return tags?.find(tag => tag.name === 'semester')?.id
+  }, [tags])
 
   // Loading state
-  if (loading?.isTopicsLoading) {
-    return <LoadingOverlay>Memuat topik...</LoadingOverlay>
+  if (loading.isTopicsLoading) {
+    return <LoadingOverlay>Memuat topik latihan...</LoadingOverlay>
   }
 
   // Empty state
@@ -37,18 +43,29 @@ function TopicList({ topics }) {
     return (
       <EmptyState>
         <EmptyStateIcon>📝</EmptyStateIcon>
-        <EmptyStateText>Tidak ada topik ditemukan</EmptyStateText>
+        <EmptyStateText>Tidak ada topik latihan ditemukan</EmptyStateText>
       </EmptyState>
     )
   }
 
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(date)
+  }
+
   // Data state - render topic grid
   return (
-    <TopicsGrid>
-      {topics.map(topic => {
-        // Get tag groups
-        const universityTags = topic.tags?.filter(tag => tag.tagGroup?.name === 'university') || []
-        const semesterTags = topic.tags?.filter(tag => tag.tagGroup?.name === 'semester') || []
+    <TopicGrid>
+      {topics.map((topic) => {
+        // Get tag groups using tagGroupId
+        const universityTags = topic.tags?.filter(tag => tag.tagGroupId === universityGroupId) || []
+        const semesterTags = topic.tags?.filter(tag => tag.tagGroupId === semesterGroupId) || []
 
         return (
           <Card key={topic.id} shadow hoverable>
@@ -81,38 +98,29 @@ function TopicList({ topics }) {
                 </TagList>
               )}
 
-              <div style={{ flex: 1 }}></div>
-
               <TopicStats>
                 <StatItem>
                   <StatLabel>Soal</StatLabel>
-                  <StatValue>{topic.question_count || 0}</StatValue>
+                  <StatValue>{topic.questionCount || topic.questions?.length || 0}</StatValue>
                 </StatItem>
-                {topic.quiz_time_limit > 0 && (
-                  <StatItem>
-                    <StatLabel>Waktu</StatLabel>
-                    <StatValue>{topic.quiz_time_limit} menit</StatValue>
-                  </StatItem>
-                )}
                 <StatItem>
-                  <StatLabel>Passing</StatLabel>
-                  <StatValue>{topic.passing_score}%</StatValue>
+                  <StatLabel>Diperbarui</StatLabel>
+                  <StatValue>{formatDate(topic.updated_at || topic.updatedAt)}</StatValue>
                 </StatItem>
               </TopicStats>
 
-              <ModeButtonContainer>
-                <Button variant="outline" onClick={() => handleSelectMode(topic.id, 'learning')} style={{ flex: 1 }}>
-                  📖 Learning
-                </Button>
-                <Button variant="primary" onClick={() => handleSelectMode(topic.id, 'quiz')} style={{ flex: 1 }}>
-                  ⏱️ Quiz
-                </Button>
-              </ModeButtonContainer>
+              <Button
+                variant="outline"
+                onClick={() => navigate(generatePath(ExerciseRoute.detailRoute, { id: topic.id }))}
+                style={{ width: '100%' }}
+              >
+                Mulai Latihan
+              </Button>
             </CardBody>
           </Card>
         )
       })}
-    </TopicsGrid>
+    </TopicGrid>
   )
 }
 

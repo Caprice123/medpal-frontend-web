@@ -2,8 +2,6 @@ import Login from '@routes/Auth/pages/Login';
 import Home from '@routes/Home';
 import Dashboard from '@routes/Dashboard';
 import AdminPanel from '@routes/Admin/AdminPanel';
-import SessionDetail from '@routes/SessionDetail';
-import ExercisePage from '@routes/Exercise';
 import UITest from '@routes/UITest';
 import EditorTest from '@routes/EditorTest';
 import HtmlToDocxExample from '@components/HtmlToDocxExample';
@@ -14,6 +12,7 @@ import { anatomyQuizRoutes } from './routes/AnatomyQuiz/routes';
 import { summaryNotesRoutes } from './routes/SummaryNotes/routes';
 import { multipleChoiceRoutes } from './routes/MultipleChoice/routes';
 import { flashcardRoutes } from './routes/Flashcard/routes';
+import { exerciseRoutes } from './routes/Exercise/routes';
 import { chatbotRoutes } from './routes/Chatbot/routes';
 import { skripsiRoutes } from './routes/SkripsiBuilder/routes';
 
@@ -31,16 +30,10 @@ const appRoutes = [
                 path: '/dashboard',
                 element: (
                         <Dashboard />
-                    
-                )
-            },
-            {
-                path: '/exercises',
-                element: (
-                        <ExercisePage />
 
                 )
             },
+            ...exerciseRoutes,
             ...anatomyQuizRoutes,
             ...calculatorRoutes,
             ...summaryNotesRoutes,

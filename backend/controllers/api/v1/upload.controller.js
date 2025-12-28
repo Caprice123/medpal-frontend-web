@@ -18,9 +18,6 @@ class UploadController {
         })
       }
 
-      console.log('Upload request - req.file:', req.file)
-      console.log('Upload request - req.body:', req.body)
-
       const { type = 'general' } = req.body
       const filePath = req.file.path
 
@@ -95,6 +92,7 @@ class UploadController {
           url: presignedUrl,
           key: blob.key,
           fileName: blob.filename, // Return original filename
+          contentType: blob.contentType, // Return content type
           byteSize: blob.byteSize  // Return file size
         }
       })

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { fetchCalculatorConstants, updateCalculatorConstants } from '@store/calculator/action'
+import { fetchConstants, updateConstants } from '@store/constant/action'
+import { actions as constantActions } from '@store/constant/reducer'
 import Dropdown from '@components/common/Dropdown'
 import {
   Overlay,
@@ -49,7 +50,10 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
         'calculator_is_active'
       ]
 
-      const constants = await dispatch(fetchCalculatorConstants(keys))
+      // Set filter keys before fetching
+      dispatch(constantActions.updateFilter({ key: 'keys', value: keys }))
+
+      const constants = await dispatch(fetchConstants())
 
       console.log('Fetched calculator constants:', constants)
 
@@ -99,7 +103,7 @@ function CalculatorSettingsModal({ isOpen, onClose }) {
         calculator_is_active: String(settings.calculator_is_active)
       }
 
-      await dispatch(updateCalculatorConstants(settingsToSave))
+      await dispatch(updateConstants(settingsToSave))
 
       alert('Pengaturan berhasil disimpan!')
       onClose()

@@ -1,24 +1,17 @@
 import { useSelector } from 'react-redux'
+import { Card, CardHeader, CardBody } from '@components/common/Card'
+import Button from '@components/common/Button'
 import {
   LoadingOverlay,
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
-  ActionButton,
   QuizzesGrid,
-  QuizCard,
-  QuizCardHeader,
-  QuizCardTitle,
-  StatusBadge,
-  QuizImageContainer,
-  QuizImage,
   QuizDescription,
   QuizStats,
   StatItem,
   StatLabel,
   StatValue,
-  CardActions,
-  CardActionButton,
   TagList,
   Tag
 } from './QuizList.styles'
@@ -48,57 +41,58 @@ function QuizList() {
   return (
     <QuizzesGrid>
       {quizzes.map(quiz => (
-        <QuizCard key={quiz.id}>
-          <QuizCardHeader>
-            <QuizCardTitle>{quiz.title}</QuizCardTitle>
-          </QuizCardHeader>
+        <Card key={quiz.id} shadow hoverable>
+          <CardHeader title={quiz.title} divider={false} />
 
-          <QuizDescription>
-            {quiz.description || 'Tidak ada deskripsi'}
-          </QuizDescription>
+          <CardBody padding="0 1.25rem 1.25rem 1.25rem">
+            <QuizDescription>
+              {quiz.description || 'Tidak ada deskripsi'}
+            </QuizDescription>
 
-          {/* University Tags */}
-          {quiz.universityTags && quiz.universityTags.length > 0 && (
-            <TagList>
-              {quiz.universityTags.map((tag) => (
-                <Tag key={tag.id} university>
-                  🏛️ {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
+            {/* University Tags */}
+            {quiz.universityTags && quiz.universityTags.length > 0 && (
+              <TagList>
+                {quiz.universityTags.map((tag) => (
+                  <Tag key={tag.id} university>
+                    🏛️ {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
 
-          {/* Semester Tags */}
-          {quiz.semesterTags && quiz.semesterTags.length > 0 && (
-            <TagList>
-              {quiz.semesterTags.map((tag) => (
-                <Tag key={tag.id} semester>
-                  📚 {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
+            {/* Semester Tags */}
+            {quiz.semesterTags && quiz.semesterTags.length > 0 && (
+              <TagList>
+                {quiz.semesterTags.map((tag) => (
+                  <Tag key={tag.id} semester>
+                    📚 {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
 
-          <div style={{flex: "1"}}></div>
-          <QuizStats>
-            <StatItem>
-              <StatLabel>Questions</StatLabel>
-              <StatValue>{quiz.questionCount || 0}</StatValue>
-            </StatItem>
-            <StatItem>
-              <StatLabel>Terakhir Diperbaharui</StatLabel>
-              <StatValue>
-                {new Date(quiz.updatedAt).toLocaleDateString("id-ID")}
-              </StatValue>
-            </StatItem>
-          </QuizStats>
+            <QuizStats>
+              <StatItem>
+                <StatLabel>Questions</StatLabel>
+                <StatValue>{quiz.questionCount || 0}</StatValue>
+              </StatItem>
+              <StatItem>
+                <StatLabel>Terakhir Diperbaharui</StatLabel>
+                <StatValue>
+                  {new Date(quiz.updatedAt).toLocaleDateString("id-ID")}
+                </StatValue>
+              </StatItem>
+            </QuizStats>
 
-          <CardActions>
-            <CardActionButton onClick={() => navigate(generatePath(AnatomyQuizRoute.detailRoute, { id: quiz.id }))}>
+            <Button
+              variant="outline"
+              onClick={() => navigate(generatePath(AnatomyQuizRoute.detailRoute, { id: quiz.id }))}
+              style={{ width: '100%' }}
+            >
               Select
-            </CardActionButton>
-          </CardActions>
-        </QuizCard>
+            </Button>
+          </CardBody>
+        </Card>
       ))}
     </QuizzesGrid>
   )

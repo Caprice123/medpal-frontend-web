@@ -4,16 +4,16 @@ import { useFormik } from 'formik'
 import {
   createSummaryNote,
   generateSummaryFromDocument,
-  fetchAdminSummaryNotes,
-  uploadDocument
+  fetchAdminSummaryNotes
 } from '@store/summaryNotes/action'
+import { upload } from '@store/common/action'
 import { actions } from '@store/summaryNotes/reducer'
 import { markdownToBlocks } from '@utils/markdownToBlocks'
 import { blocksToMarkdown } from '@utils/blocksToMarkdown'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
-const { clearGeneratedContent, setError, clearError, setLoading } = actions
+const { clearGeneratedContent, setError, clearError } = actions
 
 export const useCreateNote = (onClose) => {
   const dispatch = useDispatch()
@@ -110,29 +110,19 @@ export const useCreateNote = (onClose) => {
         return
       }
 
-      try {
-        dispatch(setLoading({ key: 'isUploading', value: true }))
-        dispatch(clearError())
+      // Upload file immediately to get blobId
+      const result = await dispatch(upload(file, 'summary-notes'))
 
-        // Upload file immediately to get blobId
-        const result = await dispatch(uploadDocument(file))
-
-        setBlobId(result.blobId)
-        const fileInfo = {
-          name: result.fileName || file.name, // Backend returns fileName (camelCase)
-          type: file.type, // Get from original file object (backend doesn't return contentType)
+      setBlobId(result.blobId)
+      const fileInfo = {
+          name: result.filename || file.name,
+          type: result.contentType || file.type,
           size: result.byteSize,
           url: result.url // For viewing the uploaded file
-        }
-        console.log('Upload result:', result)
-        console.log('Setting uploadedFileInfo:', fileInfo)
-        setUploadedFileInfo(fileInfo)
-      } catch (error) {
-        console.error('Failed to upload file:', error)
-        dispatch(setError('Gagal upload file. Silakan coba lagi.'))
-      } finally {
-        dispatch(setLoading({ key: 'isUploading', value: false }))
       }
+      console.log('Upload result:', result)
+      console.log('Setting uploadedFileInfo:', fileInfo)
+      setUploadedFileInfo(fileInfo)
     }
   }
 
@@ -142,12 +132,7 @@ export const useCreateNote = (onClose) => {
       return
     }
 
-    try {
-      dispatch(clearError())
-      await dispatch(generateSummaryFromDocument(blobId))
-    } catch (err) {
-      dispatch(setError('Gagal generate ringkasan. Silakan coba lagi.'))
-    }
+    await dispatch(generateSummaryFromDocument(blobId))
   }
 
   const handleRemoveFile = () => {
@@ -157,7 +142,6 @@ export const useCreateNote = (onClose) => {
   }
 
   const handleImageUpload = async (file) => {
-    try {
       // Validate file type (images only)
       const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
       if (!allowedImageTypes.includes(file.type)) {
@@ -170,15 +154,10 @@ export const useCreateNote = (onClose) => {
       }
 
       // Upload image to blob storage
-      const result = await dispatch(uploadDocument(file))
+      const result = await dispatch(upload(file, 'summary-notes'))
 
       // Return permanent blob URL (never expires, generates fresh presigned URL on each request)
       return `${API_BASE_URL}/api/v1/blobs/${result.blobId}`
-    } catch (error) {
-      console.error('Failed to upload image:', error)
-      dispatch(setError(error.message || 'Gagal upload gambar.'))
-      throw error
-    }
   }
 
   return {

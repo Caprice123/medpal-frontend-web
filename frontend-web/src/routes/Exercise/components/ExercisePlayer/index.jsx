@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import Button from '@components/common/Button'
 import {
   Container,
   Header,
@@ -7,10 +8,8 @@ import {
   QuestionCard,
   QuestionNumber,
   QuestionText,
-  AnswerInput,
+  InlineInput,
   NavigationButtons,
-  NavButton,
-  SubmitButton,
   ProgressBar,
   ProgressFill
 } from './ExercisePlayer.styles'
@@ -18,6 +17,14 @@ import {
 const ExercisePlayer = ({ topic, onSubmit, onBack }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState({})
+  const inputRef = useRef(null)
+
+  // Auto-focus input when question changes
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [currentIndex])
 
   const currentQuestion = topic.questions[currentIndex]
   const totalQuestions = topic.questions.length
@@ -55,61 +62,79 @@ const ExercisePlayer = ({ topic, onSubmit, onBack }) => {
   const isLastQuestion = currentIndex === totalQuestions - 1
   const allAnswered = topic.questions.every(q => answers[q.id]?.trim())
 
+  // Replace ____ with inline input in question text
+  const renderQuestionWithInput = () => {
+    const questionParts = currentQuestion.question.split('____')
+
+    if (questionParts.length === 1) {
+      // No blank, just return the question
+      return <QuestionText>{currentQuestion.question}</QuestionText>
+    }
+
+    return (
+      <QuestionText>
+        {questionParts[0]}
+        <InlineInput
+          ref={inputRef}
+          type="text"
+          value={answers[currentQuestion.id] || ''}
+          onChange={(e) => handleAnswerChange(e.target.value)}
+        />
+        {questionParts[1]}
+      </QuestionText>
+    )
+  }
+
   return (
     <Container>
       <Header>
+        <BackButton onClick={onBack}>
+          ← Kembali
+        </BackButton>
         <TopicInfo>
           <h2>{topic.title}</h2>
           <p>{topic.description}</p>
         </TopicInfo>
-        <BackButton onClick={onBack}>
-          ← Kembali
-        </BackButton>
       </Header>
 
       <QuestionCard>
+        <ProgressBar>
+          <ProgressFill progress={progress} />
+        </ProgressBar>
+
         <QuestionNumber>
           Soal {currentIndex + 1} dari {totalQuestions}
         </QuestionNumber>
 
-        <QuestionText>
-          {currentQuestion.question}
-        </QuestionText>
-
-        <AnswerInput
-          placeholder="Tulis jawaban Anda di sini..."
-          value={answers[currentQuestion.id] || ''}
-          onChange={(e) => handleAnswerChange(e.target.value)}
-        />
+        {renderQuestionWithInput()}
 
         <NavigationButtons>
-          <NavButton
+          <Button
+            variant="ghost"
             onClick={handlePrevious}
             disabled={currentIndex === 0}
           >
             ← Sebelumnya
-          </NavButton>
-          <NavButton
+          </Button>
+          <Button
             variant="primary"
             onClick={handleNext}
             disabled={isLastQuestion}
           >
             Selanjutnya →
-          </NavButton>
+          </Button>
         </NavigationButtons>
-
-        <ProgressBar>
-          <ProgressFill progress={progress} />
-        </ProgressBar>
       </QuestionCard>
 
       {isLastQuestion && (
-        <SubmitButton
+        <Button
+          variant="primary"
           onClick={handleSubmit}
           disabled={!allAnswered}
+          style={{ width: '100%', padding: '1rem', fontSize: '1.125rem' }}
         >
           Selesai & Lihat Hasil
-        </SubmitButton>
+        </Button>
       )}
     </Container>
   )

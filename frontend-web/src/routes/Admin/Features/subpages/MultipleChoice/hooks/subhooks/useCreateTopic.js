@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux'
 import { useFormik } from 'formik'
 import { useState, useCallback, useRef } from 'react'
 import { createMcqTopic } from '@store/mcq/action'
-import { useUploadQuestionImage } from './useUploadQuestionImage'
+import { upload } from '@store/common/action'
 
 export const useCreateTopic = (closeCallback) => {
   const dispatch = useDispatch()
@@ -114,15 +114,14 @@ export const useCreateTopic = (closeCallback) => {
     const file = e.target.files[0]
     if (!file) return
 
-    // Create a callback that updates the specific question
-    const { form: uploadForm } = useUploadQuestionImage((imageInfo) => {
-      form.setFieldValue(`questions.${questionIndex}.image_url`, imageInfo.image_url)
-      form.setFieldValue(`questions.${questionIndex}.image_key`, imageInfo.image_key)
-      form.setFieldValue(`questions.${questionIndex}.image_filename`, imageInfo.image_filename)
-    })
-
-    await uploadForm.setFieldValue('file', file)
-    uploadForm.handleSubmit()
+    try {
+      const result = await dispatch(upload(file, 'exercise'))
+      form.setFieldValue(`questions.${questionIndex}.image_url`, result.url)
+      form.setFieldValue(`questions.${questionIndex}.image_key`, result.key)
+      form.setFieldValue(`questions.${questionIndex}.image_filename`, result.filename)
+    } catch (error) {
+      console.error('Failed to upload question image:', error)
+    }
   }
 
   return {

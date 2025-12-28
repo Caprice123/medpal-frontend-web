@@ -21,7 +21,7 @@ const {
 export const fetchPricingPlans = (bundleType = null) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     const url = bundleType
       ? `${Endpoints.pricing.plans}?bundle_type=${bundleType}`
@@ -45,7 +45,7 @@ export const fetchPricingPlans = (bundleType = null) => async (dispatch) => {
 export const fetchUserStatus = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isStatusLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.pricing.status)
 
@@ -65,7 +65,7 @@ export const fetchUserStatus = () => async (dispatch) => {
 export const fetchPurchaseHistory = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isHistoryLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await getWithToken(Endpoints.pricing.history)
 
@@ -87,7 +87,7 @@ export const fetchPurchaseHistory = () => async (dispatch) => {
 export const purchasePricingPlan = (pricingPlanId, paymentMethod = 'manual') => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPurchaseLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.pricing.purchase, {
       pricingPlanId,
@@ -104,7 +104,6 @@ export const purchasePricingPlan = (pricingPlanId, paymentMethod = 'manual') => 
 
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isPurchaseLoading', value: false }))
   }
@@ -117,7 +116,7 @@ export const purchasePricingPlan = (pricingPlanId, paymentMethod = 'manual') => 
 export const fetchAllPricingPlans = (params = {}) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     // Build query string
     const queryParams = new URLSearchParams()
@@ -149,7 +148,7 @@ export const fetchAllPricingPlans = (params = {}) => async (dispatch) => {
 export const createPricingPlan = (planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     const response = await postWithToken(Endpoints.pricing.admin.create, planData)
 
@@ -160,7 +159,6 @@ export const createPricingPlan = (planData) => async (dispatch) => {
 
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isPlansLoading', value: false }))
   }
@@ -173,7 +171,7 @@ export const createPricingPlan = (planData) => async (dispatch) => {
 export const updatePricingPlan = (planId, planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     const { putWithToken } = await import('../../utils/requestUtils')
 
@@ -186,7 +184,6 @@ export const updatePricingPlan = (planId, planData) => async (dispatch) => {
 
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isPlansLoading', value: false }))
   }
@@ -199,7 +196,7 @@ export const updatePricingPlan = (planId, planData) => async (dispatch) => {
 export const togglePricingPlanStatus = (planId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    dispatch(clearError())
+    
 
     const { patchWithToken } = await import('../../utils/requestUtils')
 
@@ -212,7 +209,6 @@ export const togglePricingPlanStatus = (planId) => async (dispatch) => {
 
   } catch (err) {
     handleApiError(err, dispatch)
-    throw err
   } finally {
     dispatch(setLoading({ key: 'isPlansLoading', value: false }))
   }
