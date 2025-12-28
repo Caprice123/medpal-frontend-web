@@ -34,6 +34,7 @@ import adminChatbotRoutes from '#routes/admin/v1/chatbot.routes';
 import skripsiRoutes from '#routes/api/v1/skripsi.routes';
 import adminSkripsiRoutes from '#routes/admin/v1/skripsi.routes';
 import uploadRoutes from '#routes/api/v1/upload.routes';
+import blobRoutes from '#routes/api/v1/blobs.routes';
 import htmlToDocxRoutes from '#routes/api/v1/htmlToDocx.routes';
 import webhookRoutes from '#routes/webhook/v1/xendit.routes';
 
@@ -82,6 +83,7 @@ app.use('/api/v1/anatomy', anatomyRoutes);
 app.use('/api/v1/mcq', mcqRoutes);
 app.use('/api/v1/chatbot', chatbotRoutes);
 app.use('/api/v1', uploadRoutes);
+app.use('/api/v1/blobs', blobRoutes);
 app.use('/api/v1', skripsiRoutes);
 app.use('/api/v1/html-to-docx', htmlToDocxRoutes);
 
