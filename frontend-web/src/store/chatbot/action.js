@@ -373,14 +373,15 @@ export const submitFeedback = (messageId, feedbackType) => async (dispatch) => {
 
 // ============= Admin Endpoints =============
 
-export const fetchAdminConversations = (filters, page, perPage) => async (dispatch) => {
+export const fetchAdminConversations = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
-    
+
+    const { filters, pagination } = getState().chatbot
 
     const queryParams = {
-      page: page || 1,
-      perPage: perPage || 20
+      page: pagination.page,
+      perPage: pagination.perPage
     }
 
     if (filters?.search) queryParams.search = filters.search
@@ -390,6 +391,7 @@ export const fetchAdminConversations = (filters, page, perPage) => async (dispat
     const response = await getWithToken(Endpoints.chatbot.admin.conversations, queryParams)
     dispatch(setConversations(response.data.data || []))
     dispatch(setPagination(response.data.pagination || { page: 1, perPage: 20, isLastPage: false }))
+    console.log(response.data.pagination)
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {

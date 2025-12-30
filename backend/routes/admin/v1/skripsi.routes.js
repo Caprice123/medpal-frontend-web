@@ -9,11 +9,6 @@ const router = express.Router()
 router.use(authenticateToken)
 router.use(requireAdmin)
 
-// Constants management
-router.get('/skripsi/constants', asyncHandler(SkripsiAdminController.getConstants.bind(SkripsiAdminController)))
-router.put('/skripsi/constants/:key', asyncHandler(SkripsiAdminController.updateConstant.bind(SkripsiAdminController)))
-router.put('/skripsi/constants', asyncHandler(SkripsiAdminController.updateMultipleConstants.bind(SkripsiAdminController)))
-
 // Skripsi Sets management
 router.get('/skripsi/sets', asyncHandler(SkripsiAdminController.index.bind(SkripsiAdminController)))
 router.get('/skripsi/sets/:id', asyncHandler(SkripsiAdminController.show.bind(SkripsiAdminController)))

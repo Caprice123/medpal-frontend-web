@@ -1,39 +1,47 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
-  padding: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 `
 
 export const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 2rem;
 `
 
 export const BackButton = styled.button`
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 0.875rem;
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 0.5rem 0;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
 
   &:hover {
-    color: #374151;
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 `
 
 export const HeaderContent = styled.div`
+  flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
 `
 
 export const TitleSection = styled.div`

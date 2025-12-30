@@ -8,78 +8,6 @@ import { SkripsiSetSerializer } from '#serializers/admin/v1/skripsiSetSerializer
 import { SkripsiSetListSerializer } from '#serializers/admin/v1/skripsiSetListSerializer'
 
 class SkripsiController {
-  async getConstants(req, res) {
-    const result = await getSkripsiConstantsService()
-
-    res.status(200).json({
-      message: 'Constants retrieved successfully',
-      data: result.constants,
-      raw: result.raw
-    })
-  }
-
-  async updateConstant(req, res) {
-    const { key, value } = req.body
-
-    if (!key) {
-      return res.status(400).json({
-        success: false,
-        message: 'Key is required'
-      })
-    }
-
-    if (value === undefined || value === null) {
-      return res.status(400).json({
-        success: false,
-        message: 'Value is required'
-      })
-    }
-
-    const constant = await updateSkripsiConstantService(key, value)
-
-    res.status(200).json({
-      message: 'Constant updated successfully',
-      data: constant
-    })
-  }
-
-  async updateMultipleConstants(req, res) {
-    const { constants } = req.body
-
-    if (!constants || typeof constants !== 'object') {
-      return res.status(400).json({
-        success: false,
-        message: 'Constants object is required'
-      })
-    }
-
-    const results = []
-    const errors = []
-
-    for (const [key, value] of Object.entries(constants)) {
-      try {
-        const constant = await updateSkripsiConstantService(key, value)
-        results.push(constant)
-      } catch (error) {
-        errors.push({ key, error: error.message })
-      }
-    }
-
-    if (errors.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Some constants failed to update',
-        data: results,
-        errors
-      })
-    }
-
-    res.status(200).json({
-      message: 'Constants updated successfully',
-      data: results
-    })
-  }
-
   async index(req, res) {
     const { page, perPage, userId, search } = req.query
 
@@ -122,7 +50,9 @@ class SkripsiController {
     await deleteAdminSkripsiSetService(parseInt(id))
 
     res.status(200).json({
-      message: 'Skripsi set deleted successfully'
+      data: {
+        success: true
+      }
     })
   }
 }

@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useExerciseSection } from './hooks/useExerciseSection'
 import { fetchExerciseTopic, fetchAdminExerciseTopics } from '@store/exercise/adminAction'
 import CreateTopicModal from './components/CreateTopicModal'

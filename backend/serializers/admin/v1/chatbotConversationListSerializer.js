@@ -2,14 +2,16 @@ export class ChatbotConversationListSerializer {
   static serialize(conversations) {
     return conversations.map(conversation => ({
       id: conversation.id,
-      topic: conversation.title,
-      user: conversation.users ? {
+      topic: conversation.topic || conversation.title,
+      user: conversation.user || (conversation.users ? {
+        id: conversation.users.id,
         name: conversation.users.name,
         email: conversation.users.email
-      } : null,
+      } : null),
       messageCount: conversation._count?.chatbot_messages || conversation.messageCount || 0,
-      createdAt: conversation.created_at,
-      updatedAt: conversation.updated_at
+      lastMessage: conversation.lastMessage || null,
+      createdAt: conversation.createdAt || conversation.created_at,
+      updatedAt: conversation.updatedAt || conversation.updated_at
     }))
   }
 }

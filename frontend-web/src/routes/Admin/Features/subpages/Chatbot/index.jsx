@@ -29,13 +29,15 @@ function Chatbot({ onBack }) {
   })
 
   useEffect(() => {
-    dispatch(fetchAdminConversations({}, 1, 20))
+    dispatch(fetchAdminConversations())
   }, [dispatch])
 
   const handlePageChange = (page) => {
     dispatch(actions.setPage(page))
     dispatch(fetchAdminConversations())
   }
+
+  console.log(pagination)
 
   const handleViewConversation = (conversation) => {
     setUiState({

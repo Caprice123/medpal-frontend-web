@@ -4,13 +4,14 @@ export class SkripsiSetListSerializer {
       id: set.id,
       title: set.title,
       description: set.description,
-      user: set.users ? {
+      user: set.user || (set.users ? {
+        id: set.users.id,
         name: set.users.name,
         email: set.users.email
-      } : null,
+      } : null),
       tabCount: set._count?.skripsi_tabs || set.tabCount || 0,
-      createdAt: set.created_at,
-      updatedAt: set.updated_at
+      createdAt: set.createdAt || set.created_at,
+      updatedAt: set.updatedAt || set.updated_at
     }))
   }
 }

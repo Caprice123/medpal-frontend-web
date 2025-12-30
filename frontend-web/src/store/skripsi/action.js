@@ -20,17 +20,21 @@ const {
 
 // ============= Admin Sets Management =============
 
-export const fetchAdminSets = (filters = {}, page = 1, perPage = 20) => async (dispatch) => {
+export const fetchAdminSets = () => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ key: 'isSetsLoading', value: true }))
 
-    const params = {
-      page: page.toString(),
-      perPage: perPage.toString(),
-      ...filters
+    const { filters, pagination } = getState().chatbot
+    const queryParams = {
+      page: pagination.page,
+      perPage: pagination.perPage
     }
 
-    const response = await getWithToken(Endpoints.skripsi.admin.sets, params)
+    if (filters?.search) queryParams.search = filters.search
+    if (filters?.mode) queryParams.mode = filters.mode
+    if (filters?.userId) queryParams.userId = filters.userId
+
+    const response = await getWithToken(Endpoints.skripsi.admin.sets, queryParams)
 
     dispatch(setSets(response.data.data || []))
     dispatch(setPagination(response.data.pagination || {}))
