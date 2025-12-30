@@ -5,7 +5,6 @@ import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHand
 import { startCronJobs } from '#jobs/cron';
 import { errorHandler } from '#middleware/errorHandler.middleware';
 import authRoutes from '#routes/api/v1/auth.routes';
-import creditRoutes from '#routes/credit.routes';
 import creditPlanRoutes from '#routes/api/v1/creditPlan.routes';
 import exerciseRoutes from '#routes/api/v1/exercise.routes';
 import flashcardRoutes from '#routes/api/v1/flashcard.routes';
@@ -68,7 +67,6 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api', authRoutes);
-app.use('/api/credits', creditRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/v1/credit-plans', creditPlanRoutes);
 app.use('/api/v1/exercises', exerciseRoutes);
