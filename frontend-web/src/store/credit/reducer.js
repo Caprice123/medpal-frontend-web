@@ -2,11 +2,9 @@ import { createSlice } from '@reduxjs/toolkit'
 import { resetAllState } from '../globalAction'
 
 const initialState = {
-  balance: 0,
   plans: [],
   transactions: [],
   loading: {
-    isBalanceLoading: false,
     isPlansLoading: false,
     isTransactionsLoading: false,
     isPurchaseLoading: false,
@@ -30,9 +28,6 @@ const { reducer, actions } = createSlice({
   reducers: {
     setLoading: (state, { payload: { key, value } }) => {
       state.loading[key] = value
-    },
-    setBalance: (state, { payload }) => {
-      state.balance = payload
     },
     setPlans: (state, { payload }) => {
       state.plans = payload
@@ -67,11 +62,10 @@ const { reducer, actions } = createSlice({
   },
   
     extraReducers: (builder) => {
-    //   builder.addCase(resetAllState, (state) => ({
-    //       ...initialState,
-    //       balance: state.balance,
-    //       loading: state.loading, // 🔥 preserve current loading state
-    //   }));
+      builder.addCase(resetAllState, (state) => ({
+          ...initialState,
+          loading: state.loading, // 🔥 preserve current loading state
+      }));
     },
 })
 
