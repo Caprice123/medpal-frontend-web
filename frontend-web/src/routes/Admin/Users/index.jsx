@@ -19,8 +19,7 @@ import {
   TableActionButton
 } from './Users.styles'
 import { Filter } from "./components/Filter"
-import AdjustCreditModal from "./components/AdjustCreditModal"
-import AdjustSubscriptionModal from "./components/AdjustSubscriptionModal"
+import UserDetailModal from "./components/UserDetailModal"
 import { actions } from "@store/user/reducer"
 import { formatDate } from "../../../utils/dateUtils"
 
@@ -28,8 +27,7 @@ function Users() {
   const { filter, users, loading, pagination } = useSelector(state => state.user)
   const {
     uiState,
-    useAdjustCredit,
-    useAdjustSubscription,
+    useUserDetail,
   } = useUserSection()
 
   // Helper function to get active subscription
@@ -108,11 +106,8 @@ function Users() {
       align: 'center',
       render: (user) => (
         <ActionButtons>
-          <TableActionButton onClick={() => useAdjustCredit.onOpen(user)}>
-            Credit
-          </TableActionButton>
-          <TableActionButton onClick={() => useAdjustSubscription.onOpen(user)}>
-            Subscription
+          <TableActionButton onClick={() => useUserDetail.onOpen(user)}>
+            Show Detail
           </TableActionButton>
         </ActionButtons>
       )
@@ -158,20 +153,12 @@ function Users() {
         )}
       </TableContainer>
 
-      {/* Adjust Credit Modal */}
-      <AdjustCreditModal
-        isOpen={uiState.isCreditActionPopupOpen}
-        onClose={useAdjustCredit.onHide}
-        formik={useAdjustCredit.formik}
-        user={useAdjustCredit.user}
-      />
-
-      {/* Adjust Subscription Modal */}
-      <AdjustSubscriptionModal
-        isOpen={uiState.isSubscriptionActionPopupOpen}
-        onClose={useAdjustSubscription.onHide}
-        formik={useAdjustSubscription.formik}
-        user={useAdjustSubscription.user}
+      {/* User Detail Modal */}
+      <UserDetailModal
+        isOpen={uiState.isUserDetailModalOpen}
+        onClose={useUserDetail.onClose}
+        onAdjustCredit={useUserDetail.onAdjustCredit}
+        onAddSubscription={useUserDetail.onAddSubscription}
       />
     </Container>
   )

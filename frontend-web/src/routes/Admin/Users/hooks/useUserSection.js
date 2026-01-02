@@ -2,13 +2,11 @@ import { useEffect } from "react"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
 import { fetchUsers } from "../../../../store/user/action"
-import { useAdjustCredit } from "./subhooks/useAdjustCredit"
-import { useAdjustSubscription } from "./subhooks/useAdjustSubscription"
+import { useUserDetail } from "./subhooks/useUserDetail"
 
 export const useUserSection = () => {
     const [uiState, setUiState] = useState({
-        isCreditActionPopupOpen: false,
-        isSubscriptionActionPopupOpen: false
+        isUserDetailModalOpen: false
     })
     const dispatch = useDispatch()
 
@@ -19,7 +17,6 @@ export const useUserSection = () => {
     return {
         uiState,
         setUiState,
-        useAdjustCredit: useAdjustCredit(setUiState),
-        useAdjustSubscription: useAdjustSubscription(setUiState),
+        useUserDetail: useUserDetail(setUiState),
     }
 }

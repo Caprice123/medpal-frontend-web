@@ -3,6 +3,9 @@ import { resetAllState } from '../globalAction'
 
 const initialState = {
   users: [],
+  detail: null,
+  subscriptions: [],
+  subscriptionFilter: 'all', // 'all' or 'active'
   filter: {
     email: undefined,
     name: undefined,
@@ -13,10 +16,18 @@ const initialState = {
     perPage: 50,
     isLastPage: false
   },
+  subscriptionPagination: {
+    page: 1,
+    perPage: 20,
+    isLastPage: false
+  },
   loading: {
     isGetUsersLoading: false,
     isAdjustCreditLoading: false,
     isAdjustSubscriptionLoading: false,
+    isAddSubscriptionLoading: false,
+    isFetchUserDetailLoading: false,
+    isFetchUserSubscriptionsLoading: false,
   },
 }
 
@@ -40,9 +51,28 @@ const usersSlice = createSlice({
     setUsers: (state, action) => {
       state.users = action.payload
     },
+    setDetail: (state, action) => {
+        state.detail = action.payload
+    },
     updateFilter: (state, { payload }) => {
         state.pagination.currentPage = 1
         Object.assign(state.filter, { [payload.key]: payload.value })
+    },
+    setSubscriptions: (state, action) => {
+      state.subscriptions = action.payload
+    },
+    setSubscriptionPagination: (state, action) => {
+      const { page, perPage, isLastPage } = action.payload
+      state.subscriptionPagination.page = page
+      state.subscriptionPagination.perPage = perPage
+      state.subscriptionPagination.isLastPage = isLastPage
+    },
+    setSubscriptionPage: (state, { payload }) => {
+        state.subscriptionPagination.page = payload
+    },
+    setSubscriptionFilter: (state, { payload }) => {
+        state.subscriptionFilter = payload
+        state.subscriptionPagination.page = 1 // Reset to page 1 when filter changes
     },
   },
   

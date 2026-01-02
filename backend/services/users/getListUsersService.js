@@ -8,6 +8,7 @@ export class GetListUsersService extends BaseService {
     static async call(filters = {}) {
         this.validate(filters)
 
+        const userId = filters.userId
         const email = filters.email
         const name = filters.name
         const status = filters.status
@@ -15,6 +16,11 @@ export class GetListUsersService extends BaseService {
         const perPage = Number(filters.perPage) || 50
 
         const where = {}
+
+        // User ID filter - exact match
+        if (userId) {
+            where.id = userId
+        }
 
         // Email filter - partial match (contains)
         if (email) {
@@ -37,24 +43,19 @@ export class GetListUsersService extends BaseService {
             where.is_active = status === 'active'
         }
 
-        const now = moment().tz("Asia/Jakarta").toDate();
         const users = await prisma.users.findMany({
             where,
             include: {
-                user_purchases: {
-                    where: {
-                        bundle_type: { in: ['subscription', 'hybrid'] },
-                        subscription_status: 'active',
-                        subscription_end: { gte: now }
-                    },
+                user_subscription: {
                     orderBy: {
-                        subscription_end: 'desc'
+                        created_at: 'desc'
                     },
-                    take: 1,
                     select: {
-                        subscription_start: true,
-                        subscription_end: true,
-                        subscription_status: true,
+                        id: true,
+                        start_date: true,
+                        end_date: true,
+                        status: true,
+                        created_at: true,
                     }
                 },
                 user_credit: {

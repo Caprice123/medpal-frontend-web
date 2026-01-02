@@ -70,18 +70,8 @@ class PricingController {
       })
     }
 
-    // Check if user already has active subscription (only for subscription/hybrid plans)
-    const plan = await GetActivePricingPlansService.call()
-    const selectedPlan = plan.find(p => p.id === pricingPlanId)
-
-    if (selectedPlan && (selectedPlan.bundle_type === 'subscription' || selectedPlan.bundle_type === 'hybrid')) {
-      const hasActive = await HasActiveSubscriptionService.call(userId)
-      if (hasActive) {
-        return res.status(400).json({
-          error: 'You already have an active subscription'
-        })
-      }
-    }
+    // Note: We allow users to purchase subscriptions even if they have an active one
+    // The subscription will be stacked/extended from the current active subscription's end date
 
     const purchase = await PurchasePricingPlanService.call(
       userId,
@@ -110,7 +100,7 @@ class PricingController {
           amount: Number(purchase.amount_paid),
           externalId: `PURCHASE-${purchase.id}-${Date.now()}`,
           payerEmail: user.email,
-          description: `${purchase.pricing_plan.name} - ${purchase.bundle_type === 'credits' ? `${purchase.credits_granted} Credits` : purchase.bundle_type === 'subscription' ? 'Subscription' : 'Hybrid Package'}`
+          description: `${purchase.pricing_plan.name} - ${purchase.bundle_type === 'credits' ? `${purchase.pricing_plan.credits_included} Credits` : purchase.bundle_type === 'subscription' ? 'Subscription' : 'Hybrid Package'}`
         })
 
         // Debug: Log the full invoice response
@@ -147,13 +137,8 @@ class PricingController {
         id: purchase.id,
         planName: purchase.pricing_plan.name,
         bundleType: purchase.bundle_type,
-        creditsGranted: purchase.credits_granted,
         amountPaid: purchase.amount_paid,
-        subscription: purchase.subscription_status ? {
-          startDate: purchase.subscription_start,
-          endDate: purchase.subscription_end,
-          status: purchase.subscription_status
-        } : null,
+        paymentStatus: purchase.payment_status,
         paymentInfo: paymentInfo
       },
       message: paymentMethod === 'xendit' ? 'Payment invoice created. Please complete payment.' : 'Purchase completed successfully'

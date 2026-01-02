@@ -44,8 +44,6 @@ export const fetchCreditTransactions = (params = {}) => async (dispatch) => {
 
   try {
     dispatch(setLoading({ key: 'isTransactionsLoading', value: true }))
-    
-
     const { limit = 50, offset = 0, type } = params
 
     const queryParams = {
@@ -73,8 +71,6 @@ export const fetchCreditTransactions = (params = {}) => async (dispatch) => {
 export const purchaseCredits = (creditPlanId, paymentMethod = 'xendit') => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPurchaseLoading', value: true }))
-    
-
     const requestBody = {
         creditPlanId,
         paymentMethod
@@ -97,8 +93,6 @@ export const purchaseCredits = (creditPlanId, paymentMethod = 'xendit') => async
 export const deductCredits = (amount, description, sessionId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeductLoading', value: true }))
-    
-
     const requestBody = {
         amount,
         description,
@@ -125,8 +119,6 @@ export const deductCredits = (amount, description, sessionId) => async (dispatch
 export const fetchAllCreditPlans = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    
-
     const response = await getWithToken(`${Endpoints.creditPlans}`)
 
     dispatch(setPlans(response.data.data))
@@ -143,8 +135,6 @@ export const fetchAllCreditPlans = () => async (dispatch) => {
 export const fetchActiveCreditPlans = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isPlansLoading', value: true }))
-    
-
     // Use public endpoint for landing page (no auth required)
     const response = await getPublic(`${Endpoints.creditPlans}/active`)
 
@@ -163,8 +153,6 @@ export const fetchActiveCreditPlans = () => async (dispatch) => {
 export const createCreditPlan = (planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreatePlanLoading', value: true }))
-    
-
     const response = await postWithToken(
       `${Endpoints.creditPlans}`,
       planData,
@@ -172,9 +160,7 @@ export const createCreditPlan = (planData) => async (dispatch) => {
 
     dispatch(addPlan(response.data.data))
   } catch (err) {
-    handleApiError(err, dispatch)
-    
-  } finally {
+    handleApiError(err, dispatch)  } finally {
     dispatch(setLoading({ key: 'isCreatePlanLoading', value: false }))
   }
 }
@@ -185,8 +171,6 @@ export const createCreditPlan = (planData) => async (dispatch) => {
 export const updateCreditPlan = (planId, planData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdatePlanLoading', value: true }))
-    
-
     const response = await putWithToken(
       `${Endpoints.creditPlans}/${planId}`,
       planData,
@@ -205,8 +189,6 @@ export const updateCreditPlan = (planId, planData) => async (dispatch) => {
  */
 export const toggleCreditPlanStatus = (planId) => async (dispatch) => {
   try {
-    
-
     const response = await patchWithToken(
       `${Endpoints.creditPlans}/${planId}/toggle`,
       {},
@@ -260,8 +242,6 @@ export const fetchAllTransactions = (params = {}) => async (dispatch) => {
  */
 export const confirmPayment = (transactionId, status) => async (dispatch) => {
   try {
-    
-
     await postWithToken(
       Endpoints.credits.admin.confirm(transactionId),
       { status },

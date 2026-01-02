@@ -12,6 +12,9 @@ import { ToastContainer, Slide } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import GlobalErrorHandler from '@components/GlobalErrorHandler'
 import styled from 'styled-components'
+import { MantineProvider } from '@mantine/core'
+import '@mantine/core/styles.css'
+import '@mantine/dates/styles.css'
 
 const StyledToastContainer = styled(ToastContainer)`
   .Toastify__toast {
@@ -58,28 +61,30 @@ const AppRouter = () => useRoutes(appRoutes);
 
 function App() {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <Provider store={store}>
-            <Router>
-                <AxiosInterceptorSetup />
-                <Middleware />
-                <GlobalErrorHandler />
-                <AppRouter />
-                <GlobalStyles />
-                <StyledToastContainer
-                  position="top-center"
-                  autoClose={3000}
-                  hideProgressBar
-                  newestOnTop
-                  closeOnClick
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  transition={Slide}
-                />
-            </Router>
-        </Provider>
-    </GoogleOAuthProvider>
+    <MantineProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <Provider store={store}>
+              <Router>
+                  <AxiosInterceptorSetup />
+                  <Middleware />
+                  <GlobalErrorHandler />
+                  <AppRouter />
+                  <GlobalStyles />
+                  <StyledToastContainer
+                    position="top-center"
+                    autoClose={3000}
+                    hideProgressBar
+                    newestOnTop
+                    closeOnClick
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    transition={Slide}
+                  />
+              </Router>
+          </Provider>
+      </GoogleOAuthProvider>
+    </MantineProvider>
   )
 }
 

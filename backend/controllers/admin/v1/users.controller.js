@@ -1,8 +1,9 @@
 import { ValidationUtils } from "#utils/validationUtils";
 import { GetListUsersService } from "#services/users/getListUsersService";
 import { AddCreditService } from "#services/users/addCreditService";
-import { AddSubscriptionService } from "#services/users/addSubscriptionService";
+import { GetUserSubscriptionsService } from "#services/users/getUserSubscriptionsService";
 import { UserSerializer } from "#serializers/admin/v1/userSerializer";
+import { UserSubscriptionSerializer } from "#serializers/admin/v1/userSubscriptionSerializer";
 
 class UsersController {
   async index(req, res) {
@@ -23,6 +24,28 @@ class UsersController {
     });
   }
 
+  async show(req, res) {
+    ValidationUtils.validate_fields({
+      request: req,
+      requiredFields: ["id"],
+      optionalFields: [],
+      source: "params"
+    });
+
+    const userId = parseInt(req.params.id);
+    const { users } = await GetListUsersService.call({ userId });
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        error: "User not found"
+      });
+    }
+
+    res.status(200).json({
+      data: UserSerializer.serialize(users[0])
+    });
+  }
+
   async addCredit(req, res) {
     ValidationUtils.validate_fields({
       request: req,
@@ -38,24 +61,33 @@ class UsersController {
     });
   }
 
-  async addSubscription(req, res) {
+  async getSubscriptions(req, res) {
     ValidationUtils.validate_fields({
       request: req,
-      requiredFields: ["userId", "startDate", "endDate"],
-      optionalFields: [],
+      requiredFields: ["id"],
+      optionalFields: ["page", "perPage", "status"],
+      source: "params"
     });
-    await AddSubscriptionService.call(
-      req.body.userId,
-      req.body.startDate,
-      req.body.endDate
-    );
+
+    const userId = parseInt(req.params.id);
+    const { page, perPage, status } = req.query;
+
+    const { subscriptions, isLastPage } = await GetUserSubscriptionsService.call(userId, {
+      page,
+      perPage,
+      status
+    });
 
     res.status(200).json({
-      data: {
-        success: true,
+      data: UserSubscriptionSerializer.serialize(subscriptions),
+      pagination: {
+        page: parseInt(page) || 1,
+        perPage: parseInt(perPage) || 20,
+        isLastPage: isLastPage,
       },
     });
   }
+
 }
 
 export default new UsersController();

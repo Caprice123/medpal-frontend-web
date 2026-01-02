@@ -20,16 +20,14 @@ export class GetUserPurchaseHistoryService extends BaseService {
       planName: purchase.pricing_plan.name,
       bundleType: purchase.bundle_type,
       amountPaid: purchase.amount_paid,
-      creditsGranted: purchase.credits_granted,
       purchaseDate: purchase.purchase_date,
       paymentMethod: purchase.payment_method,
       paymentStatus: purchase.payment_status,
-      // Include subscription details if applicable
-      subscription: (purchase.bundle_type === 'subscription' || purchase.bundle_type === 'hybrid') ? {
-        startDate: purchase.subscription_start,
-        endDate: purchase.subscription_end,
-        status: purchase.subscription_status
-      } : null
+      // Pricing plan details
+      pricingPlan: {
+        creditsIncluded: purchase.pricing_plan.credits_included,
+        durationDays: purchase.pricing_plan.duration_days
+      }
     }))
   }
 }

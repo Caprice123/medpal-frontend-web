@@ -18,23 +18,22 @@ export class UserPurchaseSerializer {
         name: purchase.user.name,
         email: purchase.user.email
       } : null,
-      type: purchase.bundle_type,
-      amount: purchase.credits_granted,
+      bundleType: purchase.bundle_type,
       description: `Purchase: ${purchase.pricing_plan?.name || 'Unknown Plan'}`,
       paymentStatus: purchase.payment_status,
       paymentMethod: purchase.payment_method,
       paymentReference: purchase.payment_reference,
       amountPaid: purchase.amount_paid,
-      createdAt: purchase.purchase_date || purchase.created_at,
-      creditPlan: purchase.pricing_plan ? {
+      purchaseDate: purchase.purchase_date,
+      createdAt: purchase.created_at,
+      pricingPlan: purchase.pricing_plan ? {
         id: purchase.pricing_plan.id,
         name: purchase.pricing_plan.name,
         price: purchase.pricing_plan.price,
-        bundleType: purchase.pricing_plan.bundle_type
-      } : null,
-      subscriptionStart: purchase.subscription_start,
-      subscriptionEnd: purchase.subscription_end,
-      subscriptionStatus: purchase.subscription_status
+        bundleType: purchase.pricing_plan.bundle_type,
+        creditsIncluded: purchase.pricing_plan.credits_included,
+        durationDays: purchase.pricing_plan.duration_days
+      } : null
     }
   }
 }

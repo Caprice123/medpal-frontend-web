@@ -17,54 +17,79 @@ export class PurchasePricingPlanService extends BaseService {
     }
 
     // For Xendit payments, create purchase with pending status
+    // Create subscription with 'not_active' status
     // Credits will be granted after webhook confirms payment
     if (paymentMethod === 'xendit') {
-      const purchase = await prisma.user_purchases.create({
-        data: {
-          user_id: userId,
-          pricing_plan_id: pricingPlanId,
-          bundle_type: plan.bundle_type,
-          subscription_start: null, // Will be set after payment
-          subscription_end: null, // Will be set after payment
-          subscription_status: null, // Will be set after payment
-          credits_granted: plan.credits_included,
-          payment_status: 'pending',
-          payment_method: paymentMethod,
-          amount_paid: plan.price
-        },
-        include: {
-          pricing_plan: true
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. Create the purchase record with pending status
+        const purchase = await tx.user_purchases.create({
+          data: {
+            user_id: userId,
+            pricing_plan_id: pricingPlanId,
+            bundle_type: plan.bundle_type,
+            payment_status: 'pending',
+            payment_method: paymentMethod,
+            amount_paid: plan.price
+          },
+          include: {
+            pricing_plan: true
+          }
+        })
+
+        // 2. Create subscription record with 'not_active' status if plan includes subscription
+        if (plan.bundle_type === 'subscription' || plan.bundle_type === 'hybrid') {
+          // Check if user has an active subscription
+          const activeSubscription = await tx.user_subscriptions.findFirst({
+            where: {
+              user_id: userId,
+              end_date: { gte: new Date() },
+              status: 'active' // Only consider active subscriptions
+            },
+            orderBy: {
+              end_date: 'desc' // Get the latest ending subscription
+            }
+          })
+
+          let subscriptionStart
+          let subscriptionEnd
+
+          if (activeSubscription) {
+            // If user has active subscription, extend from current end date
+            subscriptionStart = activeSubscription.end_date
+            subscriptionEnd = new Date(subscriptionStart)
+            subscriptionEnd.setDate(subscriptionEnd.getDate() + (plan.duration_days || 30))
+          } else {
+            // If no active subscription, start from today
+            subscriptionStart = new Date()
+            subscriptionEnd = new Date(subscriptionStart)
+            subscriptionEnd.setDate(subscriptionEnd.getDate() + (plan.duration_days || 30))
+          }
+
+          await tx.user_subscriptions.create({
+            data: {
+              user_id: userId,
+              start_date: subscriptionStart,
+              end_date: subscriptionEnd,
+              status: 'not_active' // Mark as not_active until payment is confirmed
+            }
+          })
         }
+
+        return purchase
       })
 
-      return purchase
+      return result
     }
 
     // For manual/other payment methods, complete immediately
-    // Calculate subscription dates if needed
-    let subscriptionStart = null
-    let subscriptionEnd = null
-    let subscriptionStatus = null
-
-    if (plan.bundle_type === 'subscription' || plan.bundle_type === 'hybrid') {
-      subscriptionStart = new Date()
-      subscriptionEnd = new Date(subscriptionStart)
-      subscriptionEnd.setDate(subscriptionEnd.getDate() + (plan.duration_days || 30))
-      subscriptionStatus = 'active'
-    }
-
-    // Create purchase and add credits in a transaction
+    // Create purchase and properly populate all 4 tables in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create the purchase record
+      // 1. Create the purchase record (user_purchases table)
       const purchase = await tx.user_purchases.create({
         data: {
           user_id: userId,
           pricing_plan_id: pricingPlanId,
           bundle_type: plan.bundle_type,
-          subscription_start: subscriptionStart,
-          subscription_end: subscriptionEnd,
-          subscription_status: subscriptionStatus,
-          credits_granted: plan.credits_included,
           payment_status: 'completed',
           payment_method: paymentMethod,
           amount_paid: plan.price
@@ -74,7 +99,46 @@ export class PurchasePricingPlanService extends BaseService {
         }
       })
 
-      // Add credits to user's balance if plan includes credits
+      // 2. Create subscription record if plan includes subscription (user_subscriptions table)
+      if (plan.bundle_type === 'subscription' || plan.bundle_type === 'hybrid') {
+        // Check if user has an active subscription
+        const activeSubscription = await tx.user_subscriptions.findFirst({
+          where: {
+            user_id: userId,
+            end_date: { gte: new Date() },
+            status: 'active' // Only consider active subscriptions
+          },
+          orderBy: {
+            end_date: 'desc' // Get the latest ending subscription
+          }
+        })
+
+        let subscriptionStart
+        let subscriptionEnd
+
+        if (activeSubscription) {
+          // If user has active subscription, extend from current end date
+          subscriptionStart = activeSubscription.end_date
+          subscriptionEnd = new Date(subscriptionStart)
+          subscriptionEnd.setDate(subscriptionEnd.getDate() + (plan.duration_days || 30))
+        } else {
+          // If no active subscription, start from today
+          subscriptionStart = new Date()
+          subscriptionEnd = new Date(subscriptionStart)
+          subscriptionEnd.setDate(subscriptionEnd.getDate() + (plan.duration_days || 30))
+        }
+
+        await tx.user_subscriptions.create({
+          data: {
+            user_id: userId,
+            start_date: subscriptionStart,
+            end_date: subscriptionEnd,
+            status: 'active' // Payment already confirmed for manual purchases
+          }
+        })
+      }
+
+      // 3. Add credits to user's balance if plan includes credits (user_credits table)
       if (plan.credits_included > 0) {
         // Find or create user credits
         let userCredit = await tx.user_credits.findUnique({
@@ -102,7 +166,7 @@ export class PurchasePricingPlanService extends BaseService {
           }
         })
 
-        // Create credit transaction record
+        // 4. Create credit transaction ledger record (credit_transactions table)
         await tx.credit_transactions.create({
           data: {
             user_id: userId,

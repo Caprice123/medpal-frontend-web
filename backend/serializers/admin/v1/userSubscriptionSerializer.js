@@ -11,8 +11,12 @@ export class UserSubscriptionSerializer {
 
     static serializeOne(userSubscription) {
         return {
+            id: userSubscription.id,
             startDate: userSubscription.start_date,
             endDate: userSubscription.end_date,
+            status: userSubscription.status,
+            isCurrentlyActive: userSubscription.isCurrentlyActive || false,
+            createdAt: userSubscription.created_at,
         }
     }
 }

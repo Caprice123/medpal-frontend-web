@@ -202,34 +202,83 @@ async function handleExpiredInvoice(transaction) {
 async function handlePaidPurchase(purchase, paymentDetails) {
   try {
     const { paidAmount, paymentMethod, paymentChannel, paidAt, invoiceId } = paymentDetails
+    const creditsIncluded = purchase.pricing_plan?.credits_included || 0
 
-    // Calculate subscription dates if needed
-    let subscriptionStart = null
-    let subscriptionEnd = null
-    let subscriptionStatus = null
-
-    if (purchase.bundle_type === 'subscription' || purchase.bundle_type === 'hybrid') {
-      subscriptionStart = new Date()
-      subscriptionEnd = new Date(subscriptionStart)
-      subscriptionEnd.setDate(subscriptionEnd.getDate() + (purchase.pricing_plan.duration_days || 30))
-      subscriptionStatus = 'active'
-    }
-
-    // Update purchase and grant credits in a transaction
+    // Properly populate all 4 tables in a transaction
     await prisma.$transaction(async (tx) => {
-      // Update purchase record to completed
+      // 1. Update purchase record to completed (user_purchases table)
       await tx.user_purchases.update({
         where: { id: purchase.id },
         data: {
-          payment_status: 'completed',
-          subscription_start: subscriptionStart,
-          subscription_end: subscriptionEnd,
-          subscription_status: subscriptionStatus
+          payment_status: 'completed'
         }
       })
 
-      // Add credits to user's balance if plan includes credits
-      if (purchase.credits_granted > 0) {
+      // 2. Activate subscription if plan includes subscription (user_subscriptions table)
+      // Subscription was already created with 'not_active' status when purchase was initiated
+      if (purchase.bundle_type === 'subscription' || purchase.bundle_type === 'hybrid') {
+        // Find the pending subscription created for this user
+        // We find the most recent 'not_active' subscription for this user
+        const pendingSubscription = await tx.user_subscriptions.findFirst({
+          where: {
+            user_id: purchase.user_id,
+            status: 'not_active'
+          },
+          orderBy: {
+            created_at: 'desc' // Get the most recently created pending subscription
+          }
+        })
+
+        if (pendingSubscription) {
+          // Activate the pending subscription
+          await tx.user_subscriptions.update({
+            where: { id: pendingSubscription.id },
+            data: {
+              status: 'active' // Activate the subscription now that payment is confirmed
+            }
+          })
+        } else {
+          // Fallback: If no pending subscription found (shouldn't happen in normal flow)
+          // Create subscription with active status
+          console.warn(`No pending subscription found for user ${purchase.user_id}, creating new active subscription`)
+
+          const activeSubscription = await tx.user_subscriptions.findFirst({
+            where: {
+              user_id: purchase.user_id,
+              end_date: { gte: new Date() },
+              status: 'active'
+            },
+            orderBy: {
+              end_date: 'desc'
+            }
+          })
+
+          let subscriptionStart
+          let subscriptionEnd
+
+          if (activeSubscription) {
+            subscriptionStart = activeSubscription.end_date
+            subscriptionEnd = new Date(subscriptionStart)
+            subscriptionEnd.setDate(subscriptionEnd.getDate() + (purchase.pricing_plan.duration_days || 30))
+          } else {
+            subscriptionStart = new Date()
+            subscriptionEnd = new Date(subscriptionStart)
+            subscriptionEnd.setDate(subscriptionEnd.getDate() + (purchase.pricing_plan.duration_days || 30))
+          }
+
+          await tx.user_subscriptions.create({
+            data: {
+              user_id: purchase.user_id,
+              start_date: subscriptionStart,
+              end_date: subscriptionEnd,
+              status: 'active'
+            }
+          })
+        }
+      }
+
+      // 3. Add credits to user's balance if plan includes credits (user_credits table)
+      if (creditsIncluded > 0) {
         // Find or create user credits
         let userCredit = await tx.user_credits.findUnique({
           where: { user_id: purchase.user_id }
@@ -245,7 +294,7 @@ async function handlePaidPurchase(purchase, paymentDetails) {
         }
 
         const balanceBefore = userCredit.balance
-        const balanceAfter = Number(balanceBefore) + Number(purchase.credits_granted)
+        const balanceAfter = Number(balanceBefore) + Number(creditsIncluded)
 
         // Update balance
         await tx.user_credits.update({
@@ -256,13 +305,13 @@ async function handlePaidPurchase(purchase, paymentDetails) {
           }
         })
 
-        // Create credit transaction record
+        // 4. Create credit transaction ledger record (credit_transactions table)
         await tx.credit_transactions.create({
           data: {
             user_id: purchase.user_id,
             user_credit_id: userCredit.id,
             type: purchase.bundle_type === 'credits' ? 'purchase' : 'subscription_bonus',
-            amount: purchase.credits_granted,
+            amount: creditsIncluded,
             balance_before: balanceBefore,
             balance_after: balanceAfter,
             description: `Credits from ${purchase.pricing_plan.name} (Paid via ${paymentChannel})`,
@@ -274,7 +323,7 @@ async function handlePaidPurchase(purchase, paymentDetails) {
       }
     })
 
-    console.log(`Payment completed for purchase ${purchase.id}. Granted ${purchase.credits_granted} credits to user ${purchase.user_id}`)
+    console.log(`Payment completed for purchase ${purchase.id}. Granted ${creditsIncluded} credits to user ${purchase.user_id}`)
   } catch (error) {
     console.error('Error handling paid purchase:', error)
     throw error
@@ -286,12 +335,36 @@ async function handlePaidPurchase(purchase, paymentDetails) {
  */
 async function handleExpiredPurchase(purchase) {
   try {
-    // For expired invoices, we can either delete the purchase or mark it as failed
-    // Deleting makes sense since no payment was made
-    await prisma.user_purchases.update({
-      where: { id: purchase.id },
-      data: {
-        payment_status: 'failed'
+    // For expired invoices, mark purchase as failed and expire any pending subscription
+    await prisma.$transaction(async (tx) => {
+      // 1. Mark purchase as failed
+      await tx.user_purchases.update({
+        where: { id: purchase.id },
+        data: {
+          payment_status: 'failed'
+        }
+      })
+
+      // 2. Mark any pending subscription as expired
+      if (purchase.bundle_type === 'subscription' || purchase.bundle_type === 'hybrid') {
+        const pendingSubscription = await tx.user_subscriptions.findFirst({
+          where: {
+            user_id: purchase.user_id,
+            status: 'not_active'
+          },
+          orderBy: {
+            created_at: 'desc'
+          }
+        })
+
+        if (pendingSubscription) {
+          await tx.user_subscriptions.update({
+            where: { id: pendingSubscription.id },
+            data: {
+              status: 'expired'
+            }
+          })
+        }
       }
     })
 

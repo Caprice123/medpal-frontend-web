@@ -385,12 +385,14 @@ model user_subscriptions {
   user_id    Int
   start_date DateTime
   end_date   DateTime
+  status     String   @default("active") // 'active', 'not_active', 'expired'
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
   user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id, start_date, end_date])
+  @@index([status])
 }
 
 model user_credits {
@@ -501,16 +503,8 @@ model user_purchases {
   id              Int      @id @default(autoincrement())
   user_id         Int
   pricing_plan_id Int
-  bundle_type     String // credits, subscription, hybrid
+  bundle_type     String   // credits, subscription, hybrid
   purchase_date   DateTime @default(now())
-
-  // Subscription fields (for subscription/hybrid bundles)
-  subscription_start  DateTime?
-  subscription_end    DateTime?
-  subscription_status String? // active, expired, cancelled
-
-  // Credits fields
-  credits_granted Int @default(0)
 
   // Payment fields
   payment_status    String  @default("completed")
@@ -527,8 +521,7 @@ model user_purchases {
   @@index([user_id])
   @@index([pricing_plan_id])
   @@index([bundle_type])
-  @@index([subscription_status])
-  @@index([subscription_end])
+  @@index([payment_status])
 }
 
 // ============= Features Configuration =============

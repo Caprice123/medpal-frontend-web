@@ -11,9 +11,11 @@ router.use(requireAdmin)
 
 // Get all users
 router.get('/', asyncHandler(usersController.index.bind(usersController)))
+// Get single user details
+router.get('/:id', asyncHandler(usersController.show.bind(usersController)))
+// Get user subscriptions with pagination (supports status filter: 'active', 'all', etc.)
+router.get('/:id/subscriptions', asyncHandler(usersController.getSubscriptions.bind(usersController)))
 // Adjust user credits
 router.put('/credits', asyncHandler(usersController.addCredit.bind(usersController)))
-// Adjust user subscriptions
-router.put('/subscriptions', asyncHandler(usersController.addSubscription.bind(usersController)))
 
 export default router

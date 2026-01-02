@@ -7,21 +7,17 @@ import moment from 'moment-timezone'
  */
 export class GetUserStatusService extends BaseService {
   static async call(userId) {
-    // Get active subscription
-    const activeSubscription = await prisma.user_purchases.findFirst({
+    // Get active subscription from user_subscriptions table
+    const activeSubscription = await prisma.user_subscriptions.findFirst({
       where: {
         user_id: userId,
-        bundle_type: { in: ['subscription', 'hybrid'] },
-        subscription_status: 'active',
-        subscription_end: {
+        status: 'active',
+        end_date: {
           gte: new Date()
         }
       },
-      include: {
-        pricing_plan: true
-      },
       orderBy: {
-        subscription_end: 'desc'
+        end_date: 'desc'
       }
     })
 
@@ -36,11 +32,10 @@ export class GetUserStatusService extends BaseService {
       hasActiveSubscription: !!activeSubscription,
       subscription: activeSubscription ? {
         id: activeSubscription.id,
-        planName: activeSubscription.pricing_plan.name,
-        bundleType: activeSubscription.bundle_type,
-        startDate: activeSubscription.subscription_start,
-        endDate: activeSubscription.subscription_end,
-        daysRemaining: Math.ceil((new Date(activeSubscription.subscription_end) - new Date()) / (1000 * 60 * 60 * 24))
+        startDate: activeSubscription.start_date,
+        endDate: activeSubscription.end_date,
+        status: activeSubscription.status,
+        daysRemaining: Math.ceil((new Date(activeSubscription.end_date) - new Date()) / (1000 * 60 * 60 * 24))
       } : null,
       creditBalance: parseFloat(creditBalance) || 0,
       userId: userId
@@ -59,6 +54,7 @@ export class HasActiveSubscriptionService extends BaseService {
     const subscription = await prisma.user_subscriptions.findFirst({
       where: {
         user_id: userId,
+        status: 'active',
         start_date: {
             lte: moment(new Date()).toDate()
         },

@@ -36,6 +36,7 @@ export default {
     },
     tagGroups: "/admin/v1/tag-groups",
     users: "/admin/v1/users",
+    subscriptions: "/admin/v1/subscriptions",
     calculators: {
         api: "/api/v1/calculators",
         admin: {
