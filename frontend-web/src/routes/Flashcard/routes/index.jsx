@@ -1,5 +1,14 @@
-import FlashcardListPage from '../pages/List';
-import FlashcardDetailPage from '../pages/Detail';
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const FlashcardListPage = lazy(() => import('../pages/List'));
+const FlashcardDetailPage = lazy(() => import('../pages/Detail'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Flashcards..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class FlashcardRoute {
     static moduleRoute = "/flashcards"
@@ -8,6 +17,6 @@ export class FlashcardRoute {
 }
 
 export const flashcardRoutes = [
-    { path: FlashcardRoute.initialRoute, element: <FlashcardListPage /> },
-    { path: FlashcardRoute.detailRoute, element: <FlashcardDetailPage /> },
+    { path: FlashcardRoute.initialRoute, element: withSuspense(<FlashcardListPage />) },
+    { path: FlashcardRoute.detailRoute, element: withSuspense(<FlashcardDetailPage />) },
 ];

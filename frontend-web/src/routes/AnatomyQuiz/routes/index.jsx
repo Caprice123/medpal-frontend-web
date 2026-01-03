@@ -1,5 +1,14 @@
-import AnatomyQuizList from '../pages/List';
-import AnatomyQuizDetail from '../pages/Detail';
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const AnatomyQuizList = lazy(() => import('../pages/List'));
+const AnatomyQuizDetail = lazy(() => import('../pages/Detail'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Anatomy Quiz..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class AnatomyQuizRoute {
     static moduleRoute = "/anatomy-quiz"
@@ -8,6 +17,6 @@ export class AnatomyQuizRoute {
 }
 
 export const anatomyQuizRoutes = [
-    { path: AnatomyQuizRoute.initialRoute, element: <AnatomyQuizList /> },
-    { path: AnatomyQuizRoute.detailRoute, element: <AnatomyQuizDetail /> },
+    { path: AnatomyQuizRoute.initialRoute, element: withSuspense(<AnatomyQuizList />) },
+    { path: AnatomyQuizRoute.detailRoute, element: withSuspense(<AnatomyQuizDetail />) },
 ];

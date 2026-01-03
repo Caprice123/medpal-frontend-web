@@ -1,5 +1,14 @@
-import SummaryNotesList from '../pages/List';
-import SummaryNotesDetail from '../pages/Detail';
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const SummaryNotesList = lazy(() => import('../pages/List'));
+const SummaryNotesDetail = lazy(() => import('../pages/Detail'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Summary Notes..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class SummaryNotesRoute {
     static moduleRoute = "/summary-notes"
@@ -8,6 +17,6 @@ export class SummaryNotesRoute {
 }
 
 export const summaryNotesRoutes = [
-    { path: SummaryNotesRoute.initialRoute, element: <SummaryNotesList /> },
-    { path: SummaryNotesRoute.detailRoute, element: <SummaryNotesDetail /> },
+    { path: SummaryNotesRoute.initialRoute, element: withSuspense(<SummaryNotesList />) },
+    { path: SummaryNotesRoute.detailRoute, element: withSuspense(<SummaryNotesDetail />) },
 ];

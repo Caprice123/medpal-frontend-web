@@ -1,5 +1,14 @@
-import SkripsiList from '../pages/List'
-import SkripsiEditor from '../pages/Editor'
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const SkripsiList = lazy(() => import('../pages/List'));
+const SkripsiEditor = lazy(() => import('../pages/Editor'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Skripsi Builder..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class SkripsiRoute {
     static moduleRoute = "/skripsi/sets"
@@ -8,6 +17,6 @@ export class SkripsiRoute {
 }
 
 export const skripsiRoutes = [
-    { path: SkripsiRoute.initialRoute, element: <SkripsiList /> },
-    { path: SkripsiRoute.editorRoute, element: <SkripsiEditor /> },
+    { path: SkripsiRoute.initialRoute, element: withSuspense(<SkripsiList />) },
+    { path: SkripsiRoute.editorRoute, element: withSuspense(<SkripsiEditor />) },
 ]

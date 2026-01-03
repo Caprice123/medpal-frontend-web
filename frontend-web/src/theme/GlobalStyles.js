@@ -32,9 +32,5 @@ export const GlobalStyles = createGlobalStyle`
   a {
     color: ${colors.primary.main};
     text-decoration: none;
-
-    &:hover {
-      color: ${colors.primary.hover};
-    }
   }
 `

@@ -1,5 +1,14 @@
-import ExerciseListPage from '../pages/List';
-import ExerciseDetailPage from '../pages/Detail';
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const ExerciseListPage = lazy(() => import('../pages/List'));
+const ExerciseDetailPage = lazy(() => import('../pages/Detail'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Exercises..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class ExerciseRoute {
     static moduleRoute = "/exercises"
@@ -8,6 +17,6 @@ export class ExerciseRoute {
 }
 
 export const exerciseRoutes = [
-    { path: ExerciseRoute.initialRoute, element: <ExerciseListPage /> },
-    { path: ExerciseRoute.detailRoute, element: <ExerciseDetailPage /> },
+    { path: ExerciseRoute.initialRoute, element: withSuspense(<ExerciseListPage />) },
+    { path: ExerciseRoute.detailRoute, element: withSuspense(<ExerciseDetailPage />) },
 ];

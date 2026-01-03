@@ -1,5 +1,14 @@
-import MultipleChoiceTopicList from '../pages/List';
-import MultipleChoiceTopicDetail from '../pages/Detail';
+import { lazy, Suspense } from 'react';
+import PageLoader from '@components/PageLoader';
+
+const MultipleChoiceTopicList = lazy(() => import('../pages/List'));
+const MultipleChoiceTopicDetail = lazy(() => import('../pages/Detail'));
+
+const withSuspense = (Component) => (
+    <Suspense fallback={<PageLoader fullScreen={false} text="Loading Multiple Choice..." />}>
+        {Component}
+    </Suspense>
+);
 
 export class MultipleChoiceRoute {
     static moduleRoute = "/multiple-choice"
@@ -8,6 +17,6 @@ export class MultipleChoiceRoute {
 }
 
 export const multipleChoiceRoutes = [
-    { path: MultipleChoiceRoute.initialRoute, element: <MultipleChoiceTopicList /> },
-    { path: MultipleChoiceRoute.detailRoute, element: <MultipleChoiceTopicDetail /> },
+    { path: MultipleChoiceRoute.initialRoute, element: withSuspense(<MultipleChoiceTopicList />) },
+    { path: MultipleChoiceRoute.detailRoute, element: withSuspense(<MultipleChoiceTopicDetail />) },
 ];
