@@ -1,17 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
+import 'react-photo-view/dist/react-photo-view.css'
 import {
   PlayerContainer,
+  Header,
+  HeaderTop,
+  ProgressBadge,
+  BackButton,
+  TopicInfo,
+  TagList,
+  Tag,
+  ProgressBarContainer,
+  ProgressBarWrapper,
   ProgressBar,
-  ProgressText,
-  ProgressBarBg,
   ProgressBarFill,
+  ProgressPercentage,
   CardContainer,
   Flashcard,
   CardFront,
   CardBack,
   CardLabel,
   CardContent,
+  CardContentInner,
   CardImage,
   AnswerSection,
   AnswerLabel,
@@ -19,11 +30,7 @@ import {
   ShowAnswerSection,
   ShowAnswerButton,
   NavigationButtons,
-  PrimaryButton,
-  SecondaryButton,
-  CardDots,
-  Dot,
-  BackButton,
+  NavButton,
   FeedbackSection,
   FeedbackBadge,
   FeedbackText,
@@ -43,9 +50,39 @@ const FlashcardPlayer = ({ onSubmit, onBack }) => {
   const [startTime, setStartTime] = useState(Date.now())
 
   const { topicSnapshot } = useSelector(state => state.session)
+  const { tags } = useSelector(state => state.tags)
+
+  // Get tag group IDs
+  const universityGroupId = useMemo(() => {
+    return tags?.find(tag => tag.name === 'university')?.id
+  }, [tags])
+
+  const semesterGroupId = useMemo(() => {
+    return tags?.find(tag => tag.name === 'semester')?.id
+  }, [tags])
+
+  // Get tag groups using tagGroupId
+  const universityTags = useMemo(() => {
+    return topicSnapshot?.tags?.filter(tag => tag.tagGroupId === universityGroupId) || []
+  }, [topicSnapshot?.tags, universityGroupId])
+
+  const semesterTags = useMemo(() => {
+    return topicSnapshot?.tags?.filter(tag => tag.tagGroupId === semesterGroupId) || []
+  }, [topicSnapshot?.tags, semesterGroupId])
 
   // Cards are already sorted by spaced repetition from backend
   const cards = topicSnapshot?.cards || []
+
+  // Early return if no cards
+  if (!cards || cards.length === 0) {
+    return (
+      <PlayerContainer>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>No cards available</p>
+        </div>
+      </PlayerContainer>
+    )
+  }
 
   const currentCard = cards[currentCardIndex]
   const isLastCard = currentCardIndex === cards.length - 1
@@ -142,53 +179,88 @@ const FlashcardPlayer = ({ onSubmit, onBack }) => {
   }
 
   const handleComplete = async (allAnswers) => {
-    if (window.confirm('Submit all your answers. Your progress will be saved for spaced repetition.')) {
-      onSubmit(allAnswers)
-    }
+    onSubmit(allAnswers)
   }
 
-  if (!currentCard) {
-    return <div>No cards available</div>
-  }
+  const progress = ((currentCardIndex + 1) / cards.length) * 100
 
   return (
-    <PlayerContainer>
-      {/* Back Button */}
-      <BackButton onClick={onBack}>
-        ← Kembali ke Daftar Deck
-      </BackButton>
+    <PhotoProvider>
+      <PlayerContainer>
+        {/* Header with Progress */}
+        <Header>
+        <HeaderTop>
+          <BackButton onClick={onBack}>
+            ← Kembali
+          </BackButton>
+          <ProgressBadge>
+            Card {currentCardIndex + 1}/{cards.length}
+          </ProgressBadge>
+        </HeaderTop>
 
-      {/* Progress Bar */}
-      <ProgressBar>
-        <ProgressText>
-          Card {currentCardIndex + 1} / {cards.length}
-        </ProgressText>
-        <ProgressBarBg>
-          <ProgressBarFill
-            progress={((currentCardIndex + 1) / cards.length) * 100}
-          />
-        </ProgressBarBg>
-      </ProgressBar>
+        <TopicInfo>
+          <h2>🎴 {topicSnapshot?.title || 'Flashcard Deck'}</h2>
+          {topicSnapshot?.description && <p>{topicSnapshot.description}</p>}
+
+          {/* University Tags */}
+          {universityTags.length > 0 && (
+            <TagList>
+              {universityTags.map((tag) => (
+                <Tag key={tag.id} university>
+                  🏛️ {tag.name}
+                </Tag>
+              ))}
+            </TagList>
+          )}
+
+          {/* Semester Tags */}
+          {semesterTags.length > 0 && (
+            <TagList>
+              {semesterTags.map((tag) => (
+                <Tag key={tag.id} semester>
+                  📚 {tag.name}
+                </Tag>
+              ))}
+            </TagList>
+          )}
+        </TopicInfo>
+
+        <ProgressBarContainer>
+          <ProgressBarWrapper>
+            <ProgressBar>
+              <ProgressBarFill progress={progress} />
+            </ProgressBar>
+            <ProgressPercentage>{Math.round(progress)}%</ProgressPercentage>
+          </ProgressBarWrapper>
+        </ProgressBarContainer>
+      </Header>
 
       {/* Card Container */}
       <CardContainer>
         <Flashcard flipped={isFlipped}>
           {/* Card Front */}
           <CardFront>
-            <CardLabel>Question</CardLabel>
             <CardContent>
-              {currentCard.imageUrl && (
-                <CardImage src={currentCard.imageUrl} alt="Flashcard image" />
-              )}
-              <p>{currentCard.front || currentCard.front_text}</p>
+              <CardContentInner>
+                {currentCard.imageUrl && (
+                  <PhotoView src={currentCard.imageUrl}>
+                    <CardImage
+                      src={currentCard.imageUrl}
+                      alt="Flashcard image"
+                    />
+                  </PhotoView>
+                )}
+                <p>{currentCard.front || currentCard.front_text}</p>
+              </CardContentInner>
             </CardContent>
           </CardFront>
 
           {/* Card Back */}
           <CardBack>
-            <CardLabel>Correct Answer</CardLabel>
             <CardContent>
-              <p>{currentCard.back || currentCard.back_text}</p>
+              <CardContentInner>
+                <p>{currentCard.back || currentCard.back_text}</p>
+              </CardContentInner>
             </CardContent>
           </CardBack>
         </Flashcard>
@@ -268,30 +340,34 @@ const FlashcardPlayer = ({ onSubmit, onBack }) => {
 
       {/* Navigation Buttons */}
       <NavigationButtons>
-        <SecondaryButton
+        <NavButton
+          variant="ghost"
           onClick={handlePrevious}
           disabled={currentCardIndex === 0}
         >
           ← Sebelumnya
-        </SecondaryButton>
+        </NavButton>
 
         {isLastCard ? (
-          <PrimaryButton
+          <NavButton
+            variant="primary"
             onClick={() => handleNext()}
             disabled={!showFeedback}
           >
             Selesai
-          </PrimaryButton>
+          </NavButton>
         ) : (
-          <PrimaryButton
+          <NavButton
+            variant="primary"
             onClick={handleNext}
             disabled={!showFeedback}
           >
             Selanjutnya →
-          </PrimaryButton>
+          </NavButton>
         )}
       </NavigationButtons>
-    </PlayerContainer>
+      </PlayerContainer>
+    </PhotoProvider>
   )
 }
 

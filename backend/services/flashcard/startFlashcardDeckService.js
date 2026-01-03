@@ -165,6 +165,11 @@ export class StartFlashcardDeckService extends BaseService {
         id: deck.id,
         title: deck.title || 'Untitled',
         description: deck.description || '',
+        tags: (deck.flashcard_deck_tags || []).map(t => ({
+          id: t.tags.id,
+          name: t.tags.name,
+          tagGroupId: t.tags.tag_group_id
+        })),
         cards: sortedCards.map((card, index) => ({
           id: card.id,
           front: card.front || '',

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
 import { startFlashcardDeck, submitFlashcardProgress, clearSession } from '@store/session/action'
+import { fetchTags } from '@store/tags/action'
+import { actions as tagActions } from '@store/tags/reducer'
 import { FlashcardRoute } from '../../routes'
 
 export const useFlashcardDetail = () => {
@@ -20,6 +22,10 @@ export const useFlashcardDetail = () => {
 
         // Clear previous session data
         dispatch(clearSession())
+
+        // Load tags for displaying university and semester tags
+        dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
+        dispatch(fetchTags())
 
         // Start flashcard deck
         await dispatch(startFlashcardDeck(id))
@@ -40,8 +46,6 @@ export const useFlashcardDetail = () => {
     try {
       // Submit answers to update spaced repetition data
       await dispatch(submitFlashcardProgress(id, answers))
-
-      alert('Sesi selesai! Progress Anda telah disimpan.')
 
       // Navigate back to list
       navigate(FlashcardRoute.initialRoute)

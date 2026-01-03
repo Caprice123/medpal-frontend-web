@@ -4,6 +4,11 @@ export class FlashcardDeckSerializer {
       id: deck.id,
       title: deck.title,
       description: deck.description,
+      tags: (deck.tags || []).map(t => ({
+        id: t.id,
+        name: t.name,
+        tagGroupId: t.tagGroupId
+      })),
       cards: (deck.cards || []).map((card, index) => ({
         id: card.id,
         front: card.front,
