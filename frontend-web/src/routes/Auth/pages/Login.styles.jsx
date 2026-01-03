@@ -36,29 +36,27 @@ export const BackButton = styled(Link)`
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-  color: white;
+  background: white;
+  color: #374151;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
   font-weight: 500;
-  padding: 0.625rem 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   z-index: 100;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateX(-4px);
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 
   @media (max-width: 968px) {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.875rem;
     top: 1rem;
     left: 1rem;
   }

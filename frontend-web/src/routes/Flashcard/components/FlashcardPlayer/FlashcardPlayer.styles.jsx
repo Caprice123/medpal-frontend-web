@@ -58,22 +58,18 @@ export const TopicInfo = styled.div`
 `
 
 export const BackButton = styled.button`
-  background: none;
-  border: none;
-  color: ${colors.text.secondary};
-  font-size: 0.875rem;
-  font-weight: 600;
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
 
   &:hover {
-    color: ${colors.text.primary};
-    background: ${colors.neutral.gray100};
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 `
 

@@ -13,6 +13,9 @@ import {
   Content,
   NoteContainer,
   NoteHeader,
+  HeaderTop,
+  BackButton,
+  TopicInfo,
   NoteTitle,
   NoteDescription,
   TagList,
@@ -81,40 +84,44 @@ const SummaryNotesDetail = () => {
   return (
     <Container>
       <Content>
+        <NoteHeader>
+          <HeaderTop>
+            <BackButton onClick={handleBack}>
+              ← Kembali
+            </BackButton>
+          </HeaderTop>
+
+          <TopicInfo>
+            <h2>📝 {note.title}</h2>
+            {note.description && (
+              <p>{note.description}</p>
+            )}
+
+            {/* University Tags */}
+            {note.universityTags && note.universityTags.length > 0 && (
+              <TagList>
+                {note.universityTags.map((tag) => (
+                  <Tag key={tag.id} university>
+                    🏛️ {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
+
+            {/* Semester Tags */}
+            {note.semesterTags && note.semesterTags.length > 0 && (
+              <TagList>
+                {note.semesterTags.map((tag) => (
+                  <Tag key={tag.id} semester>
+                    📚 {tag.name}
+                  </Tag>
+                ))}
+              </TagList>
+            )}
+          </TopicInfo>
+        </NoteHeader>
+
         <NoteContainer>
-          <NoteHeader>
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              style={{ minWidth: '44px', padding: '0.5rem 1rem' }}
-            >
-              ← Back
-            </Button>
-            <div style={{ flex: 1, marginLeft: '1rem' }}>
-              <NoteTitle>{note.title}</NoteTitle>
-              {note.description && (
-                <NoteDescription>{note.description}</NoteDescription>
-              )}
-            </div>
-          </NoteHeader>
-
-          {/* Tags Section */}
-          {((note.universityTags && note.universityTags.length > 0) ||
-            (note.semesterTags && note.semesterTags.length > 0)) && (
-            <TagList>
-              {note.universityTags?.map((tag) => (
-                <Tag key={tag.id} university>
-                  🏛️ {tag.name}
-                </Tag>
-              ))}
-              {note.semesterTags?.map((tag) => (
-                <Tag key={tag.id} semester>
-                  📚 {tag.name}
-                </Tag>
-              ))}
-            </TagList>
-          )}
-
           {/* Content Section */}
           <ContentSection>
             <BlockNoteEditor
