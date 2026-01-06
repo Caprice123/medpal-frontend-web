@@ -17,6 +17,8 @@ import TabBar from './components/TabBar'
 import ChatPanel from './components/ChatPanel'
 import EditorPanel from './components/EditorPanel'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+
 const SkripsiEditor = () => {
   const { setId } = useParams()
   const dispatch = useAppDispatch()
@@ -32,7 +34,8 @@ const SkripsiEditor = () => {
   const handleImageUpload = useCallback(async (file) => {
     try {
       const result = await dispatch(upload(file, 'skripsi-editor'))
-      return result.url
+      // Use permanent blob URL instead of presigned URL so images persist indefinitely
+      return `${API_BASE_URL}/api/v1/blobs/${result.blobId}`
     } catch (error) {
       console.error('Image upload failed:', error)
       throw error
@@ -51,8 +54,11 @@ const SkripsiEditor = () => {
         types: ['heading', 'paragraph'],
       }),
       Image.configure({
-        inline: true,
+        inline: false,
         allowBase64: false,
+        HTMLAttributes: {
+          class: 'editor-image',
+        },
       }),
     ],
     content: '',
@@ -188,7 +194,14 @@ const SkripsiEditor = () => {
           isSendingMessage={isSendingMessage}
         />
 
-        <EditorPanel editor={editor} onImageUpload={handleImageUpload} />
+        <EditorPanel
+          editor={editor}
+          onImageUpload={handleImageUpload}
+          hasUnsavedChanges={hasUnsavedChanges}
+          isSavingContent={isSavingContent}
+          onSave={handleSave}
+          onExportWord={handleExportWord}
+        />
       </EditorArea>
     </Container>
   )

@@ -4,6 +4,10 @@ export const Container = styled.div`
   min-height: calc(100vh - 63px);
   background: #f0fdfa;
   padding: 40px 20px;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+  }
 `
 
 export const ContentWrapper = styled.div`
@@ -16,6 +20,12 @@ export const Header = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 40px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
 `
 
 export const HeaderLeft = styled.div`
@@ -27,12 +37,20 @@ export const Title = styled.h1`
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `
 
 export const Subtitle = styled.p`
   font-size: 16px;
   color: #6b7280;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
 `
 
 export const CreateButton = styled.button`
@@ -64,6 +82,12 @@ export const CreateButton = styled.button`
     cursor: not-allowed;
     transform: none;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
 `
 
 export const SetsList = styled.div`
@@ -86,6 +110,13 @@ export const SetCard = styled.div`
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
 `
 
 export const SetInfo = styled.div`
@@ -97,6 +128,10 @@ export const SetTitle = styled.h3`
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `
 
 export const SetMeta = styled.div`
@@ -104,6 +139,12 @@ export const SetMeta = styled.div`
   gap: 16px;
   font-size: 13px;
   color: #6b7280;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 `
 
 export const MetaItem = styled.span``
@@ -112,6 +153,11 @@ export const SetActions = styled.div`
   display: flex;
   gap: 12px;
   align-items: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 0.5rem;
+  }
 `
 
 export const OpenButton = styled.button`
@@ -131,6 +177,12 @@ export const OpenButton = styled.button`
 
   &:active {
     transform: scale(0.98);
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
   }
 `
 
@@ -162,6 +214,10 @@ export const EmptyState = styled.div`
   padding: 60px 40px;
   text-align: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    padding: 2.5rem 1.5rem;
+  }
 `
 
 export const EmptyIcon = styled.div`

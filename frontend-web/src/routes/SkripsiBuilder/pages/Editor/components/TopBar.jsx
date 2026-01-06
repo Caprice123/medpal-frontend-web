@@ -2,7 +2,7 @@ import React, { useState, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '@store/store'
 import { updateSetInfo } from '@store/skripsi/action'
-import { FaArrowLeft, FaSave, FaFileWord, FaEdit, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaArrowLeft, FaEdit, FaCheck, FaTimes, FaSave, FaFileWord } from 'react-icons/fa'
 import {
   TopBar as StyledTopBar,
   BackButton,
@@ -22,10 +22,6 @@ const TopBar = memo(({ currentSet, hasUnsavedChanges, isSavingContent, onSave, o
   const [editedTitle, setEditedTitle] = useState('')
 
   const handleBackClick = () => {
-    if (hasUnsavedChanges) {
-      const confirm = window.confirm('Anda memiliki perubahan yang belum disimpan. Lanjutkan?')
-      if (!confirm) return
-    }
     navigate('/skripsi/sets')
   }
 

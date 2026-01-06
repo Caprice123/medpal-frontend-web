@@ -1,14 +1,20 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
-  height: calc(100vh - 63px);
-  max-height: calc(100vh - 63px);
+  height: calc(100vh - 90px);
+  max-height: calc(100vh - 90px);
   max-width: 1200px;
   margin: 0 auto;
   background: #f0fdfa;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    height: initial;
+    max-height: initial;
+  }
 `
 
 export const TopBar = styled.div`
@@ -18,6 +24,10 @@ export const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
 `
 
 export const BackButton = styled.button`
@@ -37,6 +47,11 @@ export const BackButton = styled.button`
     background: #f3f4f6;
     color: #1f2937;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
 `
 
 export const SetTitleWrapper = styled.div`
@@ -53,6 +68,10 @@ export const SetTitle = styled.h2`
   color: #1f2937;
   margin: 0;
   text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `
 
 export const SetTitleInput = styled.input`
@@ -74,6 +93,13 @@ export const SetTitleInput = styled.input`
   &::placeholder {
     color: #9ca3af;
     font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    min-width: auto;
+    width: 100%;
+    padding: 0.5rem;
   }
 `
 
@@ -113,6 +139,24 @@ export const EditButton = styled.button`
 export const TopActions = styled.div`
   display: flex;
   gap: 12px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`
+
+export const EditorActions = styled.div`
+  display: none;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+
+  @media (max-width: 768px) {
+    display: flex;
+    padding: 0.625rem 0.75rem;
+    gap: 0.5rem;
+  }
 `
 
 export const SaveButton = styled.button`
@@ -136,6 +180,13 @@ export const SaveButton = styled.button`
   &:disabled {
     background: #9ca3af;
     cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
   }
 `
 
@@ -161,6 +212,13 @@ export const ExportButton = styled.button`
     background: #9ca3af;
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+  }
 `
 
 export const TabBar = styled.div`
@@ -178,6 +236,11 @@ export const TabBar = styled.div`
   &::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 2px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    gap: 0.25rem;
   }
 `
 
@@ -197,12 +260,23 @@ export const Tab = styled.button`
     background: #f9fafb;
     color: ${props => props.$active ? '#06b6d4' : '#1f2937'};
   }
+
+  @media (max-width: 768px) {
+    /* padding: 0.625rem 0.875rem; */
+    font-size: 0.8125rem;
+  }
 `
 
 export const EditorArea = styled.div`
   flex: 1;
   display: flex;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 `
 
 export const ChatPanel = styled.div`
@@ -211,12 +285,24 @@ export const ChatPanel = styled.div`
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100vh;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
 `
 
 export const ChatHeader = styled.div`
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
   background: #f9fafb;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
 `
 
 export const ChatTitle = styled.h3`
@@ -224,6 +310,10 @@ export const ChatTitle = styled.h3`
   font-weight: 600;
   color: #1f2937;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+  }
 `
 
 export const ChatMessages = styled.div`
@@ -241,6 +331,11 @@ export const ChatMessages = styled.div`
   &::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    gap: 0.625rem;
   }
 `
 
@@ -260,6 +355,12 @@ export const MessageBubble = styled.div`
   font-size: 14px;
   line-height: 1.5;
   word-wrap: break-word;
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    max-width: 90%;
+  }
 
   /* Markdown styling */
   p {
@@ -385,11 +486,19 @@ export const ChatInputArea = styled.div`
   padding: 16px;
   border-top: 1px solid #e5e7eb;
   background: white;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `
 
 export const ChatInputWrapper = styled.div`
   display: flex;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
 `
 
 export const ChatInput = styled.textarea`
@@ -412,6 +521,13 @@ export const ChatInput = styled.textarea`
 
   &::placeholder {
     color: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: 38px;
+    max-height: 100px;
   }
 `
 
@@ -437,6 +553,11 @@ export const SendButton = styled.button`
     background: #9ca3af;
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+  }
 `
 
 export const EditorPanel = styled.div`
@@ -445,6 +566,11 @@ export const EditorPanel = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-height: 100vh;
+    flex-shrink: 0;
+  }
 `
 
 export const EditorToolbar = styled.div`
@@ -454,6 +580,11 @@ export const EditorToolbar = styled.div`
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.75rem;
+    gap: 0.25rem;
+  }
 `
 
 export const ToolbarButton = styled.button`
@@ -478,12 +609,21 @@ export const ToolbarButton = styled.button`
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+  }
 `
 
 export const EditorContent = styled.div`
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 
   .ProseMirror {
     outline: none;
@@ -554,6 +694,23 @@ export const EditorContent = styled.div`
     a {
       color: #06b6d4;
       text-decoration: underline;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      &.ProseMirror-selectednode {
+        outline: 3px solid #06b6d4;
+        outline-offset: 2px;
+      }
     }
   }
 
