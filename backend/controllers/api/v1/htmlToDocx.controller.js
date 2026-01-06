@@ -35,13 +35,25 @@ export const convertHtmlToDocxWithImages = async (req, res) => {
         if (src) {
           try {
             const imageData = await fetchImageWithType(src);
+
+            // Get width from HTML attribute, default to 600 if not specified
+            let width = 600;
+            const widthAttr = imgElement.getAttribute('width');
+            if (widthAttr) {
+              // Remove 'px' if present and parse as integer
+              width = parseInt(widthAttr.replace('px', ''));
+            }
+
+            // Calculate height maintaining aspect ratio (assuming 3:2 ratio as default)
+            const height = Math.round(width * 2 / 3);
+
             return new Paragraph({
               children: [
                 new ImageRun({
                   data: imageData.buffer,
                   transformation: {
-                    width: 600,
-                    height: 400,
+                    width: width,
+                    height: height,
                   },
                   type: imageData.type,
                 }),
@@ -107,14 +119,26 @@ export const convertHtmlToDocxWithImages = async (req, res) => {
         if (src) {
           try {
             const imageData = await fetchImageWithType(src);
+
+            // Get width from HTML attribute, default to 600 if not specified
+            let width = 600;
+            const widthAttr = element.getAttribute('width');
+            if (widthAttr) {
+              // Remove 'px' if present and parse as integer
+              width = parseInt(widthAttr.replace('px', ''));
+            }
+
+            // Calculate height maintaining aspect ratio (assuming 3:2 ratio as default)
+            const height = Math.round(width * 2 / 3);
+
             children.push(
               new Paragraph({
                 children: [
                   new ImageRun({
                     data: imageData.buffer,
                     transformation: {
-                      width: 600,
-                      height: 400,
+                      width: width,
+                      height: height,
                     },
                     type: imageData.type,
                   }),

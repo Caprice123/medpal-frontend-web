@@ -4,6 +4,12 @@ export const EditorContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  height: 100%;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
 `
 
 export const ModeToggle = styled.div`
@@ -54,7 +60,27 @@ export const EditorWrapper = styled.div`
   background-position: ${props => props.$isStructured ? '-1px -1px' : '0 0'};
   border-radius: 12px;
   padding: ${props => props.$isStructured ? '1rem 0' : '0'};
-  min-height: 400px;
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    padding: ${props => props.$isStructured ? '0.75rem 0' : '0'};
+  }
+
+  /* Make BlockNote fill available space */
+  .bn-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bn-editor {
+    flex: 1;
+    overflow: auto;
+  }
 
   /* Structured mode - ensure all BlockNote elements are transparent to show grid */
   ${props => props.$isStructured && `

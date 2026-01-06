@@ -4,13 +4,8 @@ import { useAppSelector, useAppDispatch } from '@store/store'
 import { shallowEqual } from 'react-redux'
 import { fetchSet, switchTab, saveSetContent } from '@store/skripsi/action'
 import { upload } from '@store/common/action'
-import { useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
-import TextAlign from '@tiptap/extension-text-align'
-import Image from '@tiptap/extension-image'
 import { convertHtmlToDocxReliable } from '@utils/htmlToDocx'
+import { blocksToHTML, htmlToBlocks } from '@utils/blockNoteConversion'
 import { Container, EditorArea, LoadingState } from './Editor.styles'
 import TopBar from './components/TopBar'
 import TabBar from './components/TabBar'
@@ -29,6 +24,13 @@ const SkripsiEditor = () => {
   const loading = useAppSelector((state) => state.skripsi.loading, shallowEqual)
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [editorContent, setEditorContent] = useState([
+    {
+      type: "paragraph",
+      content: "",
+    },
+  ])
+  const [isLoadingContent, setIsLoadingContent] = useState(false)
 
   // Image upload handler
   const handleImageUpload = useCallback(async (file) => {
@@ -42,30 +44,11 @@ const SkripsiEditor = () => {
     }
   }, [dispatch])
 
-  // Initialize TipTap editor
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({
-        openOnClick: false,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Image.configure({
-        inline: false,
-        allowBase64: false,
-        HTMLAttributes: {
-          class: 'editor-image',
-        },
-      }),
-    ],
-    content: '',
-    onUpdate: () => {
-      setHasUnsavedChanges(true)
-    },
-  })
+  // Handle content changes from BlockNote editor
+  const handleContentChange = useCallback((blocks) => {
+    setEditorContent(blocks)
+    setHasUnsavedChanges(true)
+  }, [])
 
   // Fetch set data on mount
   useEffect(() => {
@@ -74,14 +57,26 @@ const SkripsiEditor = () => {
     }
   }, [setId, dispatch])
 
-  // Initialize editor content only once when set is loaded
+  // Convert HTML to BlockNote blocks when set is loaded
   useEffect(() => {
-    if (editor && currentSet && !editor.getText()) {
-      // Load content from the set
-      const content = currentSet.editorContent || ''
-      editor.commands.setContent(content, false) // Don't emit update event on initial load
+    if (!currentSet) return
+
+    const loadContent = async () => {
+      setIsLoadingContent(true)
+      try {
+        const htmlContent = currentSet.editorContent || ''
+        const blocks = await htmlToBlocks(htmlContent)
+        setEditorContent(blocks)
+        setHasUnsavedChanges(false) // Reset unsaved changes flag after loading
+      } catch (error) {
+        console.error('Failed to load editor content:', error)
+      } finally {
+        setIsLoadingContent(false)
+      }
     }
-  }, [currentSet, editor])
+
+    loadContent()
+  }, [currentSet?.id]) // Only reload when set ID changes
 
   // Warn before leaving page with unsaved changes
   useEffect(() => {
@@ -110,11 +105,12 @@ const SkripsiEditor = () => {
   }, [dispatch])
 
   const handleSave = useCallback(async (showAlert = true) => {
-    if (!currentSet || !editor) return
+    if (!currentSet) return
 
     try {
-      const content = editor.getHTML()
-      await dispatch(saveSetContent(currentSet.id, content))
+      // Convert BlockNote blocks to HTML before saving
+      const htmlContent = await blocksToHTML(editorContent)
+      await dispatch(saveSetContent(currentSet.id, htmlContent))
       setHasUnsavedChanges(false)
       if (showAlert) {
         alert('Berhasil disimpan!')
@@ -125,12 +121,12 @@ const SkripsiEditor = () => {
         alert('Gagal menyimpan konten')
       }
     }
-  }, [currentSet, editor, dispatch])
+  }, [currentSet, editorContent, dispatch])
 
   // Auto-save every 30 seconds (silent - no alert)
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
-      if (hasUnsavedChanges && currentSet && editor) {
+      if (hasUnsavedChanges && currentSet) {
         handleSave(false) // Don't show alert for auto-save
       }
     }, 30000) // 30 seconds
@@ -138,13 +134,14 @@ const SkripsiEditor = () => {
     return () => {
       clearInterval(autoSaveInterval)
     }
-  }, [hasUnsavedChanges, currentSet, editor, handleSave])
+  }, [hasUnsavedChanges, currentSet, handleSave])
 
   const handleExportWord = useCallback(async () => {
-    if (!editor || !currentSet) return
+    if (!currentSet) return
 
     try {
-      const htmlContent = editor.getHTML()
+      // Convert BlockNote blocks to HTML for Word export
+      const htmlContent = await blocksToHTML(editorContent)
       const fileName = currentSet.title.replace(/[^a-z0-9]/gi, '_')
 
       await convertHtmlToDocxReliable(htmlContent, fileName)
@@ -154,7 +151,7 @@ const SkripsiEditor = () => {
       console.error('Failed to export Word:', error)
       alert(`Gagal mengekspor ke Word: ${error.message}`)
     }
-  }, [editor, currentSet])
+  }, [currentSet, editorContent])
 
   if (loading.isSetLoading) {
     return (
@@ -195,12 +192,14 @@ const SkripsiEditor = () => {
         />
 
         <EditorPanel
-          editor={editor}
+          editorContent={editorContent}
+          onContentChange={handleContentChange}
           onImageUpload={handleImageUpload}
           hasUnsavedChanges={hasUnsavedChanges}
           isSavingContent={isSavingContent}
           onSave={handleSave}
           onExportWord={handleExportWord}
+          isLoadingContent={isLoadingContent}
         />
       </EditorArea>
     </Container>

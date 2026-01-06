@@ -566,9 +566,11 @@ export const EditorPanel = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
 
   @media (max-width: 768px) {
     min-height: 100vh;
+    height: 100vh;
     flex-shrink: 0;
   }
 `
@@ -619,108 +621,48 @@ export const ToolbarButton = styled.button`
 export const EditorContent = styled.div`
   flex: 1;
   padding: 24px;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   @media (max-width: 768px) {
     padding: 1rem;
+    height: 100%;
   }
 
+  /* Ensure BlockNote takes full height */
+  > div {
+    height: 100%;
+    flex: 1;
+  }
+
+  /* Custom BlockNote theme overrides */
+  .bn-editor {
+    background: transparent;
+  }
+
+  /* Ensure BlockNote content has good spacing */
   .ProseMirror {
     outline: none;
-    min-height: 100%;
+    padding: 0;
 
+    /* Add spacing between blocks */
     > * + * {
-      margin-top: 0.75em;
-    }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.3;
-    }
-
-    h2 {
-      font-size: 24px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    h3 {
-      font-size: 20px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    p {
-      line-height: 1.6;
-    }
-
-    ul, ol {
-      padding-left: 24px;
-    }
-
-    li {
-      line-height: 1.6;
-    }
-
-    blockquote {
-      border-left: 3px solid #06b6d4;
-      padding-left: 16px;
-      color: #6b7280;
-    }
-
-    code {
-      background: #f3f4f6;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.9em;
-    }
-
-    pre {
-      background: #1f2937;
-      color: #f9fafb;
-      padding: 12px 16px;
-      border-radius: 6px;
-      overflow-x: auto;
-
-      code {
-        background: none;
-        padding: 0;
-        color: inherit;
-      }
-    }
-
-    a {
-      color: #06b6d4;
-      text-decoration: underline;
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: box-shadow 0.2s;
-
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      &.ProseMirror-selectednode {
-        outline: 3px solid #06b6d4;
-        outline-offset: 2px;
-      }
+      margin-top: 0.5em;
     }
   }
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
+  /* Image styling for BlockNote */
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
 
-  &::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 4px;
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
   }
 `
 
