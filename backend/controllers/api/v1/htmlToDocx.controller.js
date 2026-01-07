@@ -1,6 +1,8 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
 import axios from 'axios';
 import jsdom from 'jsdom';
+import prisma from '#prisma/client';
+import idriveService from '#services/idrive.service';
 
 const { JSDOM } = jsdom;
 
@@ -18,11 +20,8 @@ export const convertHtmlToDocxWithImages = async (req, res) => {
       });
     }
 
-    // Convert all image URLs to base64 FIRST
-    const htmlWithBase64Images = await convertImagesToBase64InHtml(htmlContent)
-    console.log(htmlWithBase64Images)
-
-    const dom = new JSDOM(htmlWithBase64Images);
+    // Skip base64 conversion - fetch images directly from URLs for better performance
+    const dom = new JSDOM(htmlContent);
     const document = dom.window.document;
 
     const children = [];
@@ -405,6 +404,7 @@ async function convertImagesToBase64InHtml(htmlContent) {
 
 /**
  * Fetch image from URL or base64 with type detection
+ * Optimized to fetch directly from iDrive for blob URLs
  */
 async function fetchImageWithType(src) {
   let buffer;
@@ -420,6 +420,36 @@ async function fetchImageWithType(src) {
     mimeType = matches[1];
     const base64Data = matches[2];
     buffer = Buffer.from(base64Data, 'base64');
+  } else if (src.includes('/api/v1/blobs/')) {
+    // Optimized path for blob URLs - fetch directly from iDrive
+    // Extract blob ID from URL like "http://localhost:5000/api/v1/blobs/34"
+    const blobIdMatch = src.match(/\/api\/v1\/blobs\/(\d+)/);
+    if (!blobIdMatch) {
+      throw new Error('Invalid blob URL format');
+    }
+
+    const blobId = parseInt(blobIdMatch[1]);
+
+    // Fetch blob metadata from database
+    const blob = await prisma.blobs.findUnique({
+      where: { id: blobId }
+    });
+
+    if (!blob) {
+      throw new Error(`Blob ${blobId} not found in database`);
+    }
+
+    // Get presigned URL from iDrive
+    const presignedUrl = await idriveService.getSignedUrl(blob.key, 3600);
+
+    // Fetch image from iDrive
+    const response = await axios.get(presignedUrl, {
+      responseType: 'arraybuffer',
+      timeout: 30000, // 30 seconds for large images
+    });
+
+    mimeType = blob.content_type || 'image/png';
+    buffer = Buffer.from(response.data);
   } else {
     // External URL
     const response = await axios.get(src, {
