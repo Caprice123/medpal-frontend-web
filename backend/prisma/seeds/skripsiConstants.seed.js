@@ -1,4 +1,4 @@
-import prisma from '#client'
+import prisma from '#prisma/client'
 
 const skripsiConstants = [
   // Feature meta information
@@ -61,6 +61,38 @@ Panduan:
   {
     key: 'skripsi_ai_researcher_context_messages',
     value: '10',
+  },
+  {
+    key: 'skripsi_ai_researcher_trusted_domains',
+    value: 'pubmed.ncbi.nlm.nih.gov,sciencedirect.com,thelancet.com,nejm.org,bmj.com,who.int,cdc.gov,nih.gov,nature.com,science.org,jamanetwork.com,springer.com,wiley.com,cambridge.org',
+  },
+  {
+    key: 'skripsi_ai_researcher_domain_filter_enabled',
+    value: 'true',
+  },
+  {
+    key: 'skripsi_ai_researcher_recency_filter',
+    value: 'month',
+  },
+  {
+    key: 'skripsi_ai_researcher_time_filter_type',
+    value: 'recency',
+  },
+  {
+    key: 'skripsi_ai_researcher_published_after',
+    value: '',
+  },
+  {
+    key: 'skripsi_ai_researcher_published_before',
+    value: '',
+  },
+  {
+    key: 'skripsi_ai_researcher_updated_after',
+    value: '',
+  },
+  {
+    key: 'skripsi_ai_researcher_updated_before',
+    value: '',
   },
 
   // Paraphraser

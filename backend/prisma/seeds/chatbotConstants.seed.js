@@ -1,4 +1,4 @@
-import prisma from '#client'
+import prisma from '#prisma/client'
 
 export async function seedChatbotConstants() {
   console.log('Seeding chatbot constants...')
@@ -142,6 +142,38 @@ Aturan:
     {
       key: 'chatbot_research_max_sources',
       value: '5'
+    },
+    {
+      key: 'chatbot_research_trusted_domains',
+      value: 'pubmed.ncbi.nlm.nih.gov,sciencedirect.com,thelancet.com,nejm.org,bmj.com,who.int,cdc.gov,nih.gov,nature.com,science.org,jamanetwork.com,springer.com,wiley.com,cambridge.org'
+    },
+    {
+      key: 'chatbot_research_domain_filter_enabled',
+      value: 'true'
+    },
+    {
+      key: 'chatbot_research_recency_filter',
+      value: 'month'
+    },
+    {
+      key: 'chatbot_research_time_filter_type',
+      value: 'recency'
+    },
+    {
+      key: 'chatbot_research_published_after',
+      value: ''
+    },
+    {
+      key: 'chatbot_research_published_before',
+      value: ''
+    },
+    {
+      key: 'chatbot_research_updated_after',
+      value: ''
+    },
+    {
+      key: 'chatbot_research_updated_before',
+      value: ''
     },
 
     // Conversation Settings

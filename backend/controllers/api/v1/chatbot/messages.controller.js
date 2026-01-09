@@ -108,8 +108,6 @@ class MessageController {
         sender_type: 'ai',
         mode_type: modeType,
         content: content,
-        created_at: new Date(),
-        updated_at: new Date()
       }
     })
 

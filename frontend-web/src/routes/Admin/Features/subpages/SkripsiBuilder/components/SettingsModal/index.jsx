@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import Modal from '@components/common/Modal'
+import Dropdown from '@components/common/Dropdown'
 import ModelDropdown from '@components/common/ModelDropdown'
 import Textarea from '@components/common/Textarea'
 import TextInput from '@components/common/TextInput'
@@ -15,13 +17,44 @@ import {
   ModeHeader,
   ModeTitle,
   ModeIcon,
-  Divider
+  Divider,
+  DomainsList,
+  DomainItem,
+  DomainText,
+  AddDomainWrapper
 } from './SettingsModal.styles'
 import { ToggleSlider, ToggleSwitch } from '../../../SummaryNotes/components/SummaryNotesSettingsModal/SummaryNotesSettingsModal.styles'
 
 function SettingsModal({ isOpen, onClose }) {
   const { loading } = useSelector(state => state.constant || { loading: {} })
   const { form } = useFeatureSetting(onClose)
+  const [newDomain, setNewDomain] = useState('')
+
+  // Check if AI Researcher model is Perplexity
+  const isPerplexityModel = form.values.skripsi_ai_researcher_model?.startsWith('sonar')
+
+  // Parse domains from comma-separated string to array
+  const getDomains = () => {
+    const domainsString = form.values.skripsi_ai_researcher_trusted_domains || ''
+    return domainsString.split(',').map(d => d.trim()).filter(d => d.length > 0)
+  }
+
+  // Add domain to the list
+  const addDomain = () => {
+    if (newDomain.trim()) {
+      const currentDomains = getDomains()
+      const updatedDomains = [...currentDomains, newDomain.trim()]
+      form.setFieldValue('skripsi_ai_researcher_trusted_domains', updatedDomains.join(','))
+      setNewDomain('')
+    }
+  }
+
+  // Remove domain from the list
+  const removeDomain = (index) => {
+    const currentDomains = getDomains()
+    const updatedDomains = currentDomains.filter((_, i) => i !== index)
+    form.setFieldValue('skripsi_ai_researcher_trusted_domains', updatedDomains.join(','))
+  }
 
   return (
     <Modal
@@ -170,6 +203,155 @@ function SettingsModal({ isOpen, onClose }) {
             Instruksi untuk AI tentang cara melakukan research dan memberikan jawaban
           </HintText>
         </FormGroup>
+
+        {/* Domain Filtering - Only show for Perplexity models */}
+        {isPerplexityModel && (
+          <>
+            <FormGroup>
+              <Label>Filter Domain Terpercaya</Label>
+              <ToggleSwitch>
+                <input
+                  type="checkbox"
+                  checked={form.values.skripsi_ai_researcher_domain_filter_enabled}
+                  onChange={(e) => form.setFieldValue('skripsi_ai_researcher_domain_filter_enabled', e.target.checked)}
+                />
+                <ToggleSlider />
+              </ToggleSwitch>
+              <HintText>Aktifkan filter untuk memprioritaskan domain kredibel</HintText>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Domain Terpercaya</Label>
+              <HintText style={{ marginTop: '0', marginBottom: '0.5rem' }}>
+                Domain jurnal medis dan sumber kredibel yang akan diprioritaskan (max 20 domain).
+              </HintText>
+
+              {getDomains().length > 0 && (
+                <DomainsList>
+                  {getDomains().map((domain, index) => (
+                    <DomainItem key={index}>
+                      <DomainText>{domain}</DomainText>
+                      <Button
+                        variant="danger"
+                        size="small"
+                        type="button"
+                        onClick={() => removeDomain(index)}
+                      >
+                        ✕
+                      </Button>
+                    </DomainItem>
+                  ))}
+                </DomainsList>
+              )}
+
+              <AddDomainWrapper>
+                <TextInput
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  placeholder="pubmed.ncbi.nlm.nih.gov"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDomain())}
+                  style={{ fontFamily: 'monospace', fontSize: '13px' }}
+                />
+                <Button
+                  type="button"
+                  onClick={addDomain}
+                  disabled={!newDomain.trim() || getDomains().length >= 20}
+                >
+                  Tambah
+                </Button>
+              </AddDomainWrapper>
+            </FormGroup>
+
+            <FormGroup>
+              <Dropdown
+                label="Tipe Filter Waktu"
+                options={[
+                  { value: 'recency', label: 'Recency (Relatif)' },
+                  { value: 'date_range', label: 'Date Range (Tanggal Spesifik)' }
+                ]}
+                value={{
+                  value: form.values.skripsi_ai_researcher_time_filter_type,
+                  label: form.values.skripsi_ai_researcher_time_filter_type === 'recency' ? 'Recency (Relatif)' : 'Date Range (Tanggal Spesifik)'
+                }}
+                onChange={(option) => form.setFieldValue('skripsi_ai_researcher_time_filter_type', option.value)}
+              />
+              <HintText>
+                Pilih antara filter relatif (1 bulan terakhir) atau tanggal spesifik
+              </HintText>
+            </FormGroup>
+
+            {form.values.skripsi_ai_researcher_time_filter_type === 'recency' ? (
+              <FormGroup>
+                <Dropdown
+                  label="Filter Keterbaruan (Recency)"
+                  options={[
+                    { value: 'hour', label: '1 Jam Terakhir' },
+                    { value: 'day', label: '1 Hari Terakhir' },
+                    { value: 'week', label: '1 Minggu Terakhir' },
+                    { value: 'month', label: '1 Bulan Terakhir' },
+                    { value: 'year', label: '1 Tahun Terakhir' }
+                  ]}
+                  value={{
+                    value: form.values.skripsi_ai_researcher_recency_filter,
+                    label: form.values.skripsi_ai_researcher_recency_filter === 'hour' ? '1 Jam Terakhir' :
+                           form.values.skripsi_ai_researcher_recency_filter === 'day' ? '1 Hari Terakhir' :
+                           form.values.skripsi_ai_researcher_recency_filter === 'week' ? '1 Minggu Terakhir' :
+                           form.values.skripsi_ai_researcher_recency_filter === 'month' ? '1 Bulan Terakhir' :
+                           '1 Tahun Terakhir'
+                  }}
+                  onChange={(option) => form.setFieldValue('skripsi_ai_researcher_recency_filter', option.value)}
+                />
+                <HintText>
+                  Filter berdasarkan waktu relatif dari sekarang
+                </HintText>
+              </FormGroup>
+            ) : (
+              <>
+                <FormGroup>
+                  <Label>Published Date Range</Label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <TextInput
+                      label="Published After"
+                      placeholder="MM/DD/YYYY (e.g., 1/1/2024)"
+                      value={form.values.skripsi_ai_researcher_published_after}
+                      onChange={(e) => form.setFieldValue('skripsi_ai_researcher_published_after', e.target.value)}
+                    />
+                    <TextInput
+                      label="Published Before"
+                      placeholder="MM/DD/YYYY (e.g., 12/31/2024)"
+                      value={form.values.skripsi_ai_researcher_published_before}
+                      onChange={(e) => form.setFieldValue('skripsi_ai_researcher_published_before', e.target.value)}
+                    />
+                  </div>
+                  <HintText>
+                    Filter berdasarkan tanggal publikasi artikel (format: MM/DD/YYYY)
+                  </HintText>
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Last Updated Date Range</Label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <TextInput
+                      label="Updated After"
+                      placeholder="MM/DD/YYYY (e.g., 1/1/2024)"
+                      value={form.values.skripsi_ai_researcher_updated_after}
+                      onChange={(e) => form.setFieldValue('skripsi_ai_researcher_updated_after', e.target.value)}
+                    />
+                    <TextInput
+                      label="Updated Before"
+                      placeholder="MM/DD/YYYY (e.g., 12/31/2024)"
+                      value={form.values.skripsi_ai_researcher_updated_before}
+                      onChange={(e) => form.setFieldValue('skripsi_ai_researcher_updated_before', e.target.value)}
+                    />
+                  </div>
+                  <HintText>
+                    Filter berdasarkan tanggal update terakhir konten (format: MM/DD/YYYY)
+                  </HintText>
+                </FormGroup>
+              </>
+            )}
+          </>
+        )}
       </ModeSection>
 
       <ModeSection>

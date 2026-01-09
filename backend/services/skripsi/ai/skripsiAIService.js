@@ -1,9 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import prisma from '#prisma/client'
 import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+import { GetSkripsiTrustedDomainsService } from '#services/skripsi/getSkripsiTrustedDomainsService'
+import { RouterUtils } from '#utils/aiUtils/routerUtils'
 
 export class SkripsiAIService extends BaseService {
   /**
@@ -71,34 +70,82 @@ export class SkripsiAIService extends BaseService {
     const modelName = constantsMap[`skripsi_${mode}_model`] || 'gemini-2.0-flash-exp'
     const contextMessages = parseInt(constantsMap[`skripsi_${mode}_context_messages`] || '20')
 
-    // Build conversation history with configurable context length
-    const history = tab.messages.slice(-contextMessages).map(msg => ({
-      role: msg.sender_type === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }))
+    // Get AI service from router
+    const ModelService = RouterUtils.call(modelName)
+    if (!ModelService) {
+      throw new ValidationError(`Model ${modelName} is not supported`)
+    }
 
-    // Initialize Gemini model with system instruction
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      systemInstruction: systemPrompt
-    })
+    // Get conversation history with configurable context length
+    const conversationHistory = tab.messages.slice(-contextMessages)
 
-    // Start chat with history
-    const chat = model.startChat({
-      history: history,
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 8192,
+    // Check if using Perplexity model for domain filtering
+    const isPerplexity = modelName.startsWith('sonar')
+
+    if (isPerplexity) {
+      // Get trusted domains for filtering
+      const trustedDomains = await GetSkripsiTrustedDomainsService.call()
+
+      // Build options for Perplexity
+      const options = {}
+
+      // Add time filtering based on type
+      if (trustedDomains) {
+        if (trustedDomains.timeFilterType === 'recency') {
+          options.search_recency_filter = trustedDomains.recencyFilter || 'month'
+          console.log(`Skripsi AI: using recency filter: ${trustedDomains.recencyFilter}`)
+        } else if (trustedDomains.timeFilterType === 'date_range') {
+          if (trustedDomains.publishedAfter) {
+            options.search_after_date_filter = trustedDomains.publishedAfter
+          }
+          if (trustedDomains.publishedBefore) {
+            options.search_before_date_filter = trustedDomains.publishedBefore
+          }
+          if (trustedDomains.updatedAfter) {
+            options.last_updated_after_filter = trustedDomains.updatedAfter
+          }
+          if (trustedDomains.updatedBefore) {
+            options.last_updated_before_filter = trustedDomains.updatedBefore
+          }
+          console.log(`Skripsi AI: using date range filters`, {
+            published: {
+              after: trustedDomains.publishedAfter || 'none',
+              before: trustedDomains.publishedBefore || 'none'
+            },
+            lastUpdated: {
+              after: trustedDomains.updatedAfter || 'none',
+              before: trustedDomains.updatedBefore || 'none'
+            }
+          })
+        }
       }
-    })
 
-    // Send message and get streaming response
-    const result = await chat.sendMessageStream(message)
+      // Add domain filtering if enabled
+      if (trustedDomains && trustedDomains.enabled && trustedDomains.domains.length > 0) {
+        options.search_domain_filter = trustedDomains.domains
+        console.log(`Skripsi AI: filtering to ${trustedDomains.domains.length} trusted domains`)
+      }
 
-    return {
-      stream: result.stream
+      // Generate streaming response with Perplexity
+      const stream = await ModelService.generateStreamWithHistory(
+        modelName,
+        systemPrompt,
+        conversationHistory,
+        message,
+        options
+      )
+
+      return { stream, sources: [] }
+    } else {
+      // Generate streaming response with Gemini
+      const stream = await ModelService.generateStreamWithHistory(
+        modelName,
+        systemPrompt,
+        conversationHistory,
+        message
+      )
+
+      return { stream }
     }
   }
 

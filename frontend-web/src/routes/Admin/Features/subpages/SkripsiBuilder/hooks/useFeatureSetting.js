@@ -21,6 +21,14 @@ export const useFeatureSetting = (onClose) => {
       skripsi_ai_researcher_cost: '0',
       skripsi_ai_researcher_context_messages: '10',
       skripsi_ai_researcher_prompt: 'Kamu adalah asisten peneliti AI yang membantu mahasiswa dalam menyusun skripsi.',
+      skripsi_ai_researcher_trusted_domains: '',
+      skripsi_ai_researcher_domain_filter_enabled: false,
+      skripsi_ai_researcher_recency_filter: 'month',
+      skripsi_ai_researcher_time_filter_type: 'recency',
+      skripsi_ai_researcher_published_after: '',
+      skripsi_ai_researcher_published_before: '',
+      skripsi_ai_researcher_updated_after: '',
+      skripsi_ai_researcher_updated_before: '',
 
       // Paraphraser
       skripsi_paraphraser_enabled: true,
@@ -43,6 +51,7 @@ export const useFeatureSetting = (onClose) => {
           ...values,
           skripsi_is_active: String(values.skripsi_is_active),
           skripsi_ai_researcher_enabled: String(values.skripsi_ai_researcher_enabled),
+          skripsi_ai_researcher_domain_filter_enabled: String(values.skripsi_ai_researcher_domain_filter_enabled),
           skripsi_paraphraser_enabled: String(values.skripsi_paraphraser_enabled),
           skripsi_diagram_builder_enabled: String(values.skripsi_diagram_builder_enabled)
         }
@@ -67,6 +76,14 @@ export const useFeatureSetting = (onClose) => {
         'skripsi_ai_researcher_cost',
         'skripsi_ai_researcher_context_messages',
         'skripsi_ai_researcher_prompt',
+        'skripsi_ai_researcher_trusted_domains',
+        'skripsi_ai_researcher_domain_filter_enabled',
+        'skripsi_ai_researcher_recency_filter',
+        'skripsi_ai_researcher_time_filter_type',
+        'skripsi_ai_researcher_published_after',
+        'skripsi_ai_researcher_published_before',
+        'skripsi_ai_researcher_updated_after',
+        'skripsi_ai_researcher_updated_before',
         'skripsi_paraphraser_enabled',
         'skripsi_paraphraser_model',
         'skripsi_paraphraser_cost',
@@ -87,6 +104,7 @@ export const useFeatureSetting = (onClose) => {
           ...constants,
           skripsi_is_active: constants.skripsi_is_active === 'true',
           skripsi_ai_researcher_enabled: constants.skripsi_ai_researcher_enabled === 'true',
+          skripsi_ai_researcher_domain_filter_enabled: constants.skripsi_ai_researcher_domain_filter_enabled === 'true',
           skripsi_paraphraser_enabled: constants.skripsi_paraphraser_enabled === 'true',
           skripsi_diagram_builder_enabled: constants.skripsi_diagram_builder_enabled === 'true'
         }

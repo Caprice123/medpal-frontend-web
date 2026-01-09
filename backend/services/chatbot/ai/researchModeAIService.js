@@ -2,6 +2,7 @@ import { Perplexity } from '@perplexity-ai/perplexity_ai'
 import prisma from '#prisma/client'
 import { BaseService } from '#services/baseService'
 import { ValidationError } from '#errors/validationError'
+import { GetTrustedDomainsService } from '#services/chatbot/getTrustedDomainsService'
 
 export class ResearchModeAIService extends BaseService {
   /**
@@ -42,6 +43,9 @@ export class ResearchModeAIService extends BaseService {
       const systemPrompt = constantsMap.chatbot_research_system_prompt || this.getDefaultSystemPrompt()
       const citationsCount = parseInt(constantsMap.chatbot_research_citations_count) || 5
 
+      // Get trusted domains for filtering
+      const trustedDomains = await GetTrustedDomainsService.call()
+
       // Get conversation history for context
       const messages = await prisma.chatbot_messages.findMany({
         where: {
@@ -59,7 +63,7 @@ export class ResearchModeAIService extends BaseService {
       const conversationHistory = messages.reverse()
 
       // Call appropriate research API
-      const result = await this.callPerplexityAPI(model, message, conversationHistory, systemPrompt, citationsCount)
+      const result = await this.callPerplexityAPI(model, message, conversationHistory, systemPrompt, citationsCount, trustedDomains)
 
       return {
         stream: result.stream,
@@ -73,13 +77,15 @@ export class ResearchModeAIService extends BaseService {
 
   /**
    * Call Perplexity API for research with web search (streaming)
+   * @param {string} model - Model name
    * @param {string} query - User's query
    * @param {Array} conversationHistory - Previous messages
    * @param {string} systemPrompt - System instructions
    * @param {number} citationsCount - Number of sources to cite
+   * @param {Object} trustedDomains - Trusted domains configuration
    * @returns {Promise<Object>} Stream generator and sources
    */
-  static async callPerplexityAPI(model, query, conversationHistory, systemPrompt, citationsCount) {
+  static async callPerplexityAPI(model, query, conversationHistory, systemPrompt, citationsCount, trustedDomains) {
     try {
       const perplexity = new Perplexity({
         apiKey: process.env.PERPLEXITY_API_KEY
@@ -106,17 +112,63 @@ export class ResearchModeAIService extends BaseService {
       // Add current query
       messages.push({ role: 'user', content: query })
 
-      // Create streaming chat completion
-      const stream = await perplexity.chat.completions.create({
+      // Build API request parameters
+      const requestParams = {
         model: model || 'sonar-deep-research',
         messages: messages,
         // max_tokens: 2048,
         temperature: 0.7,
         return_citations: true,
         return_images: false,
-        search_recency_filter: 'month', // Focus on recent medical information
         stream: true
-      })
+      }
+
+      // Add time filtering based on type
+      // Note: search_recency_filter cannot be combined with date filters
+      if (trustedDomains) {
+        if (trustedDomains.timeFilterType === 'recency') {
+          // Use recency filter (hour, day, week, month, year)
+          requestParams.search_recency_filter = trustedDomains.recencyFilter || 'month'
+          console.log(`Research mode: using recency filter: ${trustedDomains.recencyFilter}`)
+        } else if (trustedDomains.timeFilterType === 'date_range') {
+          // Use date range filters - format must be MM/DD/YYYY (e.g., "3/1/2025")
+          // Published date filters
+          if (trustedDomains.publishedAfter) {
+            requestParams.search_after_date_filter = trustedDomains.publishedAfter
+          }
+          if (trustedDomains.publishedBefore) {
+            requestParams.search_before_date_filter = trustedDomains.publishedBefore
+          }
+
+          // Last updated date filters
+          if (trustedDomains.updatedAfter) {
+            requestParams.last_updated_after_filter = trustedDomains.updatedAfter
+          }
+          if (trustedDomains.updatedBefore) {
+            requestParams.last_updated_before_filter = trustedDomains.updatedBefore
+          }
+
+          console.log(`Research mode: using date range filters`, {
+            published: {
+              after: trustedDomains.publishedAfter || 'none',
+              before: trustedDomains.publishedBefore || 'none'
+            },
+            lastUpdated: {
+              after: trustedDomains.updatedAfter || 'none',
+              before: trustedDomains.updatedBefore || 'none'
+            }
+          })
+        }
+      }
+
+      // Add domain filtering if enabled
+      if (trustedDomains && trustedDomains.enabled && trustedDomains.domains.length > 0) {
+        requestParams.search_domain_filter = trustedDomains.domains
+        console.log(`Research mode: filtering to ${trustedDomains.domains.length} trusted domains`)
+      }
+
+      // Create streaming chat completion
+      const stream = await perplexity.chat.completions.create(requestParams)
 
       return {
         stream: stream,

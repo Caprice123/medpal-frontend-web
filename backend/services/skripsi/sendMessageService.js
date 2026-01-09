@@ -103,17 +103,41 @@ export class SendMessageService extends BaseService {
 
       // Handle streaming response
       if (onStream && result.stream) {
-        return await this.handleStreamingResponse({
-          tabId,
-          setId: tab.set_id,
-          userId,
-          userMessageContent: message.trim(),
-          stream: result.stream,
-          messageCost,
-          onStream,
-          onComplete,
-          onError
+        // Determine if it's Perplexity or Gemini based on model
+        const mode = this.getMode(tab.tab_type)
+        const constants = await prisma.constants.findMany({
+          where: { key: { in: [`skripsi_${mode}_model`] } }
         })
+        const constantsMap = {}
+        constants.forEach(c => { constantsMap[c.key] = c.value })
+        const modelName = constantsMap[`skripsi_${mode}_model`] || 'gemini-2.0-flash-exp'
+        const isPerplexity = modelName.startsWith('sonar')
+
+        if (isPerplexity) {
+          return await this.handlePerplexityStreamingResponse({
+            tabId,
+            setId: tab.set_id,
+            userId,
+            userMessageContent: message.trim(),
+            stream: result.stream,
+            messageCost,
+            onStream,
+            onComplete,
+            onError
+          })
+        } else {
+          return await this.handleStreamingResponse({
+            tabId,
+            setId: tab.set_id,
+            userId,
+            userMessageContent: message.trim(),
+            stream: result.stream,
+            messageCost,
+            onStream,
+            onComplete,
+            onError
+          })
+        }
       }
 
       // Non-streaming fallback (shouldn't reach here with current implementation)
@@ -135,6 +159,150 @@ export class SendMessageService extends BaseService {
       return 'ai_researcher'
     }
     return tabType
+  }
+
+  /**
+   * Handle streaming response from Perplexity (Research mode)
+   */
+  static async handlePerplexityStreamingResponse({ tabId, setId, userId, userMessageContent, stream, messageCost, onStream, onComplete, onError }) {
+    let fullResponse = ''
+    let userMessage = null
+    let aiMessage = null
+    const citations = []
+    const sentCitations = new Set()
+
+    try {
+      // Process Perplexity stream chunks
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || ''
+
+        if (content) {
+          fullResponse += content
+
+          // Send chunk to client
+          onStream({
+            type: 'chunk',
+            data: {
+              content: content
+            }
+          })
+        }
+
+        // Extract and send citations if available
+        if (chunk.citations && chunk.citations.length > 0) {
+          chunk.citations.forEach(citation => {
+            if (!sentCitations.has(citation)) {
+              sentCitations.add(citation)
+              citations.push(citation)
+
+              // Send citation to client immediately
+              onStream({
+                type: 'citation',
+                data: {
+                  url: citation,
+                  title: citation.substring(0, 200)
+                }
+              })
+            }
+          })
+        }
+      }
+
+      // Streaming complete - NOW save messages to database and deduct credits
+      try {
+        userMessage = await prisma.skripsi_messages.create({
+          data: {
+            tab_id: tabId,
+            sender_type: 'user',
+            content: userMessageContent
+          }
+        })
+
+        aiMessage = await prisma.skripsi_messages.create({
+          data: {
+            tab_id: tabId,
+            sender_type: 'ai',
+            content: fullResponse
+          }
+        })
+
+        // Deduct credits if cost > 0
+        if (messageCost > 0) {
+          // Get full user credit record before deduction
+          const userCredit = await prisma.user_credits.findUnique({
+            where: { user_id: userId }
+          })
+
+          // Deduct credits
+          await prisma.user_credits.update({
+            where: { user_id: userId },
+            data: {
+              balance: { decrement: messageCost }
+            }
+          })
+
+          // Get updated balance
+          const creditAfter = await prisma.user_credits.findUnique({
+            where: { user_id: userId },
+            select: { balance: true }
+          })
+
+          // Log credit transaction
+          await prisma.credit_transactions.create({
+            data: {
+              user_id: userId,
+              user_credit_id: userCredit.id,
+              amount: -messageCost,
+              type: 'deduction',
+              description: `Skripsi Builder - Message sent`,
+              balance_before: userCredit.balance,
+              balance_after: creditAfter.balance,
+              payment_status: 'completed'
+            }
+          })
+        }
+
+        // Update tab and set timestamps
+        await prisma.skripsi_tabs.update({
+          where: { id: tabId },
+          data: { updated_at: new Date() }
+        })
+
+        await prisma.skripsi_sets.update({
+          where: { id: setId },
+          data: { updated_at: new Date() }
+        })
+
+        // Send completion
+        onComplete({
+          userMessage: {
+            id: userMessage.id,
+            sender_type: userMessage.sender_type,
+            content: userMessage.content,
+            created_at: userMessage.created_at
+          },
+          aiMessage: {
+            id: aiMessage.id,
+            sender_type: aiMessage.sender_type,
+            content: aiMessage.content,
+            created_at: aiMessage.created_at
+          },
+          sources: citations
+        })
+      } catch (dbError) {
+        console.error('Database error after streaming:', dbError)
+        if (onError) {
+          onError(new Error(`Failed to save message: ${dbError.message}`))
+        }
+        throw dbError
+      }
+    } catch (error) {
+      console.error('Perplexity streaming error:', error)
+      if (onError) {
+        onError(error)
+      }
+      throw error
+    }
   }
 
   /**

@@ -99,6 +99,39 @@ export class PerplexityService extends BaseAiService {
         return parsedContent;
     }
 
+    /**
+     * Generate streaming response with conversation history
+     * @param {string} model - Model name (e.g., 'sonar', 'sonar-pro')
+     * @param {string} systemPrompt - System prompt
+     * @param {Array} conversationHistory - Previous messages from database
+     * @param {string} userMessage - Current user message
+     * @param {Object} options - Additional options (search filters, etc.)
+     * @returns {Promise<AsyncGenerator>} Stream generator
+     */
+    static async generateStreamWithHistory(model, systemPrompt, conversationHistory, userMessage, options = {}) {
+        // Build conversation history
+        const messages = await this.buildConversationHistory(conversationHistory, userMessage)
+
+        // Merge with default options
+        const mergedOptions = { ...defaultOptions, ...options }
+
+        // Build request params
+        const requestParams = {
+            model: model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                ...messages
+            ],
+            stream: true,
+            ...mergedOptions
+        }
+
+        // Create streaming chat completion
+        const stream = await perplexity.chat.completions.create(requestParams)
+
+        return stream
+    }
+
     static async buildConversationHistory(conversationHistory, userMessage) {
         const messages = conversationHistory.map(msg => ({
             role: msg.sender_type === 'user' ? 'user' : 'assistant',

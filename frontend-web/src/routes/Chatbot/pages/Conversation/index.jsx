@@ -22,6 +22,7 @@ function ChatbotConversationPanel({ conversationId, onBack }) {
 
   const {
     currentConversation,
+    messages,
     currentMode,
     availableModes,
     loading,
@@ -99,13 +100,22 @@ function ChatbotConversationPanel({ conversationId, onBack }) {
     }
   }, [loading.isMessagesLoading, pagination.isLastPage, loadMoreMessages])
 
-  // Track streaming message
+  // Track streaming message - check state.messages instead of currentConversation.messages
   useEffect(() => {
-    if (currentConversation?.messages) {
-      const streaming = currentConversation.messages.find(m => m.id && m.id.toString().startsWith('streaming-'))
-      setStreamingMessage(streaming || null)
+    if (messages && messages.length > 0) {
+      const streaming = messages.find(m => m.id && m.id.toString().startsWith('streaming-'))
+      // Only update if the streaming message actually changed
+      setStreamingMessage(prev => {
+        if (!streaming && !prev) return null
+        if (streaming && prev && streaming.id === prev.id && streaming.content === prev.content) {
+          return prev
+        }
+        return streaming || null
+      })
+    } else {
+      setStreamingMessage(prev => prev ? null : prev)
     }
-  }, [currentConversation?.messages])
+  }, [messages])
 
   const handleSendMessage = useCallback(async (content) => {
     if (!content || loading.isSendingMessage) return
@@ -120,11 +130,19 @@ function ChatbotConversationPanel({ conversationId, onBack }) {
   const handleStopStreaming = useCallback(async () => {
     if (!streamingMessage) return
 
+    // Clear streaming message state immediately to prevent re-renders
+    const messageToSave = { ...streamingMessage }
+    setStreamingMessage(null)
+
     try {
-      const savedMessage = await dispatch(stopChatbotStreaming(conversationId, streamingMessage.content, streamingMessage.modeType || currentMode))
+      const savedMessage = await dispatch(stopChatbotStreaming(conversationId, messageToSave.content, messageToSave.modeType || currentMode))
 
       // Add the saved message to Redux with real ID from backend
       if (savedMessage) {
+        // Remove the streaming message first
+        dispatch(actions.removeMessage(messageToSave.id))
+
+        // Then add the saved message
         dispatch(actions.addMessage({
           id: savedMessage.id,
           senderType: savedMessage.senderType,
@@ -133,12 +151,7 @@ function ChatbotConversationPanel({ conversationId, onBack }) {
           sources: savedMessage.sources || [],
           createdAt: savedMessage.createdAt
         }))
-
-        // Remove the streaming message
-        dispatch(actions.removeMessage(streamingMessage.id))
       }
-
-      setStreamingMessage(null)
     } catch (error) {
       console.error('Failed to stop streaming:', error)
     }

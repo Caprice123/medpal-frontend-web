@@ -39,7 +39,15 @@ export const useFeatureSetting = (onClose) => {
       chatbot_research_last_message_count: '10',
       chatbot_research_system_prompt: 'Berikan jawaban berbasis riset medis dengan sitasi dari sumber terpercaya. Prioritaskan jurnal ilmiah dan guidelines medis terbaru.',
       chatbot_research_citations_count: '5',
-      chatbot_research_message_count: '0'
+      chatbot_research_message_count: '0',
+      chatbot_research_trusted_domains: 'pubmed.ncbi.nlm.nih.gov,sciencedirect.com,thelancet.com,nejm.org,bmj.com,who.int,cdc.gov,nih.gov,nature.com,science.org',
+      chatbot_research_domain_filter_enabled: true,
+      chatbot_research_recency_filter: 'month',
+      chatbot_research_time_filter_type: 'recency',
+      chatbot_research_published_after: '',
+      chatbot_research_published_before: '',
+      chatbot_research_updated_after: '',
+      chatbot_research_updated_before: ''
     },
     onSubmit: async (values) => {
       try {
@@ -49,7 +57,8 @@ export const useFeatureSetting = (onClose) => {
           chatbot_is_active: String(values.chatbot_is_active),
           chatbot_normal_enabled: String(values.chatbot_normal_enabled),
           chatbot_validated_enabled: String(values.chatbot_validated_enabled),
-          chatbot_research_enabled: String(values.chatbot_research_enabled)
+          chatbot_research_enabled: String(values.chatbot_research_enabled),
+          chatbot_research_domain_filter_enabled: String(values.chatbot_research_domain_filter_enabled)
         }
         await dispatch(updateConstants(constantsToSave))
         onClose()
@@ -86,7 +95,15 @@ export const useFeatureSetting = (onClose) => {
         'chatbot_research_last_message_count',
         'chatbot_research_system_prompt',
         'chatbot_research_citations_count',
-        'chatbot_research_message_count'
+        'chatbot_research_message_count',
+        'chatbot_research_trusted_domains',
+        'chatbot_research_domain_filter_enabled',
+        'chatbot_research_recency_filter',
+        'chatbot_research_time_filter_type',
+        'chatbot_research_published_after',
+        'chatbot_research_published_before',
+        'chatbot_research_updated_after',
+        'chatbot_research_updated_before'
       ]
 
       try {
@@ -98,7 +115,8 @@ export const useFeatureSetting = (onClose) => {
           chatbot_is_active: constants.chatbot_is_active === 'true',
           chatbot_normal_enabled: constants.chatbot_normal_enabled === 'true',
           chatbot_validated_enabled: constants.chatbot_validated_enabled === 'true',
-          chatbot_research_enabled: constants.chatbot_research_enabled === 'true'
+          chatbot_research_enabled: constants.chatbot_research_enabled === 'true',
+          chatbot_research_domain_filter_enabled: constants.chatbot_research_domain_filter_enabled === 'true'
         }
 
         form.setValues(formattedConstants)

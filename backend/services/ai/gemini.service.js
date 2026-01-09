@@ -83,6 +83,42 @@ export class GeminiService extends BaseAiService {
         return text;
     }
 
+    /**
+     * Generate streaming response with conversation history
+     * @param {string} model - Model name (e.g., 'gemini-2.5-flash')
+     * @param {string} systemPrompt - System prompt
+     * @param {Array} conversationHistory - Previous messages from database
+     * @param {string} userMessage - Current user message
+     * @param {Object} options - Additional generation config options
+     * @returns {Promise<AsyncGenerator>} Stream generator
+     */
+    static async generateStreamWithHistory(model, systemPrompt, conversationHistory, userMessage, options = {}) {
+        // Build conversation history
+        const messages = await this.buildConversationHistory(conversationHistory, userMessage)
+
+        // Initialize Gemini model with system instruction
+        const geminiModel = genAI.getGenerativeModel({
+            model: model,
+            systemInstruction: systemPrompt
+        })
+
+        // Default generation config
+        const generationConfig = {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            ...options
+        }
+
+        // Generate streaming response
+        const result = await geminiModel.generateContentStream({
+            contents: messages,
+            generationConfig
+        })
+
+        return result.stream
+    }
+
     static async buildConversationHistory(conversationHistory, userMessage) {
         const messages = conversationHistory.map(msg => ({
             role: msg.sender_type === 'user' ? 'user' : 'model',

@@ -270,3 +270,34 @@ export const ModeTitle = styled.h5`
   color: #374151;
   margin: 0;
 `
+
+// Domain List Components
+export const DomainsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+`
+
+export const DomainItem = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+`
+
+export const DomainText = styled.div`
+  flex: 1;
+  font-size: 0.813rem;
+  color: #374151;
+  font-family: monospace;
+`
+
+export const AddDomainWrapper = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`
