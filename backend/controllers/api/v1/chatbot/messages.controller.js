@@ -35,29 +35,67 @@ class MessageController {
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
 
+    // Track if client disconnected and create AbortController for streaming
+    let clientDisconnected = false
+    const streamAbortController = new AbortController()
+
+    req.on('close', () => {
+      console.log('🔴 req.on("close") fired - Client disconnected')
+      clientDisconnected = true
+      streamAbortController.abort() // Abort the AI stream
+    })
+
+    // Also listen to other disconnection events
+    res.on('close', () => {
+      console.log('🔴 res.on("close") fired - Response stream closed')
+      clientDisconnected = true
+      streamAbortController.abort()
+    })
+
+    res.on('finish', () => {
+      console.log('🟢 res.on("finish") fired - Response finished normally')
+    })
+
+    res.on('error', (err) => {
+      console.log('🔴 res.on("error") fired:', err.message)
+      clientDisconnected = true
+      streamAbortController.abort()
+    })
+
     try {
       await SendMessageService.call({
         userId,
         conversationId: parseInt(conversationId),
         message,
         mode,
-        onStream: (chunk) => {
-          // Send streaming chunk to client
-          res.write(`data: ${JSON.stringify(chunk)}\n\n`)
+        streamAbortSignal: streamAbortController.signal, // Pass abort signal
+        checkClientConnected: () => !clientDisconnected, // Function to check if client still connected
+        onStream: (chunk, onSend) => {
+          // Only send if client still connected
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`)
+            onSend()
+          }
         },
         onComplete: (result) => {
-          // Send final result
-          res.write(`data: ${JSON.stringify({ type: 'done', data: result })}\n\n`)
-          res.end()
+          // Only send final result if client still connected
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify({ type: 'done', data: result })}\n\n`)
+            res.end()
+          }
         },
         onError: (error) => {
-          res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
-          res.end()
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
+            res.end()
+          }
         }
       })
     } catch (error) {
-      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
-      res.end()
+      if (!clientDisconnected) {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
+        res.end()
+      }
     }
   }
 
@@ -85,7 +123,7 @@ class MessageController {
   async savePartialMessage(req, res) {
     const userId = req.user.id
     const conversationId = parseInt(req.params.conversationId)
-    const { content, modeType } = req.body
+    const { content, modeType, userMessage } = req.body
 
     // Verify the conversation belongs to the user
     const conversation = await prisma.chatbot_conversations.findFirst({
@@ -101,6 +139,21 @@ class MessageController {
       })
     }
 
+    // Save the user message first (if provided)
+    let savedUserMessage = null
+    if (userMessage) {
+      savedUserMessage = await prisma.chatbot_messages.create({
+        data: {
+          conversation_id: conversationId,
+          sender_type: 'user',
+          mode_type: null,
+          content: userMessage,
+          credits_used: 0,
+          created_at: new Date()
+        }
+      })
+    }
+
     // Save the partial AI message to database
     const aiMessage = await prisma.chatbot_messages.create({
       data: {
@@ -108,18 +161,37 @@ class MessageController {
         sender_type: 'ai',
         mode_type: modeType,
         content: content,
+        credits_used: 0, // Credits not deducted for stopped messages
+        created_at: new Date()
       }
+    })
+
+    // Fetch the messages with proper timestamps
+    const userMsgWithTimestamp = savedUserMessage ? await prisma.chatbot_messages.findUnique({
+      where: { id: savedUserMessage.id }
+    }) : null
+
+    const aiMsgWithTimestamp = await prisma.chatbot_messages.findUnique({
+      where: { id: aiMessage.id }
     })
 
     return res.status(200).json({
       message: 'Partial message saved successfully',
       data: {
-        id: aiMessage.id,
-        senderType: aiMessage.sender_type,
-        modeType: aiMessage.mode_type,
-        content: aiMessage.content,
-        sources: [],
-        createdAt: aiMessage.created_at
+        userMessage: userMsgWithTimestamp ? {
+          id: userMsgWithTimestamp.id,
+          senderType: userMsgWithTimestamp.sender_type,
+          content: userMsgWithTimestamp.content,
+          createdAt: userMsgWithTimestamp.created_at.toISOString()
+        } : null,
+        aiMessage: {
+          id: aiMsgWithTimestamp.id,
+          senderType: aiMsgWithTimestamp.sender_type,
+          modeType: aiMsgWithTimestamp.mode_type,
+          content: aiMsgWithTimestamp.content,
+          sources: [],
+          createdAt: aiMsgWithTimestamp.created_at.toISOString()
+        }
       }
     })
   }

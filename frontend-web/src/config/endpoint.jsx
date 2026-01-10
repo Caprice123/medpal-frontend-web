@@ -171,6 +171,7 @@ export default {
         conversation: (id) => `${API_BASE_URL}/api/v1/chatbot/conversations/${id}`,
         messages: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/messages`,
         send: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/send`,
+        savePartialMessage: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/save-partial-message`,
         feedback: (messageId) => `${API_BASE_URL}/api/v1/chatbot/messages/${messageId}/feedback`,
         constants: `${API_BASE_URL}/api/v1/chatbot/constants`,
 

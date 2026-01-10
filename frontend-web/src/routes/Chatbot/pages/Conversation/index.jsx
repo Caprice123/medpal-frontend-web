@@ -130,32 +130,19 @@ function ChatbotConversationPanel({ conversationId, onBack }) {
   const handleStopStreaming = useCallback(async () => {
     if (!streamingMessage) return
 
-    // Clear streaming message state immediately to prevent re-renders
-    const messageToSave = { ...streamingMessage }
-    setStreamingMessage(null)
-
     try {
-      const savedMessage = await dispatch(stopChatbotStreaming(conversationId, messageToSave.content, messageToSave.modeType || currentMode))
+      console.log('⏹️ Stopping stream')
 
-      // Add the saved message to Redux with real ID from backend
-      if (savedMessage) {
-        // Remove the streaming message first
-        dispatch(actions.removeMessage(messageToSave.id))
+      // Stop receiving new chunks from backend, but finish typing what we already received
+      await dispatch(stopChatbotStreaming())
 
-        // Then add the saved message
-        dispatch(actions.addMessage({
-          id: savedMessage.id,
-          senderType: savedMessage.senderType,
-          modeType: savedMessage.modeType,
-          content: savedMessage.content,
-          sources: savedMessage.sources || [],
-          createdAt: savedMessage.createdAt
-        }))
-      }
+      // Typing animation will continue until all received content is displayed
+      // Backend saves partial message to database in background
+      // On page refresh, user will see the saved message from database
     } catch (error) {
       console.error('Failed to stop streaming:', error)
     }
-  }, [streamingMessage, conversationId, currentMode, dispatch])
+  }, [streamingMessage, dispatch])
 
   const handleModeChange = useCallback((mode) => {
     dispatch(switchMode(mode))

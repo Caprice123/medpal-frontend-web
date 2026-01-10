@@ -15,6 +15,7 @@ export class GetChatbotConfigService extends BaseService {
 
     const constantsMap = await GetConstantsService.call({ keys: constantKeys })
 
+    console.log(constantsMap)
     console.log(parseFloat(constantsMap.chatbot_research_cost))
     return {
       is_active: constantsMap.chatbot_is_active === 'true',

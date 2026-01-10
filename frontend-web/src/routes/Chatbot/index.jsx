@@ -25,7 +25,9 @@ const Chatbot = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedConversationId, setSelectedConversationId] = useState(null)
 
-  const { conversations, loading } = useSelector(state => state.chatbot)
+  // Only subscribe to conversations and loading - prevents rerender when messages update
+  const conversations = useSelector(state => state.chatbot.conversations)
+  const loading = useSelector(state => state.chatbot.loading)
 
   // Fetch chatbot config on mount (to get available modes)
   useEffect(() => {

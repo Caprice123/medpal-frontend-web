@@ -167,6 +167,8 @@ export class ResearchModeAIService extends BaseService {
         console.log(`Research mode: filtering to ${trustedDomains.domains.length} trusted domains`)
       }
 
+      console.log(requestParams)
+
       // Create streaming chat completion
       const stream = await perplexity.chat.completions.create(requestParams)
 

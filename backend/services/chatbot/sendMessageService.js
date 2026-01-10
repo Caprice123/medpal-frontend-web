@@ -7,7 +7,7 @@ import { ResearchModeAIService } from '#services/chatbot/ai/researchModeAIServic
 import { HasActiveSubscriptionService } from '#services/pricing/getUserStatusService'
 
 export class SendMessageService extends BaseService {
-  static async call({ userId, conversationId, message, mode, onStream, onComplete, onError }) {
+  static async call({ userId, conversationId, message, mode, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
     this.validate({ userId, conversationId, message, mode })
 
     // Verify conversation exists and user has access
@@ -108,7 +108,9 @@ export class SendMessageService extends BaseService {
             requiresCredits,
             onStream,
             onComplete,
-            onError
+            onError,
+            checkClientConnected,
+            streamAbortSignal
           })
         }
 
@@ -129,7 +131,9 @@ export class SendMessageService extends BaseService {
             requiresCredits,
             onStream,
             onComplete,
-            onError
+            onError,
+            checkClientConnected,
+            streamAbortSignal
           })
         }
 
@@ -150,7 +154,9 @@ export class SendMessageService extends BaseService {
             requiresCredits,
             onStream,
             onComplete,
-            onError
+            onError,
+            checkClientConnected,
+            streamAbortSignal
           })
         }
 
@@ -301,46 +307,135 @@ export class SendMessageService extends BaseService {
   /**
    * Handle streaming response from Gemini (Normal and Validated modes)
    */
-  static async handleGeminiStreamingResponse({ userId, conversationId, userMessageContent, stream, creditsUsed, sources, mode, requiresCredits, onStream, onComplete, onError }) {
-    try {
-      let fullResponse = ''
+  static async handleGeminiStreamingResponse({ userId, conversationId, userMessageContent, stream, creditsUsed, sources, mode, requiresCredits, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
+    let fullResponseFromAI = ''
+    let sentContentToClient = ''
+    let streamAborted = false
+    let clientStillConnected = true
+    let accumulatedChunk = '' // Buffer to accumulate 20 characters
 
-      // Process Gemini stream chunks
+    const CHARS_PER_CHUNK = 20
+    const TYPING_SPEED_MS = 10
+
+    try {
+      // Process Gemini stream chunks with pacing
       for await (const chunk of stream) {
+        // Check if stream was aborted (client disconnected)
+        if (streamAbortSignal && streamAbortSignal.aborted) {
+          console.log('Stream aborted - client disconnected')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
+        // Double check with function if available
+        if (checkClientConnected && !checkClientConnected()) {
+          console.log('Client disconnected - stopping stream processing')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
         const text = chunk.text()
 
         if (text) {
-          fullResponse += text
+          fullResponseFromAI += text
+          accumulatedChunk += text
 
-          // Send chunk to client
+          // Send chunk when we have 20+ characters
+          while (accumulatedChunk.length >= CHARS_PER_CHUNK) {
+            const chunkToSend = accumulatedChunk.substring(0, CHARS_PER_CHUNK)
+            accumulatedChunk = accumulatedChunk.substring(CHARS_PER_CHUNK)
+
+            // Try to send chunk to client
+            try {
+                // Only add to sentContentToClient AFTER successfully sending
+                
+                onStream({
+                    type: 'chunk',
+                    data: {
+                        content: chunkToSend
+                    }
+                }, () => {
+                    sentContentToClient += chunkToSend
+                    console.log(sentContentToClient)
+                    console.log(chunkToSend)
+                })
+
+            } catch (e) {
+              // Client disconnected mid-chunk - don't add to sentContentToClient
+              console.log('Client disconnected during chunk send - chunk not sent')
+              streamAborted = true
+              clientStillConnected = false
+              break
+            }
+
+            // Check abort status before delay
+            if (streamAbortSignal && streamAbortSignal.aborted) {
+              console.log('Stream aborted during pacing delay')
+              streamAborted = true
+              break
+            }
+
+            // Delay for 20 chars: 20 * 10ms * 1.5 = 300ms
+            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 2
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
+        }
+
+        if (streamAborted) break
+      }
+
+      // Send any remaining accumulated characters
+      if (accumulatedChunk.length > 0 && !streamAborted) {
+        try {
           onStream({
             type: 'chunk',
             data: {
-              content: text
+              content: accumulatedChunk
             }
           })
+          sentContentToClient += accumulatedChunk
+        } catch (e) {
+          console.log('Client disconnected during final chunk send')
+          streamAborted = true
         }
       }
 
-      // Streaming complete - NOW save user message to database
+      // Stream ended (either completed or aborted)
+      // Save what we have sent to the client
+      const contentToSave = streamAborted ? sentContentToClient : fullResponseFromAI
+
+      console.log(`Stream ${streamAborted ? 'aborted' : 'completed'}.`)
+      console.log(`  - Full AI response: ${fullResponseFromAI.length} chars`)
+      console.log(`  - Sent to client: ${sentContentToClient.length} chars`)
+      console.log(`  - Accumulated buffer: ${accumulatedChunk.length} chars`)
+      console.log(`  - Saving: ${contentToSave.length} chars`)
+      console.log(`  - chunks sent to client: ${sentContentToClient}`)
+      console.log(`  - sent to client: ${contentToSave}`)
+      console.log(`  - response AI: ${fullResponseFromAI}`)
+
+      // Save user message to database
       const userMessage = await prisma.chatbot_messages.create({
         data: {
           conversation_id: conversationId,
           sender_type: 'user',
           mode_type: null,
           content: userMessageContent,
-          credits_used: 0
+          credits_used: 0,
+          created_at: new Date()
         }
       })
 
-      // Save AI message to database
+      // Save AI message to database (full or partial depending on abort status)
       const aiMessage = await prisma.chatbot_messages.create({
         data: {
           conversation_id: conversationId,
           sender_type: 'ai',
           mode_type: mode,
-          content: fullResponse,
-          credits_used: creditsUsed
+          content: contentToSave,
+          credits_used: creditsUsed,
+          created_at: new Date()
         }
       })
 
@@ -385,41 +480,20 @@ export class SendMessageService extends BaseService {
         })
       }
 
-      const messageCountKey = `chatbot_${mode}_message_count`
-      const currentCount = await prisma.constants.findUnique({
-        where: { key: messageCountKey }
-      })
-
-      if (currentCount) {
-        await prisma.constants.update({
-          where: { key: messageCountKey },
-          data: {
-            value: String(parseInt(currentCount.value) + 1),
-            updated_at: new Date()
-          }
-        })
-      } else {
-        await prisma.constants.create({
-          data: {
-            key: messageCountKey,
-            value: '1'
-          }
-        })
-      }
-
       // Update conversation timestamp
       await prisma.chatbot_conversations.update({
         where: { id: conversationId },
         data: { updated_at: new Date() }
       })
 
-      // Send completion
-      onComplete({
+      // ALWAYS send completion with saved message data
+      // This ensures frontend gets real IDs even when stream was aborted
+      const responseData = {
         userMessage: {
           id: userMessage.id,
           senderType: userMessage.sender_type,
           content: userMessage.content,
-          created_at: userMessage.created_at
+          createdAt: userMessage.created_at.toISOString()
         },
         aiMessage: {
           id: aiMessage.id,
@@ -428,13 +502,26 @@ export class SendMessageService extends BaseService {
           content: aiMessage.content,
           creditsUsed: aiMessage.credits_used,
           sources: sources || [],
-          created_at: aiMessage.created_at
+          createdAt: aiMessage.created_at.toISOString()
         }
-      })
+      }
+
+      // Try to send completion event (may fail if client already disconnected)
+      try {
+        onComplete(responseData)
+      } catch (e) {
+        console.log('Could not send completion event - client already disconnected')
+      }
+
+      return responseData
     } catch (error) {
       console.error('Gemini streaming error:', error)
       if (onError) {
-        onError(error)
+        try {
+          onError(error)
+        } catch (e) {
+          console.log('Could not send error - client disconnected')
+        }
       }
     }
   }
@@ -442,27 +529,83 @@ export class SendMessageService extends BaseService {
   /**
    * Handle streaming response from Perplexity (Research mode)
    */
-  static async handlePerplexityStreamingResponse({ userId, conversationId, userMessageContent, stream, creditsUsed, mode, requiresCredits, onStream, onComplete, onError }) {
-    try {
-      let fullResponse = ''
-      const citations = []
-      const sentCitations = new Set()
+  static async handlePerplexityStreamingResponse({ userId, conversationId, userMessageContent, stream, creditsUsed, mode, requiresCredits, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
+    let fullResponseFromAI = ''
+    let sentContentToClient = ''
+    let streamAborted = false
+    let clientStillConnected = true
+    let accumulatedChunk = '' // Buffer to accumulate 20 characters
+    const citations = []
+    const sentCitations = new Set()
 
-      // Process stream chunks
+    const CHARS_PER_CHUNK = 20
+    const TYPING_SPEED_MS = 10
+
+    try {
+      // Process stream chunks with pacing
       for await (const chunk of stream) {
+        // Check if stream was aborted (client disconnected)
+        if (streamAbortSignal && streamAbortSignal.aborted) {
+          console.log('Stream aborted - client disconnected')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
+        // Double check with function if available
+        if (checkClientConnected && !checkClientConnected()) {
+          console.log('Client disconnected - stopping stream processing')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
         const content = chunk.choices[0]?.delta?.content || ''
 
         if (content) {
-          fullResponse += content
+          fullResponseFromAI += content
+          accumulatedChunk += content
 
-          // Send chunk to client
-          onStream({
-            type: 'chunk',
-            data: {
-              content: content
+          // Send chunk when we have 20+ characters
+          while (accumulatedChunk.length >= CHARS_PER_CHUNK) {
+            const chunkToSend = accumulatedChunk.substring(0, CHARS_PER_CHUNK)
+            accumulatedChunk = accumulatedChunk.substring(CHARS_PER_CHUNK)
+
+            // Try to send chunk to client
+            try {
+              onStream({
+                type: 'chunk',
+                data: {
+                  content: chunkToSend
+                }
+              }, () => {
+                  sentContentToClient += chunkToSend
+              })
+
+              // Only add to sentContentToClient AFTER successfully sending
+            } catch (e) {
+                console.log(e)
+              // Client disconnected mid-chunk - don't add to sentContentToClient
+              console.log('Client disconnected during chunk send - chunk not sent')
+              streamAborted = true
+              clientStillConnected = false
+              break
             }
-          })
+
+            // Check abort status before delay
+            if (streamAbortSignal && streamAbortSignal.aborted) {
+              console.log('Stream aborted during pacing delay')
+              streamAborted = true
+              break
+            }
+
+            // Delay for 20 chars: 20 * 10ms * 1.5 = 300ms
+            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 1.5
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
         }
+
+        if (streamAborted) break
 
         // Extract and send citations if available
         if (chunk.citations && chunk.citations.length > 0) {
@@ -472,37 +615,69 @@ export class SendMessageService extends BaseService {
               citations.push(citation)
 
               // Send citation to client immediately
-              onStream({
-                type: 'citation',
-                data: {
-                  url: citation,
-                  title: citation.substring(0, 200)
-                }
-              })
+              try {
+                onStream({
+                  type: 'citation',
+                  data: {
+                    url: citation,
+                    title: citation.substring(0, 200)
+                  }
+                })
+              } catch (e) {
+                // Ignore if client disconnected
+              }
             }
           })
         }
       }
 
-      // Streaming complete - NOW save user message to database
+      // Send any remaining accumulated characters
+      if (accumulatedChunk.length > 0 && !streamAborted) {
+        try {
+          onStream({
+            type: 'chunk',
+            data: {
+              content: accumulatedChunk
+            }
+          })
+          sentContentToClient += accumulatedChunk
+        } catch (e) {
+          console.log('Client disconnected during final chunk send')
+          streamAborted = true
+        }
+      }
+
+      // Stream ended (either completed or aborted)
+      // Save what we have sent to the client
+      const contentToSave = streamAborted ? sentContentToClient : fullResponseFromAI
+
+      console.log(`Stream ${streamAborted ? 'aborted' : 'completed'}.`)
+      console.log(`  - Full AI response: ${fullResponseFromAI.length} chars`)
+      console.log(`  - Sent to client: ${sentContentToClient.length} chars`)
+      console.log(`  - Accumulated buffer: ${accumulatedChunk.length} chars`)
+      console.log(`  - Saving: ${contentToSave.length} chars`)
+
+      // Save user message to database
       const userMessage = await prisma.chatbot_messages.create({
         data: {
           conversation_id: conversationId,
           sender_type: 'user',
           mode_type: null,
           content: userMessageContent,
-          credits_used: 0
+          credits_used: 0,
+          created_at: new Date()
         }
       })
 
-      // Save AI message to database
+      // Save AI message to database (full or partial depending on abort status)
       const aiMessage = await prisma.chatbot_messages.create({
         data: {
           conversation_id: conversationId,
           sender_type: 'ai',
           mode_type: mode,
-          content: fullResponse,
-          credits_used: creditsUsed
+          content: contentToSave,
+          credits_used: creditsUsed,
+          created_at: new Date()
         }
       })
 
@@ -559,41 +734,20 @@ export class SendMessageService extends BaseService {
         })
       }
 
-      const messageCountKey = `chatbot_${mode}_message_count`
-      const currentCount = await prisma.constants.findUnique({
-        where: { key: messageCountKey }
-      })
-
-      if (currentCount) {
-        await prisma.constants.update({
-          where: { key: messageCountKey },
-          data: {
-            value: String(parseInt(currentCount.value) + 1),
-            updated_at: new Date()
-          }
-        })
-      } else {
-        await prisma.constants.create({
-          data: {
-            key: messageCountKey,
-            value: '1'
-          }
-        })
-      }
-
       // Update conversation timestamp
       await prisma.chatbot_conversations.update({
         where: { id: conversationId },
         data: { updated_at: new Date() }
       })
 
-      // Send completion
-      onComplete({
+      // ALWAYS send completion with saved message data
+      // This ensures frontend gets real IDs even when stream was aborted
+      const responseData = {
         userMessage: {
           id: userMessage.id,
           senderType: userMessage.sender_type,
           content: userMessage.content,
-          created_at: userMessage.created_at
+          createdAt: userMessage.created_at.toISOString()
         },
         aiMessage: {
           id: aiMessage.id,
@@ -602,13 +756,26 @@ export class SendMessageService extends BaseService {
           content: aiMessage.content,
           creditsUsed: aiMessage.credits_used,
           sources: sources,
-          created_at: aiMessage.created_at
+          createdAt: aiMessage.created_at.toISOString()
         }
-      })
+      }
+
+      // Try to send completion event (may fail if client already disconnected)
+      try {
+        onComplete(responseData)
+      } catch (e) {
+        console.log('Could not send completion event - client already disconnected')
+      }
+
+      return responseData
     } catch (error) {
       console.error('Streaming error:', error)
       if (onError) {
-        onError(error)
+        try {
+          onError(error)
+        } catch (e) {
+          console.log('Could not send error - client disconnected')
+        }
       }
     }
   }
