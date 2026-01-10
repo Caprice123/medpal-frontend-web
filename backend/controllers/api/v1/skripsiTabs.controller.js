@@ -15,6 +15,7 @@ class SkripsiTabsController {
       limit: parseInt(limit) || 50,
       beforeMessageId: beforeMessageId ? parseInt(beforeMessageId) : null
     })
+    console.log(result.messages)
 
     return res.status(200).json({
       data: result.messages,
@@ -33,72 +34,63 @@ class SkripsiTabsController {
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
 
-    const onStream = (data) => {
-      res.write(`data: ${JSON.stringify(data)}\n\n`)
-    }
+    // Track if client disconnected and create AbortController for streaming
+    let clientDisconnected = false
+    const streamAbortController = new AbortController()
 
-    const onComplete = (data) => {
-      res.write(`data: ${JSON.stringify({ type: 'done', data })}\n\n`)
-      res.end()
-    }
-
-    const onError = (error) => {
-      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
-      res.end()
-    }
-
-    await SendMessageService.call({
-      tabId,
-      userId,
-      message,
-      onStream,
-      onComplete,
-      onError
+    // Detect when client disconnects (e.g., clicks stop button or closes tab)
+    req.on('close', () => {
+      console.log('🔴 req.on("close") fired - Client disconnected')
+      clientDisconnected = true
+      streamAbortController.abort() // Abort the AI stream
     })
-  }
 
-  // Save partial message when streaming is stopped
-  async savePartialMessage(req, res) {
-    const userId = req.user.id
-    const tabId = parseInt(req.params.tabId)
-    const { content } = req.body
+    res.on('close', () => {
+      console.log('🔴 res.on("close") fired - Response stream closed')
+      clientDisconnected = true
+      streamAbortController.abort()
+    })
 
-    // Verify the tab belongs to the user
-    const tab = await prisma.skripsi_tabs.findFirst({
-      where: {
-        id: tabId,
-        skripsi_set: {
-          user_id: userId
+    // Handle response errors
+    res.on('error', (err) => {
+      console.log('🔴 res.on("error") fired:', err.message)
+      clientDisconnected = true
+      streamAbortController.abort()
+    })
+
+    try {
+      await SendMessageService.call({
+        tabId,
+        userId,
+        message,
+        streamAbortSignal: streamAbortController.signal,
+        checkClientConnected: () => !clientDisconnected,
+        onStream: (chunk, onSend) => {
+          // Only send if client still connected
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`)
+            if (onSend) onSend() // Call callback if provided
+          }
+        },
+        onComplete: (result) => {
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify({ type: 'done', data: result })}\n\n`)
+            res.end()
+          }
+        },
+        onError: (error) => {
+          if (!clientDisconnected) {
+            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
+            res.end()
+          }
         }
-      }
-    })
-
-    if (!tab) {
-      return res.status(404).json({
-        message: 'Tab not found or access denied'
       })
+    } catch (error) {
+      if (!clientDisconnected) {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`)
+        res.end()
+      }
     }
-
-    // Save the partial AI message to database
-    const aiMessage = await prisma.skripsi_messages.create({
-      data: {
-        tab_id: tabId,
-        sender_type: 'ai',
-        content: content,
-        created_at: new Date(),
-        updated_at: new Date()
-      }
-    })
-
-    return res.status(200).json({
-      message: 'Partial message saved successfully',
-      data: {
-        id: aiMessage.id,
-        sender_type: aiMessage.sender_type,
-        content: aiMessage.content,
-        created_at: aiMessage.created_at
-      }
-    })
   }
 }
 

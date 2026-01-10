@@ -36,6 +36,10 @@ export async function seedChatbotConstants() {
       value: '5'
     },
     {
+      key: 'chatbot_normal_last_message_count',
+      value: '10'
+    },
+    {
       key: 'chatbot_normal_prompt',
       value: `Kamu adalah asisten AI medis yang membantu mahasiswa kedokteran dan profesional kesehatan di Indonesia.
 
@@ -58,6 +62,10 @@ Gaya Komunikasi:
 - Sabar dan mendukung proses pembelajaran
 - Responsif terhadap tingkat pemahaman pengguna`
     },
+    {
+      key: 'chatbot_normal_message_count',
+      value: '0'
+    },
 
     // Validated Search Mode Settings
     {
@@ -71,6 +79,10 @@ Gaya Komunikasi:
     {
       key: 'chatbot_validated_cost',
       value: '8'
+    },
+    {
+      key: 'chatbot_validated_last_message_count',
+      value: '10'
     },
     {
       key: 'chatbot_validated_prompt',
@@ -97,6 +109,14 @@ Aturan Ketat:
       key: 'chatbot_validated_max_context',
       value: '5'
     },
+    {
+      key: 'chatbot_validated_threshold',
+      value: '0.3'
+    },
+    {
+      key: 'chatbot_validated_message_count',
+      value: '0'
+    },
 
     // Research Mode Settings
     {
@@ -104,8 +124,16 @@ Aturan Ketat:
       value: 'false'
     },
     {
+      key: 'chatbot_research_model',
+      value: 'sonar'
+    },
+    {
       key: 'chatbot_research_cost',
       value: '15'
+    },
+    {
+      key: 'chatbot_research_last_message_count',
+      value: '10'
     },
     {
       key: 'chatbot_research_api_key',
@@ -142,6 +170,10 @@ Aturan:
     {
       key: 'chatbot_research_max_sources',
       value: '5'
+    },
+    {
+      key: 'chatbot_research_message_count',
+      value: '0'
     },
     {
       key: 'chatbot_research_trusted_domains',

@@ -377,7 +377,7 @@ export class SendMessageService extends BaseService {
               break
             }
 
-            // Delay for 20 chars: 20 * 10ms * 1.5 = 300ms
+            // Delay for 20 chars: 20 * 10ms * 2 = 400ms
             const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 2
             await new Promise(resolve => setTimeout(resolve, delay))
           }
@@ -599,8 +599,8 @@ export class SendMessageService extends BaseService {
               break
             }
 
-            // Delay for 20 chars: 20 * 10ms * 1.5 = 300ms
-            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 1.5
+            // Delay for 20 chars: 20 * 10ms * 2 = 400ms
+            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 2
             await new Promise(resolve => setTimeout(resolve, delay))
           }
         }

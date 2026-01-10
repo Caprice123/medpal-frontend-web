@@ -15,8 +15,8 @@ export const fetchFeatures = () => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isLoadingFeatures', value: true }))
     
-
-    const response = await getPublic(Endpoints.features.list)
+    const route = Endpoints.api.features
+    const response = await getPublic(route)
 
     const data = response.data.data
 

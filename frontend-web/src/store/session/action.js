@@ -322,9 +322,11 @@ export const startFlashcardDeck = (deckId) => async (dispatch) => {
     dispatch(setLoading({ key: 'isStartingFlashcard', value: true }))
     dispatch(clearError())
 
-    const response = await postWithToken(Endpoints.flashcards.start, {
-      deckId
-    })
+    const route = Endpoints.api.flashcards + "/start"
+    const response = await postWithToken(
+      route,
+      { deckId }
+    )
 
     const data = response.data.data
 
@@ -353,8 +355,9 @@ export const submitFlashcardProgress = (deckId, answers = []) => async (dispatch
     dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingAnswers', value: true }))
     dispatch(clearError())
 
+    const route = Endpoints.api.flashcards + "/submit"
     const response = await postWithToken(
-      Endpoints.flashcards.submit,
+      route,
       { deckId, answers }
     )
 

@@ -18,7 +18,7 @@ export const fetchTagGroups = () => async (dispatch, getState) => {
     const { names } = getState().tagGroups.filter
     if (names) queryParams.name = names.join(',')
 
-    const route = Endpoints.tagGroups
+    const route = Endpoints.admin.tagGroups
     const response = await getWithToken(route, queryParams)
     const { data } = response.data
     dispatch(setTagGroups(data))

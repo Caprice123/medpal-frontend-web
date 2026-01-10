@@ -57,15 +57,15 @@ model credit_transactions {
 }
 
 model exercise_questions {
-  id                        Int                         @id @default(autoincrement())
-  topic_id                  Int
-  question                  String
-  answer                    String
-  explanation               String?
-  order                     Int                         @default(0)
-  created_at                DateTime                    @default(now())
-  updated_at                DateTime                    @default(now())
-  exercise_topics           exercise_topics             @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  id              Int             @id @default(autoincrement())
+  topic_id        Int
+  question        String
+  answer          String
+  explanation     String?
+  order           Int             @default(0)
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @default(now())
+  exercise_topics exercise_topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
 
   @@index([order])
   @@index([topic_id])
@@ -93,9 +93,9 @@ model exercise_sessions {
 model exercise_session_questions {
   id                  Int      @id @default(autoincrement())
   exercise_session_id Int
-  question_text       String   // Snapshot of question at time of session
-  answer_text         String   // Snapshot of answer at time of session
-  explanation         String   // Snapshot of explanation at time of session
+  question_text       String // Snapshot of question at time of session
+  answer_text         String // Snapshot of answer at time of session
+  explanation         String // Snapshot of explanation at time of session
   order               Int
   created_at          DateTime @default(now())
 
@@ -345,17 +345,17 @@ model user_question_progress {
 }
 
 model user_sessions {
-  id                        Int       @id @default(autoincrement())
-  user_id                   Int
-  token                     String    @unique
-  refresh_token             String?   @unique
-  refresh_token_expires_at  DateTime?
-  is_active                 Boolean   @default(true)
-  user_agent                String?
-  ip_address                String?
-  expires_at                DateTime
-  last_active_at            DateTime  @default(now())
-  created_at                DateTime  @default(now())
+  id                       Int       @id @default(autoincrement())
+  user_id                  Int
+  token                    String    @unique
+  refresh_token            String?   @unique
+  refresh_token_expires_at DateTime?
+  is_active                Boolean   @default(true)
+  user_agent               String?
+  ip_address               String?
+  expires_at               DateTime
+  last_active_at           DateTime  @default(now())
+  created_at               DateTime  @default(now())
 
   @@index([token])
   @@index([refresh_token])
@@ -363,13 +363,13 @@ model user_sessions {
 }
 
 model users {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  picture   String?
-  google_id String?  @unique
-  role      String   @default("user")
-  is_active Boolean  @default(true)
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  name       String?
+  picture    String?
+  google_id  String?  @unique
+  role       String   @default("user")
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
@@ -474,21 +474,21 @@ model statistics {
 // ============= Pricing Plans (Unified Bundles) =============
 
 model pricing_plans {
-  id                      Int      @id @default(autoincrement())
-  code                    String?  @unique
-  name                    String
-  description             String?
-  price                   Decimal  @db.Decimal(10, 2)
-  bundle_type             String   @default("credits") // credits, subscription, hybrid
-  duration_days           Int? // for subscription/hybrid bundles
-  credits_included        Int      @default(0)
-  is_active               Boolean  @default(true)
-  is_popular              Boolean  @default(false)
-  discount                Int      @default(0)
-  order                   Int      @default(0)
-  allowed_payment_method  String   @default("xendit") // comma-separated: xendit, manual
-  created_at              DateTime @default(now())
-  updated_at              DateTime @default(now())
+  id                     Int      @id @default(autoincrement())
+  code                   String?  @unique
+  name                   String
+  description            String?
+  price                  Decimal  @db.Decimal(10, 2)
+  bundle_type            String   @default("credits") // credits, subscription, hybrid
+  duration_days          Int? // for subscription/hybrid bundles
+  credits_included       Int      @default(0)
+  is_active              Boolean  @default(true)
+  is_popular             Boolean  @default(false)
+  discount               Int      @default(0)
+  order                  Int      @default(0)
+  allowed_payment_method String   @default("xendit") // comma-separated: xendit, manual
+  created_at             DateTime @default(now())
+  updated_at             DateTime @default(now())
 
   user_purchases user_purchases[]
 
@@ -504,7 +504,7 @@ model user_purchases {
   id              Int      @id @default(autoincrement())
   user_id         Int
   pricing_plan_id Int
-  bundle_type     String   // credits, subscription, hybrid
+  bundle_type     String // credits, subscription, hybrid
   purchase_date   DateTime @default(now())
 
   // Payment fields
@@ -685,16 +685,16 @@ model attachments {
 }
 
 model blobs {
-  id           Int           @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   key          String
   filename     String
   metadata     String
   content_type String
   byte_size    Int
   checksum     String
-  uploaded_at  DateTime      @default(now())
-  created_at   DateTime      @default(now())
-  updated_at   DateTime      @default(now())
+  uploaded_at  DateTime @default(now())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
 
   attachments attachments[]
 
@@ -705,14 +705,15 @@ model blobs {
 // ============= Anatomy Quiz Feature =============
 
 model anatomy_quizzes {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  status      String   @default("draft")
-  is_active   Boolean  @default(true)
-  created_by  Int
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String?
+  status         String   @default("draft")
+  is_active      Boolean  @default(true)
+  question_count Int      @default(0)
+  created_by     Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
 
   anatomy_questions     anatomy_questions[]
   anatomy_quiz_tags     anatomy_quiz_tags[]
@@ -1026,13 +1027,13 @@ model skripsi_sets {
 model skripsi_tabs {
   id         Int      @id @default(autoincrement())
   set_id     Int
-  tab_type   String   // 'ai_researcher_1', 'ai_researcher_2', 'ai_researcher_3', 'paraphraser', 'diagram_builder'
+  tab_type   String // 'ai_researcher_1', 'ai_researcher_2', 'ai_researcher_3', 'paraphraser', 'diagram_builder'
   title      String?
   content    String?  @db.Text
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
-  skripsi_set skripsi_sets     @relation(fields: [set_id], references: [id], onDelete: Cascade)
+  skripsi_set skripsi_sets       @relation(fields: [set_id], references: [id], onDelete: Cascade)
   messages    skripsi_messages[]
 
   @@index([set_id])
@@ -1042,7 +1043,7 @@ model skripsi_tabs {
 model skripsi_messages {
   id          Int      @id @default(autoincrement())
   tab_id      Int
-  sender_type String   // 'user' or 'ai'
+  sender_type String // 'user' or 'ai'
   content     String   @db.Text
   created_at  DateTime @default(now())
 
@@ -1053,12 +1054,12 @@ model skripsi_messages {
 }
 
 model skripsi_constants {
-  id                          Int      @id @default(autoincrement())
-  key                         String   @unique
-  value                       String   @db.Text
-  description                 String?  @db.Text
-  created_at                  DateTime @default(now())
-  updated_at                  DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
 
   @@index([key])
 }

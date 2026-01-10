@@ -57,7 +57,8 @@ export const fetchConversations = (filters, page, perPage) => async (dispatch, g
     if (filters?.search) queryParams.search = filters.search
     if (filters?.mode) queryParams.mode = filters.mode
 
-    const response = await getWithToken(Endpoints.chatbot.conversations, queryParams)
+    const route = Endpoints.api.chatbot + '/conversations'
+    const response = await getWithToken(route, queryParams)
     dispatch(setConversations(response.data.data || []))
     dispatch(setPagination(response.data.pagination || { page: 1, perPage: 20, isLastPage: false }))
   } catch (err) {
@@ -71,7 +72,8 @@ export const fetchConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: true }))
 
-    const response = await getWithToken(Endpoints.chatbot.conversation(conversationId))
+    const route = Endpoints.api.chatbot + `/conversations/${conversationId}`
+    const response = await getWithToken(route)
     dispatch(setCurrentConversation(response.data.data))
     return response.data.data
   } catch (err) {
@@ -85,8 +87,8 @@ export const createConversation = (topic, mode = 'normal') => async (dispatch) =
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
     
-
-    const response = await postWithToken(Endpoints.chatbot.conversations, {
+    const route = Endpoints.api.chatbot + '/conversations'
+    const response = await postWithToken(route, {
       topic,
       initialMode: mode
     })
@@ -105,8 +107,8 @@ export const renameConversation = (conversationId, topic) => async (dispatch) =>
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
     
-
-    const response = await putWithToken(Endpoints.chatbot.conversation(conversationId), {
+    const route = Endpoints.api.chatbot + `/conversations/${conversationId}`
+    const response = await putWithToken(route, {
       topic
     })
 
@@ -125,8 +127,8 @@ export const deleteConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
     
-
-    await deleteWithToken(Endpoints.chatbot.conversation(conversationId))
+    const route = Endpoints.api.chatbot + `/conversations/${conversationId}`
+    await deleteWithToken(route)
     dispatch(removeConversation(conversationId))
   } catch (err) {
     handleApiError(err, dispatch)
@@ -139,9 +141,9 @@ export const fetchMessages = ({ conversationId, page = 1, perPage = 50, prepend 
   try {
     dispatch(setLoading({ key: 'isMessagesLoading', value: true }))
     
-
+    const route = Endpoints.api.chatbot + `/conversations/${conversationId}/messages`
     const queryParams = { page, perPage }
-    const response = await getWithToken(Endpoints.chatbot.messages(conversationId), queryParams)
+    const response = await getWithToken(route, queryParams)
 
     // Backend returns DESC (newest first), so reverse it to show oldest→newest
     const messages = (response.data.data || []).reverse()
@@ -165,7 +167,6 @@ export const fetchMessages = ({ conversationId, page = 1, perPage = 50, prepend 
 
 // Store active abort controller and user message for stream cancellation
 let activeChatbotAbortController = null
-let activeUserMessageContent = null
 
 // Helper function to ensure token is valid and refreshed if needed
 const ensureValidToken = async () => {
@@ -272,7 +273,7 @@ export const stopChatbotStreaming = () => async (dispatch) => {
 const sendMessageStreaming = async (conversationId, content, mode, dispatch, optimisticUserId, abortController = null) => {
   // Ensure token is valid and refreshed if needed
   const accessToken = await ensureValidToken()
-  const url = `${Endpoints.chatbot.send(conversationId)}`
+  const route = Endpoints.api.chatbot + `/conversations/${conversationId}/send`
 
   const streamingMessageId = `streaming-${Date.now()}`
   const messageCreatedAt = new Date().toISOString()
@@ -283,14 +284,15 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
   // Typing animation state
   let fullContent = '' // Complete content from backend chunks
   let displayedContent = '' // Content currently displayed with typing animation
-  let sources = [] // Store sources as they arrive
+  let sources = [] // Store sources - only show after streaming completes
+  let showSources = false // Flag to control when to display sources
   let isTyping = false
   let backendSavedMessage = false
   let finalData = null
 
   const TYPING_SPEED_MS = 10 // 10ms per character (backend delays based on chunk length × 10ms)
 
-  // Add initial streaming message
+  // Add initial streaming message (no sources initially)
   dispatch(addMessage({
     id: streamingMessageId,
     senderType: 'ai',
@@ -315,7 +317,7 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
         senderType: 'ai',
         modeType: mode,
         content: displayedContent,
-        sources: sources,
+        sources: showSources ? sources : [], // Only show sources if streaming is done
         createdAt: messageCreatedAt
       }))
 
@@ -358,7 +360,7 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
       senderType: 'ai',
       modeType: mode,
       content: displayedContent,
-      sources: sources,
+      sources: showSources ? sources : [], // Only show sources after streaming completes
       createdAt: messageCreatedAt
     }))
 
@@ -388,7 +390,7 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
   let buffer = ''
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(route, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -427,7 +429,7 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
             if (data.type === 'chunk') {
               addChunkToContent(data.data.content)
             } else if (data.type === 'citation') {
-              // Add citation to sources array
+              // Collect citation but don't show yet (wait until streaming completes)
               const newSource = {
                 url: data.data.url,
                 title: data.data.title
@@ -437,8 +439,10 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
               // Backend saved to database (full or partial)
               backendSavedMessage = true
               finalData = data.data
+              showSources = true // Now we can show sources since streaming is complete
 
               console.log('✅ Backend saved messages:', data.data)
+              console.log('✅ Citations ready to display:', sources.length)
 
               // If typing animation already caught up OR user stopped, finalize immediately
               if ((!isTyping && displayedContent.length >= fullContent.length) || userStoppedStream) {
@@ -491,7 +495,8 @@ export const switchMode = (mode) => async (dispatch) => {
 
 export const submitFeedback = (messageId, feedbackType) => async (dispatch) => {
   try {
-    await postWithToken(Endpoints.chatbot.feedback(messageId), {
+    const route = Endpoints.api.chatbot + `/conversations/${messageId}/feedback`
+    await postWithToken(route, {
       feedbackType
     })
   } catch (err) {
@@ -516,7 +521,8 @@ export const fetchAdminConversations = () => async (dispatch, getState) => {
     if (filters?.mode) queryParams.mode = filters.mode
     if (filters?.userId) queryParams.userId = filters.userId
 
-    const response = await getWithToken(Endpoints.chatbot.admin.conversations, queryParams)
+    const route = Endpoints.chatbot.admin + "/conversations"
+    const response = await getWithToken(route, queryParams)
     dispatch(setConversations(response.data.data || []))
     dispatch(setPagination(response.data.pagination || { page: 1, perPage: 20, isLastPage: false }))
     console.log(response.data.pagination)
@@ -531,8 +537,8 @@ export const fetchAdminConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCurrentConversationLoading', value: true }))
     
-
-    const response = await getWithToken(Endpoints.chatbot.admin.conversation(conversationId))
+    const route = Endpoints.chatbot.admin + `/conversations/${conversationId}`
+    const response = await getWithToken(route)
     dispatch(setCurrentConversation(response.data.data))
     return response.data.data
   } catch (err) {
@@ -546,8 +552,8 @@ export const deleteAdminConversation = (conversationId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isConversationsLoading', value: true }))
     
-
-    await deleteWithToken(Endpoints.chatbot.admin.conversation(conversationId))
+    const route = Endpoints.chatbot.admin + `/conversations/${conversationId}`
+    await deleteWithToken(route)
     dispatch(removeConversation(conversationId))
   } catch (err) {
     handleApiError(err, dispatch)
@@ -560,9 +566,9 @@ export const fetchAdminConversationMessages = ({ conversationId, page = 1, perPa
   try {
     dispatch(setLoading({ key: 'isMessagesLoading', value: true }))
     
-
+    const route = Endpoints.chatbot.admin + `/conversations/${conversationId}/messages`
     const queryParams = { page, perPage }
-    const response = await getWithToken(Endpoints.chatbot.admin.messages(conversationId), queryParams)
+    const response = await getWithToken(route, queryParams)
 
     // Backend returns DESC (newest first), so reverse it to show oldest→newest
     const messages = (response.data.data || []).reverse()

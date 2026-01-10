@@ -1,4 +1,5 @@
 import api from '@config/api';
+import Endpoints from '@config/endpoint'
 
 /**
  * Converts HTML content to DOCX and triggers download
@@ -10,8 +11,9 @@ import api from '@config/api';
  */
 export const convertHtmlToDocx = async (htmlContent, fileName = 'document', options = {}) => {
   try {
+    const route = Endpoints.api.skripsi + "/html-to-docx/convert"
     const response = await api.post(
-      '/api/v1/html-to-docx/convert',
+      route,
       {
         htmlContent,
         fileName
@@ -37,34 +39,6 @@ export const convertHtmlToDocx = async (htmlContent, fileName = 'document', opti
     return { success: true };
   } catch (error) {
     console.error('Error converting HTML to DOCX:', error);
-    throw error;
-  }
-};
-
-/**
- * Converts HTML content to DOCX and returns the blob
- * @param {string} htmlContent - The HTML content to convert
- * @param {Object} options - Additional options for html-to-docx
- * @returns {Promise<Blob>}
- */
-export const convertHtmlToDocxBlob = async (htmlContent, options = {}) => {
-  try {
-    const response = await api.post(
-      '/api/v1/html-to-docx/convert',
-      {
-        htmlContent,
-        options
-      },
-      {
-        responseType: 'blob'
-      }
-    );
-
-    return new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-  } catch (error) {
-    console.error('Error converting HTML to DOCX blob:', error);
     throw error;
   }
 };
@@ -115,7 +89,6 @@ export const convertHtmlToDocxReliable = async (htmlContent, fileName = 'documen
 
 export default {
   convertHtmlToDocx,
-  convertHtmlToDocxBlob,
   convertElementToDocx,
   convertHtmlToDocxCustom,
   convertHtmlToDocxReliable,

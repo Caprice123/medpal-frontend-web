@@ -1,4 +1,5 @@
 import prisma from '#prisma/client'
+import { SkripsiMessageSerializer } from '#serializers/api/v1/skripsiMessageSerializer'
 
 const getAdminSkripsiSetService = async (setId) => {
   const set = await prisma.skripsi_sets.findFirst({
@@ -31,6 +32,16 @@ const getAdminSkripsiSetService = async (setId) => {
     throw new Error('Skripsi set not found')
   }
 
+  // Serialize messages to camelCase format (like chatbot)
+  if (set.tabs) {
+    set.tabs.forEach(tab => {
+      if (tab.messages) {
+        tab.messages = SkripsiMessageSerializer.serialize(tab.messages)
+      }
+    })
+  }
+
+  console.log(set.tabs)
   return set
 }
 

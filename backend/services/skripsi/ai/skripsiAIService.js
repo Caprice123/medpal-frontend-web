@@ -71,6 +71,8 @@ export class SkripsiAIService extends BaseService {
     const contextMessages = parseInt(constantsMap[`skripsi_${mode}_context_messages`] || '20')
 
     // Get AI service from router
+    console.log(`skripsi_${mode}_model`)
+    console.log(modelName)
     const ModelService = RouterUtils.call(modelName)
     if (!ModelService) {
       throw new ValidationError(`Model ${modelName} is not supported`)

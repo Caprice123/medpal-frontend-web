@@ -6,7 +6,7 @@ import { SkripsiAIService } from '#services/skripsi/ai/skripsiAIService'
 import { HasActiveSubscriptionService } from '#services/pricing/getUserStatusService'
 
 export class SendMessageService extends BaseService {
-  static async call({ tabId, userId, message, onStream, onComplete, onError }) {
+  static async call({ tabId, userId, message, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
     if (!message || message.trim() === '') {
       throw new ValidationError('Message cannot be empty')
     }
@@ -123,7 +123,9 @@ export class SendMessageService extends BaseService {
             messageCost,
             onStream,
             onComplete,
-            onError
+            onError,
+            checkClientConnected,
+            streamAbortSignal
           })
         } else {
           return await this.handleStreamingResponse({
@@ -135,7 +137,9 @@ export class SendMessageService extends BaseService {
             messageCost,
             onStream,
             onComplete,
-            onError
+            onError,
+            checkClientConnected,
+            streamAbortSignal
           })
         }
       }
@@ -164,29 +168,96 @@ export class SendMessageService extends BaseService {
   /**
    * Handle streaming response from Perplexity (Research mode)
    */
-  static async handlePerplexityStreamingResponse({ tabId, setId, userId, userMessageContent, stream, messageCost, onStream, onComplete, onError }) {
-    let fullResponse = ''
+  static async handlePerplexityStreamingResponse({ tabId, setId, userId, userMessageContent, stream, messageCost, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
+    let fullResponseFromAI = ''
+    let sentContentToClient = ''
+    let streamAborted = false
+    let clientStillConnected = true
+    let accumulatedChunk = '' // Buffer to accumulate 20 characters
     let userMessage = null
     let aiMessage = null
     const citations = []
     const sentCitations = new Set()
 
+    const CHARS_PER_CHUNK = 20
+    const TYPING_SPEED_MS = 10
+
     try {
-      // Process Perplexity stream chunks
+      // Process Perplexity stream chunks with pacing
       for await (const chunk of stream) {
+        // Check if stream was aborted BEFORE processing chunk (client disconnected)
+        if (streamAbortSignal && streamAbortSignal.aborted) {
+          console.log('Stream aborted - client disconnected')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
+        // Double check with function if available
+        if (checkClientConnected && !checkClientConnected()) {
+          console.log('Client disconnected - stopping stream processing')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
         const content = chunk.choices[0]?.delta?.content || ''
 
         if (content) {
-          fullResponse += content
+          // Don't add to fullResponseFromAI if client already disconnected
+          if (streamAborted || (streamAbortSignal && streamAbortSignal.aborted)) {
+            console.log('Skipping chunk - client disconnected')
+            break
+          }
 
-          // Send chunk to client
-          onStream({
-            type: 'chunk',
-            data: {
-              content: content
+          fullResponseFromAI += content
+          accumulatedChunk += content
+
+          // Send chunk when we have 20+ characters
+          while (accumulatedChunk.length >= CHARS_PER_CHUNK) {
+            // Check abort BEFORE processing this chunk
+            if (streamAbortSignal && streamAbortSignal.aborted) {
+              console.log('Stream aborted - not sending accumulated chunk')
+              streamAborted = true
+              break
             }
-          })
+
+            const chunkToSend = accumulatedChunk.substring(0, CHARS_PER_CHUNK)
+            accumulatedChunk = accumulatedChunk.substring(CHARS_PER_CHUNK)
+
+            // Try to send chunk to client
+            try {
+              onStream({
+                type: 'chunk',
+                data: {
+                  content: chunkToSend
+                }
+              }, () => {
+                // Only add to sentContentToClient if callback fires (client still connected)
+                sentContentToClient += chunkToSend
+              })
+            } catch (e) {
+              // Client disconnected mid-chunk - don't add to sentContentToClient
+              console.log('Client disconnected during chunk send - chunk not sent')
+              streamAborted = true
+              clientStillConnected = false
+              break
+            }
+
+            // Check abort status before delay
+            if (streamAbortSignal && streamAbortSignal.aborted) {
+              console.log('Stream aborted during pacing delay')
+              streamAborted = true
+              break
+            }
+
+            // Delay for 20 chars: 20 * 10ms = 300ms
+            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 2
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
         }
+
+        if (streamAborted) break
 
         // Extract and send citations if available
         if (chunk.citations && chunk.citations.length > 0) {
@@ -196,17 +267,54 @@ export class SendMessageService extends BaseService {
               citations.push(citation)
 
               // Send citation to client immediately
-              onStream({
-                type: 'citation',
-                data: {
-                  url: citation,
-                  title: citation.substring(0, 200)
-                }
-              })
+              try {
+                onStream({
+                  type: 'citation',
+                  data: {
+                    url: citation,
+                    title: citation.substring(0, 200)
+                  }
+                })
+              } catch (e) {
+                // Ignore if client disconnected
+              }
             }
           })
         }
       }
+
+      // Send any remaining accumulated characters
+      if (accumulatedChunk.length > 0 && !streamAborted) {
+        try {
+          onStream({
+            type: 'chunk',
+            data: {
+              content: accumulatedChunk
+            }
+          }, () => {
+              sentContentToClient += accumulatedChunk
+          })
+        } catch (e) {
+          console.log('Client disconnected during final chunk send')
+          streamAborted = true
+        }
+      }
+
+      // Final check: if client disconnected during streaming, mark as aborted
+      if (!streamAborted && checkClientConnected && !checkClientConnected()) {
+        console.log('Client disconnected - detected after stream loop')
+        streamAborted = true
+      }
+
+      // Stream ended (either completed or aborted)
+      // Save what we have sent to the client
+      const contentToSave = streamAborted ? sentContentToClient : fullResponseFromAI
+
+      console.log(`Stream ${streamAborted ? 'aborted' : 'completed'}.`)
+      console.log(`  - Full AI response: ${fullResponseFromAI.length} chars`)
+      console.log(`  - Sent to client: ${sentContentToClient.length} chars`)
+      console.log(`  - Accumulated buffer: ${accumulatedChunk.length} chars`)
+      console.log(`  - Saving: ${contentToSave.length} chars`)
 
       // Streaming complete - NOW save messages to database and deduct credits
       try {
@@ -222,7 +330,7 @@ export class SendMessageService extends BaseService {
           data: {
             tab_id: tabId,
             sender_type: 'ai',
-            content: fullResponse
+            content: contentToSave
           }
         })
 
@@ -273,19 +381,19 @@ export class SendMessageService extends BaseService {
           data: { updated_at: new Date() }
         })
 
-        // Send completion
+        // Send completion with camelCase fields (like chatbot)
         onComplete({
           userMessage: {
             id: userMessage.id,
-            sender_type: userMessage.sender_type,
+            senderType: userMessage.sender_type,
             content: userMessage.content,
-            created_at: userMessage.created_at
+            createdAt: userMessage.created_at.toISOString()
           },
           aiMessage: {
             id: aiMessage.id,
-            sender_type: aiMessage.sender_type,
+            senderType: aiMessage.sender_type,
             content: aiMessage.content,
-            created_at: aiMessage.created_at
+            createdAt: aiMessage.created_at.toISOString()
           },
           sources: citations
         })
@@ -308,28 +416,112 @@ export class SendMessageService extends BaseService {
   /**
    * Handle streaming response from Gemini
    */
-  static async handleStreamingResponse({ tabId, setId, userId, userMessageContent, stream, messageCost, onStream, onComplete, onError }) {
-    let fullResponse = ''
+  static async handleStreamingResponse({ tabId, setId, userId, userMessageContent, stream, messageCost, onStream, onComplete, onError, checkClientConnected, streamAbortSignal }) {
+    let fullResponseFromAI = ''
+    let sentContentToClient = ''
+    let streamAborted = false
+    let clientStillConnected = true
+    let accumulatedChunk = '' // Buffer to accumulate 20 characters
     let userMessage = null
     let aiMessage = null
 
+    const CHARS_PER_CHUNK = 20
+    const TYPING_SPEED_MS = 10
+
     try {
-      // Process Gemini stream chunks
+      // Process Gemini stream chunks with pacing
       for await (const chunk of stream) {
+        // Check if stream was aborted BEFORE processing chunk (client disconnected)
+        if (streamAbortSignal && streamAbortSignal.aborted) {
+          console.log('Stream aborted - client disconnected')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
+        // Double check with function if available
+        if (checkClientConnected && !checkClientConnected()) {
+          console.log('Client disconnected - stopping stream processing')
+          streamAborted = true
+          clientStillConnected = false
+          break
+        }
+
         const text = chunk.text()
 
         if (text) {
-          fullResponse += text
+          fullResponseFromAI += text
+          accumulatedChunk += text
 
-          // Send chunk to client
+          // Send chunk when we have 20+ characters
+          while (accumulatedChunk.length >= CHARS_PER_CHUNK) {
+            const chunkToSend = accumulatedChunk.substring(0, CHARS_PER_CHUNK)
+            accumulatedChunk = accumulatedChunk.substring(CHARS_PER_CHUNK)
+
+            // Try to send chunk to client
+            try {
+              onStream({
+                type: 'chunk',
+                data: {
+                  content: chunkToSend
+                }
+              }, () => {
+                // Only add to sentContentToClient if callback fires (client still connected)
+                sentContentToClient += chunkToSend
+              })
+            } catch (e) {
+              // Client disconnected mid-chunk - don't add to sentContentToClient
+              console.log('Client disconnected during chunk send - chunk not sent')
+              streamAborted = true
+              clientStillConnected = false
+              break
+            }
+
+            // Check abort status before delay
+            if (streamAbortSignal && streamAbortSignal.aborted) {
+              console.log('Stream aborted during pacing delay')
+              streamAborted = true
+              break
+            }
+
+            // Delay for 20 chars: 20 * 10ms = 300ms
+            const delay = CHARS_PER_CHUNK * TYPING_SPEED_MS * 2
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
+        }
+
+        if (streamAborted) break
+      }
+
+      // Send any remaining accumulated characters
+      if (accumulatedChunk.length > 0 && !streamAborted) {
+        try {
           onStream({
             type: 'chunk',
             data: {
-              content: text
+              content: accumulatedChunk
             }
+          }, () => {
+            sentContentToClient += accumulatedChunk
           })
+        } catch (e) {
+          console.log('Client disconnected during final chunk send')
+          streamAborted = true
         }
       }
+
+      // Stream ended (either completed or aborted)
+      // Save what we have sent to the client
+      const contentToSave = streamAborted ? sentContentToClient : fullResponseFromAI
+
+      console.log(`Stream ${streamAborted ? 'aborted' : 'completed'}.`)
+      console.log(`  - Full AI response: ${fullResponseFromAI.length} chars`)
+      console.log(`  - Sent to client: ${sentContentToClient.length} chars`)
+      console.log(`  - Accumulated buffer: ${accumulatedChunk.length} chars`)
+      console.log(`  - Saving: ${contentToSave.length} chars`)
+      console.log(`  - chunks sent to client: ${sentContentToClient}`)
+      console.log(`  - sent to client: ${contentToSave}`)
+      console.log(`  - response AI: ${fullResponseFromAI}`)
 
       // Streaming complete - NOW save messages to database and deduct credits
       try {
@@ -345,7 +537,7 @@ export class SendMessageService extends BaseService {
           data: {
             tab_id: tabId,
             sender_type: 'ai',
-            content: fullResponse
+            content: contentToSave
           }
         })
 
@@ -396,19 +588,19 @@ export class SendMessageService extends BaseService {
           data: { updated_at: new Date() }
         })
 
-        // Send completion
+        // Send completion with camelCase fields (like chatbot)
         onComplete({
           userMessage: {
             id: userMessage.id,
-            sender_type: userMessage.sender_type,
+            senderType: userMessage.sender_type,
             content: userMessage.content,
-            created_at: userMessage.created_at
+            createdAt: userMessage.created_at.toISOString()
           },
           aiMessage: {
             id: aiMessage.id,
-            sender_type: aiMessage.sender_type,
+            senderType: aiMessage.sender_type,
             content: aiMessage.content,
-            created_at: aiMessage.created_at
+            createdAt: aiMessage.created_at.toISOString()
           }
         })
       } catch (dbError) {

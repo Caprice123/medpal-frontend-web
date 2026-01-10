@@ -15,7 +15,7 @@ export class AnatomyQuizListSerializer {
         title: quiz.title,
         description: quiz.description,
         status: quiz.status,
-        questionCount: quiz._count?.anatomy_questions || 0,
+        questionCount: quiz.question_count || 0,
         universityTags,
         semesterTags,
         createdAt: quiz.created_at

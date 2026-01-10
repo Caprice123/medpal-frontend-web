@@ -10,8 +10,8 @@ router.use(authenticateToken)
 router.use(requireAdmin)
 
 // Admin routes
-router.get('/transactions', asyncHandler(creditsController.getAllTransactions.bind(creditsController)))
-router.post('/confirm/:transactionId', asyncHandler(creditsController.confirmPayment.bind(creditsController)))
+router.get('/', asyncHandler(creditsController.getAllTransactions.bind(creditsController)))
+router.post('/:transactionId/confirm', asyncHandler(creditsController.confirmPayment.bind(creditsController)))
 router.post('/bonus', asyncHandler(creditsController.addBonus.bind(creditsController)))
 
 export default router

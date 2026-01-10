@@ -31,47 +31,17 @@ export const fetchExerciseTopics = () => async (dispatch, getState) => {
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
 
-    const response = await getWithToken(Endpoints.exercises.topics, queryParams)
+    const route = Endpoints.api.exercises + '/topics'
+    const response = await getWithToken(route, queryParams)
 
     dispatch(setTopics(response.data.data || response.data.topics || []))
-
-    // Update pagination
-    if (response.data.pagination) {
-      dispatch(updatePagination(response.data.pagination))
-    } else {
-      // If no pagination in response, assume it's the last page
-      dispatch(updatePagination({ isLastPage: true }))
-    }
+    dispatch(updatePagination(response.data.pagination))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isTopicsLoading', value: false }))
   }
 }
-
-// ============= Tags Actions =============
-
-/**
- * Fetch all tags (admin endpoint)
- */
-export const fetchExerciseTags = (type = null) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isTagsLoading', value: true }))
-    
-
-    const queryParams = {}
-    if (type) queryParams.type = type
-
-    const response = await getWithToken(Endpoints.exercises.admin.tags, queryParams)
-
-    dispatch(setTags(response.data.data || response.data.tags || []))
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isTagsLoading', value: false }))
-  }
-}
-
 
 // ============= Sessionless Exercise Actions =============
 
@@ -82,8 +52,8 @@ export const startExerciseTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isStartingExercise', value: true }))
     
-
-    const response = await postWithToken(Endpoints.exercises.start, { topicId })
+    const route = Endpoints.api.exercises + '/start'
+    const response = await postWithToken(route, { topicId })
     const data = response.data.data
 
     return data
@@ -101,8 +71,8 @@ export const submitExerciseProgress = (topicId, answers) => async (dispatch) => 
   try {
     dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoadingExercise', value: true }))
     
-
-    const response = await postWithToken(Endpoints.exercises.submit, {
+    const route = Endpoints.api.exercises + '/submit'
+    const response = await postWithToken(route, {
       topicId,
       answers
     })

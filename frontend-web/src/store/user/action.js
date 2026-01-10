@@ -26,7 +26,7 @@ export const fetchUsers = () => async (dispatch, getState) => {
         perPage: perPage || 50,
     }
 
-    const route = Endpoints.users
+    const route = Endpoints.admin.users
     const response = await getWithToken(route, queryParams)
     const { data } = response.data
     dispatch(setUsers(data))
@@ -42,7 +42,7 @@ export const adjustCredit = (userId, credit, onSuccess) => async (dispatch) => {
     dispatch(setLoading({ key: 'isAdjustCreditLoading', value: true }))
 
     const subRoute = "/credits"
-    const route = Endpoints.users + subRoute
+    const route = Endpoints.admin.users + subRoute
     const requestBody = {
         userId,
         credit,
@@ -63,7 +63,7 @@ export const adjustSubscription = (form, onSuccess) => async (dispatch) => {
     dispatch(setLoading({ key: 'isAdjustSubscriptionLoading', value: true }))
 
     const subRoute = "/subscriptions"
-    const route = Endpoints.users + subRoute
+    const route = Endpoints.admin.users + subRoute
     const requestBody = {
         userId: form.userId,
         durationDays: form.durationDays,
@@ -81,7 +81,7 @@ export const addSubscription = (userId, startDate, endDate, onSuccess) => async 
   try {
     dispatch(setLoading({ key: 'isAddSubscriptionLoading', value: true }))
 
-    const route = Endpoints.subscriptions
+    const route = Endpoints.admin.subscriptions
     const requestBody = {
         userId,
         startDate,
@@ -103,7 +103,7 @@ export const fetchUserDetail = (userId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isFetchUserDetailLoading', value: true }))
 
-    const route = `${Endpoints.users}/${userId}`
+    const route = `${Endpoints.admin.users}/${userId}`
     const response = await getWithToken(route)
     const userData = response.data.data
 
@@ -130,7 +130,7 @@ export const fetchUserSubscriptions = (userId) => async (dispatch, getState) => 
       status: subscriptionFilter || 'all',
     }
 
-    const route = `${Endpoints.users}/${userId}/subscriptions`
+    const route = `${Endpoints.admin.users}/${userId}/subscriptions`
     const response = await getWithToken(route, queryParams)
     const { data, pagination } = response.data
 

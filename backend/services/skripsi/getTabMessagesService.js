@@ -1,6 +1,7 @@
 import prisma from '#prisma/client'
 import { BaseService } from '#services/baseService'
 import { NotFoundError } from '#errors/notFoundError'
+import { SkripsiMessageSerializer } from '#serializers/api/v1/skripsiMessageSerializer'
 
 export class GetTabMessagesService extends BaseService {
   static async call({ tabId, userId, limit = 50, beforeMessageId = null }) {
@@ -39,7 +40,7 @@ export class GetTabMessagesService extends BaseService {
     messages.reverse()
 
     return {
-      messages,
+      messages: SkripsiMessageSerializer.serialize(messages),
       hasMore: messages.length === limit
     }
   }

@@ -35,7 +35,8 @@ export const fetchMcqTopics = () => async (dispatch, getState) => {
     queryParams.page = pagination.page
     queryParams.limit = pagination.limit
 
-    const response = await getWithToken(Endpoints.mcq.topics, queryParams)
+    const route = Endpoints.api.mcq + "/topics"
+    const response = await getWithToken(route, queryParams)
 
     const data = response.data
     console.log(data)
@@ -55,8 +56,9 @@ export const fetchMcqTopicById = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isTopicLoading', value: true }))
 
-    const response = await getWithToken(Endpoints.mcq.topic(topicId))
-
+    const route = Endpoints.api.mcq + `/topics/${topicId}`
+    const response = await getWithToken(route)
+    
     const topic = response.data.data
     dispatch(actions.setCurrentTopic(topic))
     return topic
@@ -74,7 +76,8 @@ export const submitMcqAnswers = (topicId, answers) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSubmitAnatomyQuizLoading', value: true }))
 
-    const response = await postWithToken(Endpoints.mcq.submit(topicId), { answers })
+    const route = Endpoints.api.mcq + `/topics/${topicId}/submit`
+    const response = await postWithToken(route, { answers })
 
     const result = response.data.data
     return result
@@ -92,7 +95,8 @@ export const fetchMcqTopicSession = (topicId, mode = 'learning') => async (dispa
   try {
     dispatch(setLoading({ key: 'isTopicLoading', value: true }))
 
-    const response = await getWithToken(Endpoints.mcq.topicSession(topicId), { mode })
+    const route = Endpoints.api.mcq + `/topics/${topicId}/session`
+    const response = await getWithToken(route, { mode })
 
     const session = response.data.data
     dispatch(setCurrentSession(session))
@@ -111,7 +115,8 @@ export const checkMcqAnswers = (topicId, answers) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isChecking', value: true }))
 
-    const response = await postWithToken(Endpoints.mcq.check(topicId), { answers })
+    const route = Endpoints.api.mcq + `/topics/${topicId}/check`
+    const response = await postWithToken(route, { answers })
 
     const result = response.data.data
     // Don't store in Redux, let the component handle it locally
@@ -142,7 +147,8 @@ export const fetchAdminMcqTopics = () => async (dispatch, getState) => {
     queryParams.page = pagination.page
     queryParams.limit = pagination.limit
 
-    const response = await getWithToken(Endpoints.mcq.admin.topics, queryParams)
+    const route = Endpoints.admin.mcq + "/topics"
+    const response = await getWithToken(route, queryParams)
 
     dispatch(setTopics(response.data.data || []))
     dispatch(setPagination(response.data.pagination || { page: 1, limit: 30, isLastPage: false }))
@@ -160,7 +166,8 @@ export const fetchMcqTopicDetail = (topicId, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isTopicLoading', value: true }))
 
-    const response = await getWithToken(Endpoints.mcq.admin.topic(topicId))
+    const route = Endpoints.admin.mcq + `/topics/${topicId}`
+    const response = await getWithToken(route)
 
     const topic = response.data.data
     dispatch(setSelectedTopic(topic))
@@ -194,7 +201,8 @@ export const generateMcqQuestions = ({ content, type, questionCount, blobId }, o
       throw new Error('Invalid generation type or missing required data')
     }
 
-    const response = await postWithToken(Endpoints.mcq.admin.generate, requestBody)
+    const route = Endpoints.admin.mcq + "/generate"
+    const response = await postWithToken(route, requestBody)
 
     const questions = response.data.data
     if (onSuccess) onSuccess(questions)
@@ -213,7 +221,8 @@ export const createMcqTopic = (topicData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreatingTopic', value: true }))
 
-    const response = await postWithToken(Endpoints.mcq.admin.topics, topicData)
+    const route = Endpoints.admin.mcq + "/topics"
+    const response = await postWithToken(route, topicData)
 
     const topic = response.data.data
     // Reset to page 1 and refresh the list to show the new topic
@@ -235,7 +244,8 @@ export const updateMcqTopic = (topicId, topicData, onSuccess) => async (dispatch
   try {
     dispatch(setLoading({ key: 'isUpdatingTopic', value: true }))
 
-    await putWithToken(Endpoints.mcq.admin.topic(topicId), topicData)
+    const route = Endpoints.admin.mcq + `/topics/${topicId}`
+    await putWithToken(route, topicData)
 
     // Refresh the list to show updated topic
     if (onSuccess) onSuccess()
@@ -253,7 +263,8 @@ export const deleteMcqTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeletingTopic', value: true }))
 
-    await deleteWithToken(Endpoints.mcq.admin.topic(topicId))
+    const route = Endpoints.admin.mcq + `/topics/${topicId}`
+    await deleteWithToken(route)
 
     dispatch(removeTopic(topicId))
   } catch (err) {

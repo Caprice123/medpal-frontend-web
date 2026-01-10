@@ -19,7 +19,7 @@ router.delete('/:id', asyncHandler(SummaryNotesAdminController.destroy))
 router.post('/generate', asyncHandler(SummaryNotesAdminController.generateFromDocument))
 
 // ChromaDB embeddings routes
-router.get('/embeddings/list', asyncHandler(SummaryNotesAdminController.getEmbeddings))
+router.get('/embeddings', asyncHandler(SummaryNotesAdminController.getEmbeddings))
 router.get('/embeddings/:id', asyncHandler(SummaryNotesAdminController.getEmbeddingDetail))
 
 export default router

@@ -6,8 +6,6 @@ import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../.
 const {
   setLoading,
   setTopics,
-  setTags,
-  setFilters,
   setDetail,
   updatePagination,
 } = actions
@@ -29,7 +27,7 @@ export const fetchAdminExerciseTopics = () => async (dispatch, getState) => {
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
 
-    const route = Endpoints.exercises.admin.topics
+    const route = Endpoints.admin.exercises + "/topics"
     const response = await getWithToken(route, queryParams)
 
     // Backend returns { data: { topics: [...], pagination: {...} } }
@@ -52,7 +50,7 @@ export const fetchExerciseTopic = (topicId, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isGetDetailExerciseTopicLoading', value: true }))
 
-    const route = Endpoints.exercises.admin.topic(topicId)
+    const route = Endpoints.admin.exercises + `/topics/${topicId}`
     const response = await getWithToken(route)
 
     const topic = response.data.data || response.data.topic
@@ -79,7 +77,8 @@ export const generateQuestions = (content, type, questionCount = 10) => async (d
       questionCount
     }
 
-    const response = await postWithToken(Endpoints.exercises.admin.generate, requestBody)
+    const route = Endpoints.admin.exercises + "/generate"
+    const response = await postWithToken(route, requestBody)
 
     const questions = response.data.data || response.data.questions || []
     return questions
@@ -98,7 +97,8 @@ export const generateQuestionsFromPDF = (blobId, questionCount = 10) => async (d
   try {
     dispatch(setLoading({ key: 'isGeneratingQuestions', value: true }))
 
-    const response = await postWithToken(Endpoints.exercises.admin.generateFromPDF, {
+    const route = Endpoints.admin.exercises + "/generate-from-pdf"
+    const response = await postWithToken(route, {
       blobId,
       questionCount
     })
@@ -123,7 +123,8 @@ export const createExerciseTopic = (topicData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreatingTopic', value: true }))
 
-    const response = await postWithToken(Endpoints.exercises.admin.topics, topicData)
+    const route = Endpoints.admin.exercises + "/topics"
+    const response = await postWithToken(route, topicData)
 
     const topic = response.data.data || response.data.topic
     return topic
@@ -142,8 +143,9 @@ export const updateExerciseTopic = (topicId, topicData) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdatingTopic', value: true }))
 
+    const route = Endpoints.admin.exercises + `/topics/${topicId}`
     const response = await putWithToken(
-      Endpoints.exercises.admin.topic(topicId),
+      route,
       topicData
     )
 
@@ -157,20 +159,13 @@ export const updateExerciseTopic = (topicId, topicData) => async (dispatch) => {
 }
 
 /**
- * Update topic questions (admin only)
- * @deprecated Use updateExerciseTopic instead
- */
-export const updateTopicQuestions = (topicId, questions) => async (dispatch) => {
-  return updateExerciseTopic(topicId, { questions })(dispatch)
-}
-
-/**
  * Add manual question to topic (admin only)
  */
 export const addManualQuestion = (topicId, questionData) => async (dispatch) => {
   try {
+    const route = Endpoints.admin.exercises + `/topics/${topicId}`
     const response = await postWithToken(
-      Endpoints.exercises.admin.topic(topicId),
+      route,
       questionData
     )
 
@@ -187,42 +182,11 @@ export const deleteExerciseTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeletingTopic', value: true }))
 
-    await deleteWithToken(Endpoints.exercises.admin.topic(topicId))
+    const route = Endpoints.admin.exercises + `/topics/${topicId}`
+    await deleteWithToken(route)
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isDeletingTopic', value: false }))
   }
-}
-
-// ============= Tags Actions =============
-
-/**
- * Fetch all tags (admin endpoint)
- */
-export const fetchExerciseTags = (type = null) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isTagsLoading', value: true }))
-
-    const queryParams = {}
-    if (type) queryParams.type = type
-
-    const response = await getWithToken(Endpoints.exercises.admin.tags, queryParams)
-
-    dispatch(setTags(response.data.data || response.data.tags || []))
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isTagsLoading', value: false }))
-  }
-}
-
-
-// ============= Filter Actions =============
-
-/**
- * Update filters
- */
-export const updateExerciseFilters = (filters) => (dispatch) => {
-  dispatch(setFilters(filters))
 }

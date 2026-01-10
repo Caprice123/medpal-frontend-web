@@ -49,6 +49,7 @@ export class UpdateAnatomyQuizService extends BaseService {
               order: q.order !== undefined ? q.order : index
             }))
           },
+          question_count: questions.length,
           anatomy_quiz_tags: {
             create: tags.map(tag => ({
               tag_id: typeof tag === 'object' ? tag.id : tag

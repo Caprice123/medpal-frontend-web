@@ -17,7 +17,7 @@ export const fetchTags = () => async (dispatch, getState) => {
     const queryParams = {}
     if (tagGroupNames) queryParams.tagGroupNames = tagGroupNames.join(",")
 
-    const route = Endpoints.tags
+    const route = Endpoints.admin.tags
     const response = await getWithToken(route, queryParams)
     const { data } = response.data
     dispatch(setTags(data))
@@ -32,7 +32,7 @@ export const createTag = (form, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreateTagLoading', value: true }))
 
-    const route = Endpoints.tags
+    const route = Endpoints.admin.tags
     const requestBody = {
         groupName: form.tagGroup ? JSON.parse(form.tagGroup.value).name : null,
         name: form.name
@@ -51,7 +51,7 @@ export const updateTag = (id, form, onSuccess) => async (dispatch) => {
     dispatch(setLoading({ key: 'isUpdateTagLoading', value: true }))
 
     const subRoute = `/${id}`
-    const route = Endpoints.tags + subRoute
+    const route = Endpoints.admin.tags + subRoute
     const requestBody = {
         groupName: form.tagGroup ? JSON.parse(form.tagGroup.value).name : null,
         name: form.name
@@ -62,22 +62,5 @@ export const updateTag = (id, form, onSuccess) => async (dispatch) => {
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isUpdateTagLoading', value: false }))
-  }
-}
-
-/**
- * Create tag group (admin only)
- */
-export const createTagGroup = (groupData) => async (dispatch) => {
-  try {
-    dispatch(setLoading({ key: 'isCreating', value: true }))
-
-    const response = await postWithToken(Endpoints.tagGroups.create, groupData)
-
-    return response.data.data || response.data
-  } catch (err) {
-    handleApiError(err, dispatch)
-  } finally {
-    dispatch(setLoading({ key: 'isCreating', value: false }))
   }
 }

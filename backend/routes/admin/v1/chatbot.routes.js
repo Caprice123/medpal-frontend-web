@@ -14,8 +14,4 @@ router.get('/conversations/:id', asyncHandler(ChatbotAdminController.getConversa
 router.get('/conversations/:id/messages', asyncHandler(ChatbotAdminController.getConversationMessages))
 router.delete('/conversations/:id', asyncHandler(ChatbotAdminController.deleteConversation))
 
-// Constants management (settings)
-router.get('/constants', asyncHandler(ChatbotAdminController.getConstants))
-router.put('/constants', asyncHandler(ChatbotAdminController.updateConstants))
-
 export default router

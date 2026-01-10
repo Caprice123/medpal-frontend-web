@@ -16,9 +16,9 @@ export class SkripsiSetSerializer {
         tabType: tab.tab_type,
         title: tab.tab_label || tab.title,
         messages: (tab.skripsi_messages || tab.messages || []).map(msg => ({
-          senderType: msg.sender_type,
+          senderType: msg.senderType,
           content: msg.content,
-          createdAt: msg.created_at
+          createdAt: msg.createdAt
         }))
       }))
     }

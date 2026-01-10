@@ -20,7 +20,8 @@ import {
 
 // Memoized individual message component - only re-renders when its own data changes
 const MessageItem = memo(({ message, formatTime, getModeInfo, processContentWithCitations, markdownComponents }) => {
-  return (
+    if (!message.content) return null
+    return (
     <MessageBubble key={message.id} isUser={message.senderType === 'user'}>
       {message.senderType === 'user' ? (
         <UserMessage>

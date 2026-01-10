@@ -27,15 +27,6 @@ export class GetSkripsiSetService extends BaseService {
       throw new NotFoundError('Skripsi set not found')
     }
 
-    // Reverse messages to show oldest first (since we fetched newest first with limit)
-    if (includeMessages && set.tabs) {
-      set.tabs.forEach(tab => {
-        if (tab.messages) {
-          tab.messages.reverse()
-        }
-      })
-    }
-
     return set
   }
 }

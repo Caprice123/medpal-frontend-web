@@ -5,104 +5,35 @@ export default {
     Login: "/api/v1/login",
     Logout: "/api/v1/logout",
     creditPlans: `${API_BASE_URL}/api/v1/credit-plans`,
-    credits: {
-        admin: {
-            transactions: `${API_BASE_URL}/admin/v1/credits/transactions`,
-            confirm: (id) => `${API_BASE_URL}/admin/v1/credits/confirm/${id}`,
-            bonus: `${API_BASE_URL}/admin/v1/credits/bonus`,
-        }
-    },
-    // tags: {
-    //     list: `${API_BASE_URL}/api/v1/tags`,
-    //     create: `${API_BASE_URL}/api/v1/tags`,
-    //     update: (id) => `${API_BASE_URL}/api/v1/tags/${id}`,
-    //     delete: (id) => `${API_BASE_URL}/api/v1/tags/${id}`,
-    // },
-    tags: "/admin/v1/tags",
-    // tagGroups: {
-    //     list: `${API_BASE_URL}/api/v1/tag-groups`,
-    //     create: `${API_BASE_URL}/api/v1/tag-groups`,
-    // },
     admin: {
         constants: "/admin/v1/constants",
         flashcards: "/admin/v1/flashcards",
+        exercises: "/admin/v1/exercises",
+        calculators: "/admin/v1/calculators",
         anatomy: "/admin/v1/anatomy",
+        credits: "/admin/v1/credits",
+        tags: "/admin/v1/tags",
+        tagGroups: "/admin/v1/tag-groups",
+        users: "/admin/v1/users",
+        subscriptions: "/admin/v1/subscriptions",
+        summaryNotes: "/admin/v1/summary-notes",
+        mcq: "/admin/v1/mcq",
+        chatbot: "/admin/v1/chatbot",
+        pricing: "/admin/v1/pricing",
+        skripsi: "/admin/v1/skripsi",
     },
     api: {
         calculators: "/api/v1/calculators",
         flashcards: "/api/v1/flashcards",
+        exercises: "/api/v1/exercises",
         anatomy: "/api/v1/anatomy",
+        features: "/api/v1/features",
+        summaryNotes: "/api/v1/summary-notes",
         uploadImage: `/api/v1/upload/image`,
-    },
-    tagGroups: "/admin/v1/tag-groups",
-    users: "/admin/v1/users",
-    subscriptions: "/admin/v1/subscriptions",
-    calculators: {
-        api: "/api/v1/calculators",
-        admin: {
-            list: `${API_BASE_URL}/admin/v1/calculators`,
-            detail: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            create: `${API_BASE_URL}/admin/v1/calculators`,
-            update: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            delete: (id) => `${API_BASE_URL}/admin/v1/calculators/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/calculators/constants`,
-        }
-    },
-    exercises: {
-        // User endpoints
-        topics: `${API_BASE_URL}/api/v1/exercises/topics`,
-        createTopic: `${API_BASE_URL}/api/v1/exercises/topics`,
-        start: `${API_BASE_URL}/api/v1/exercises/start`,
-        submit: `${API_BASE_URL}/api/v1/exercises/submit`,
-
-        // Admin endpoints
-        admin: {
-            generate: `${API_BASE_URL}/admin/v1/exercises/generate`,
-            generateFromPDF: `${API_BASE_URL}/admin/v1/exercises/generate-from-pdf`,
-            topics: `${API_BASE_URL}/admin/v1/exercises/topics`,
-            topic: (id) => `${API_BASE_URL}/admin/v1/exercises/topics/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/exercises/constants`,
-        }
-    },
-    flashcards: {
-        // User endpoints
-        decks: `${API_BASE_URL}/api/v1/flashcards/decks`,
-        start: `${API_BASE_URL}/api/v1/flashcards/start`,
-        submit: `${API_BASE_URL}/api/v1/flashcards/submit`,
-
-        // Admin endpoints
-        admin: {
-            generate: `${API_BASE_URL}/admin/v1/flashcards/generate`,
-            generateFromPDF: `${API_BASE_URL}/admin/v1/flashcards/generate-from-pdf`,
-            decks: `${API_BASE_URL}/admin/v1/flashcards/decks`,
-            deck: (id) => `${API_BASE_URL}/admin/v1/flashcards/decks/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/flashcards/constants`,
-        }
-    },
-    sessions: {
-        create: `${API_BASE_URL}/api/v1/sessions`,
-        list: `${API_BASE_URL}/api/v1/sessions`,
-        detail: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}`,
-        flashcard: {
-            start: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}/flashcard/start`,
-            submit: (sessionId) => `${API_BASE_URL}/api/v1/sessions/${sessionId}/flashcard/submit`,
-        },
-        exercise: {
-            create: `${API_BASE_URL}/api/v1/sessions/exercise`,
-            attempts: {
-                get: (learningSessionId) => `${API_BASE_URL}/api/v1/exercises/${learningSessionId}/attempts`,
-                detail: (attemptId) => `${API_BASE_URL}/api/v1/exercises/attempts/${attemptId}`,
-                create: (learningSessionId) => `${API_BASE_URL}/api/v1/exercises/${learningSessionId}/attempts`,
-                start: (attemptId) => `${API_BASE_URL}/api/v1/exercises/attempts/${attemptId}/start`,
-                complete: (attemptId) => `${API_BASE_URL}/api/v1/exercises/attempts/${attemptId}/complete`,
-            }
-        }
-    },
-    features: {
-        list: `${API_BASE_URL}/api/v1/features`,
-    },
-    statistics: {
-        list: `${API_BASE_URL}/api/v1/statistics`,
+        mcq: "/api/v1/mcq",
+        chatbot: "/api/v1/chatbot",
+        pricing: "/api/v1/pricing",
+        skripsi: "/api/v1/skripsi",
     },
     pricing: {
         plans: `${API_BASE_URL}/api/v1/pricing/plans`,
@@ -115,93 +46,6 @@ export default {
             create: `${API_BASE_URL}/admin/v1/pricing`,
             update: (id) => `${API_BASE_URL}/admin/v1/pricing/${id}`,
             toggle: (id) => `${API_BASE_URL}/admin/v1/pricing/${id}/toggle`,
-        }
-    },
-    summaryNotes: {
-        // User endpoints
-        list: `${API_BASE_URL}/api/v1/summary-notes`,
-        start: `${API_BASE_URL}/api/v1/summary-notes/sessions/start`,
-        session: (sessionId) => `${API_BASE_URL}/api/v1/summary-notes/sessions/${sessionId}`,
-
-        // Admin endpoints
-        admin: {
-            list: `${API_BASE_URL}/admin/v1/summary-notes`,
-            detail: (id) => `${API_BASE_URL}/admin/v1/summary-notes/${id}`,
-            generate: `${API_BASE_URL}/admin/v1/summary-notes/generate`,
-            embeddings: `${API_BASE_URL}/admin/v1/summary-notes/embeddings/list`,
-            embeddingDetail: (id) => `${API_BASE_URL}/admin/v1/summary-notes/embeddings/${id}`,
-        }
-    },
-    anatomy: {
-        // User endpoints
-        quizzes: `${API_BASE_URL}/api/v1/anatomy/quizzes`,
-        quiz: (id) => `${API_BASE_URL}/api/v1/anatomy/quizzes/${id}`,
-        submit: (id) => `${API_BASE_URL}/api/v1/anatomy/quizzes/${id}/submit`,
-        constants: `${API_BASE_URL}/api/v1/anatomy/constants`,
-
-        // Admin endpoints
-        admin: {
-            uploadImage: `${API_BASE_URL}/admin/v1/anatomy/upload-image`,
-            quizzes: `${API_BASE_URL}/admin/v1/anatomy/quizzes`,
-            quiz: (id) => `${API_BASE_URL}/admin/v1/anatomy/quizzes/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/anatomy/constants`,
-        }
-    },
-    mcq: {
-        // User endpoints
-        topics: `${API_BASE_URL}/api/v1/mcq/topics`,
-        topic: (id) => `${API_BASE_URL}/api/v1/mcq/topics/${id}`,
-        submit: (id) => `${API_BASE_URL}/api/v1/mcq/topics/${id}/submit`,
-        topicSession: (id) => `${API_BASE_URL}/api/v1/mcq/topics/${id}/session`,
-        check: (id) => `${API_BASE_URL}/api/v1/mcq/topics/${id}/check`,
-        constants: `${API_BASE_URL}/api/v1/mcq/constants`,
-
-        // Admin endpoints
-        admin: {
-            generate: `${API_BASE_URL}/admin/v1/mcq/generate`,
-            topics: `${API_BASE_URL}/admin/v1/mcq/topics`,
-            topic: (id) => `${API_BASE_URL}/admin/v1/mcq/topics/${id}`,
-            constants: `${API_BASE_URL}/admin/v1/mcq/constants`,
-        }
-    },
-    chatbot: {
-        // User endpoints
-        config: `${API_BASE_URL}/api/v1/chatbot/config`,
-        conversations: `${API_BASE_URL}/api/v1/chatbot/conversations`,
-        conversation: (id) => `${API_BASE_URL}/api/v1/chatbot/conversations/${id}`,
-        messages: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/messages`,
-        send: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/send`,
-        savePartialMessage: (conversationId) => `${API_BASE_URL}/api/v1/chatbot/conversations/${conversationId}/save-partial-message`,
-        feedback: (messageId) => `${API_BASE_URL}/api/v1/chatbot/messages/${messageId}/feedback`,
-        constants: `${API_BASE_URL}/api/v1/chatbot/constants`,
-
-        // Admin endpoints
-        admin: {
-            conversations: `${API_BASE_URL}/admin/v1/chatbot/conversations`,
-            conversation: (id) => `${API_BASE_URL}/admin/v1/chatbot/conversations/${id}`,
-            messages: (conversationId) => `${API_BASE_URL}/admin/v1/chatbot/conversations/${conversationId}/messages`,
-            constants: `${API_BASE_URL}/admin/v1/chatbot/constants`,
-        }
-    },
-    skripsi: {
-        // Sets endpoints
-        sets: `${API_BASE_URL}/api/v1/skripsi/sets`,
-        set: (id) => `${API_BASE_URL}/api/v1/skripsi/sets/${id}`,
-        updateSetContent: (id) => `${API_BASE_URL}/api/v1/skripsi/sets/${id}/content`,
-        exportWord: `${API_BASE_URL}/api/v1/skripsi/export-word`,
-
-        // Tabs endpoints
-        // updateTab: (id) => `${API_BASE_URL}/api/v1/skripsi/tabs/${id}`, // Deprecated
-        tabMessages: (tabId) => `${API_BASE_URL}/api/v1/skripsi/tabs/${tabId}/messages`,
-        sendMessage: (id) => `${API_BASE_URL}/api/v1/skripsi/tabs/${id}/messages`,
-
-        // Admin endpoints
-        admin: {
-            constants: `${API_BASE_URL}/admin/v1/skripsi/constants`,
-            constant: (key) => `${API_BASE_URL}/admin/v1/skripsi/constants/${key}`,
-            sets: `${API_BASE_URL}/admin/v1/skripsi/sets`,
-            set: (id) => `${API_BASE_URL}/admin/v1/skripsi/sets/${id}`,
-            setTabs: (id) => `${API_BASE_URL}/admin/v1/skripsi/sets/${id}/tabs`,
         }
     },
 }

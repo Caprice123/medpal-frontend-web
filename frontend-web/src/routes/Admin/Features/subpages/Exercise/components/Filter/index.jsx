@@ -3,8 +3,14 @@ import TextInput from '@components/common/TextInput'
 import Dropdown from '@components/common/Dropdown'
 import Button from '@components/common/Button'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchAdminExerciseTopics, updateExerciseFilters } from '@store/exercise/adminAction'
+import { fetchAdminExerciseTopics } from '@store/exercise/adminAction'
 import { useMemo } from 'react'
+import { actions } from '@store/exercise/reducer'
+
+const {
+  setFilters,
+} = actions
+
 
 export const Filter = () => {
   const dispatch = useDispatch()
@@ -25,7 +31,7 @@ export const Filter = () => {
 
   const onChangeFilter = (key, value) => {
     const newFilters = { ...filters, [key]: value }
-    dispatch(updateExerciseFilters(newFilters))
+    dispatch(setFilters(newFilters))
   }
 
   return (

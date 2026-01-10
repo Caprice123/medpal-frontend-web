@@ -220,7 +220,7 @@ export const fetchAllTransactions = (params = {}) => async (dispatch) => {
     }
 
     const response = await getWithToken(
-      Endpoints.credits.admin.transactions,
+      Endpoints.admin.credits,
       queryParams
     )
 
@@ -242,8 +242,9 @@ export const fetchAllTransactions = (params = {}) => async (dispatch) => {
  */
 export const confirmPayment = (transactionId, status) => async (dispatch) => {
   try {
+    const url = Endpoints.admin.credits + `/transactions/${transactionId}/confirm`
     await postWithToken(
-      Endpoints.credits.admin.confirm(transactionId),
+      url,
       { status },
     )
   } catch (err) {
@@ -256,8 +257,9 @@ export const confirmPayment = (transactionId, status) => async (dispatch) => {
  */
 export const addBonusCredits = (userId, amount, description) => async (dispatch) => {
   try {
+    const url = Endpoints.admin.credits + `/bonus`
     await postWithToken(
-      Endpoints.credits.admin.bonus,
+      url,
       { userId, amount, description },
     )
   } catch (err) {

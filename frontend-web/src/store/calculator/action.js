@@ -24,7 +24,8 @@ export const fetchAdminCalculatorTopics = () => async (dispatch, getState) => {
     if (filters.name) requestQuery.name = filters.name
     if (filters.tagName) requestQuery.tagName = filters.tagName
 
-    const response = await getWithToken(Endpoints.calculators.admin.list, requestQuery)
+    const route = Endpoints.admin.calculators
+    const response = await getWithToken(route, requestQuery)
 
     const responseData = response.data.data || response.data
 
@@ -43,7 +44,8 @@ export const fetchAdminCalculatorTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isGetDetailCalculatorLoading', value: true }))
     
-    const response = await getWithToken(Endpoints.calculators.admin.detail(topicId))
+    const route = Endpoints.admin.calculators + `/${topicId}`
+    const response = await getWithToken(route)
     const topic = response.data.data || response.data
     dispatch(setDetail(topic))
     return topic
@@ -59,7 +61,8 @@ export const createCalculatorTopic = (data, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isCreateCalculatorLoading', value: true }))
     
-    await postWithToken(Endpoints.calculators.admin.create, data)
+    const route = Endpoints.admin.calculators
+    await postWithToken(route, data)
     if (onSuccess) onSuccess()
   } catch (err) {
     handleApiError(err, dispatch)
@@ -73,7 +76,8 @@ export const updateCalculatorTopic = (topicId, data) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isUpdateCalculatorLoading', value: true }))
     
-    await putWithToken(Endpoints.calculators.admin.update(topicId), data)
+    const route = Endpoints.admin.calculators + `/${topicId}`
+    await putWithToken(route, data)
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -86,7 +90,8 @@ export const deleteCalculatorTopic = (topicId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isDeleteCalculatorLoading', value: true }))
     
-    await deleteWithToken(Endpoints.calculators.admin.delete(topicId))
+    const route = Endpoints.admin.calculators + `/${topicId}`
+    await deleteWithToken(route)
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -113,13 +118,8 @@ export const getCalculatorTopics = () => async (dispatch, getState) => {
     const responseData = response.data.data || response.data
 
     // Handle paginated response
-    if (responseData.topics && responseData.pagination) {
-      dispatch(setTopics(responseData.topics))
-      dispatch(updatePagination(responseData.pagination))
-    } else {
-      // Fallback for non-paginated response
-      dispatch(setTopics(Array.isArray(responseData) ? responseData : []))
-    }
+    dispatch(setTopics(responseData.topics))
+    dispatch(updatePagination(responseData.pagination))
   } catch (err) {
     handleApiError(err, dispatch)
   } finally {
@@ -144,9 +144,8 @@ export const getCalculatorTopicDetail = (id) => async (dispatch) => {
 export const calculateResult = (id, inputs) => async (dispatch) => {
     try {
         dispatch(setLoading({ key: 'isCalculateResultLoading', value: true }))
-        
-        const subRoute = `/${id}/calculate`
-        const route = Endpoints.api.calculators + subRoute
+
+        const route = Endpoints.api.calculators + `/${id}/calculate`
         const response = await postWithToken(route, inputs)
         return response.data.data
     } catch (err) {

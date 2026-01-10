@@ -1,7 +1,7 @@
 import { useFormik } from "formik"
 import { useDispatch } from "react-redux"
-import { fetchSummaryNotesConstants, updateSummaryNotesConstants } from "@store/summaryNotes/action"
 import { useEffect } from "react"
+import { fetchConstants, updateConstants } from "@store/constant/action"
 
 export const useFeatureSetting = (onClose) => {
   const dispatch = useDispatch()
@@ -23,7 +23,7 @@ export const useFeatureSetting = (onClose) => {
           ...values,
           summary_notes_is_active: String(values.summary_notes_is_active)
         }
-        await dispatch(updateSummaryNotesConstants(constantsToSave))
+        await dispatch(updateConstants(constantsToSave))
         onClose()
       } catch (error) {
         console.error('Failed to save settings:', error)
@@ -42,7 +42,7 @@ export const useFeatureSetting = (onClose) => {
         'summary_notes_generation_model',
         'summary_notes_generation_prompt'
       ]
-      const constants = await dispatch(fetchSummaryNotesConstants(keys))
+      const constants = await dispatch(fetchConstants(keys))
 
       // Convert string boolean to actual boolean for toggle switch
       const formattedConstants = {

@@ -16,6 +16,8 @@ const {
   removeSet,
   updateSetContent,
   addMessage,
+  updateMessage,
+  removeMessage,
   setLoading,
   setPagination,
 } = actions
@@ -36,7 +38,8 @@ export const fetchAdminSets = () => async (dispatch, getState) => {
     if (filters?.mode) queryParams.mode = filters.mode
     if (filters?.userId) queryParams.userId = filters.userId
 
-    const response = await getWithToken(Endpoints.skripsi.admin.sets, queryParams)
+    const route = Endpoints.admin.skripsi + "/sets"
+    const response = await getWithToken(route, queryParams)
 
     dispatch(setSets(response.data.data || []))
     dispatch(setPagination(response.data.pagination || {}))
@@ -53,7 +56,8 @@ export const fetchAdminSet = (setId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isAdminSetLoading', value: true }))
 
-    const response = await getWithToken(Endpoints.skripsi.admin.set(setId))
+    const route = Endpoints.admin.skripsi + `/sets/${setId}`
+    const response = await getWithToken(route)
     const set = response.data.data
 
     return set
@@ -67,7 +71,8 @@ export const fetchAdminSet = (setId) => async (dispatch) => {
 export const deleteAdminSet = (setId) => async (dispatch) => {
   try {
 
-    await deleteWithToken(Endpoints.skripsi.admin.set(setId))
+    const route = Endpoints.admin.skripsi + `/sets/${setId}`
+    await deleteWithToken(route)
 
     dispatch(removeSet(setId))
   } catch (err) {
@@ -80,8 +85,9 @@ export const deleteAdminSet = (setId) => async (dispatch) => {
 export const fetchSets = (page = 1, perPage = 20) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetsLoading', value: true }))
-
-    const response = await getWithToken(Endpoints.skripsi.sets, { page, perPage })
+    
+    const route = Endpoints.api.skripsi + "/sets"
+    const response = await getWithToken(route, { page, perPage })
 
     dispatch(setSets(response.data.data || []))
     dispatch(setPagination(response.data.pagination || {}))
@@ -97,8 +103,9 @@ export const fetchSets = (page = 1, perPage = 20) => async (dispatch) => {
 export const createSet = (title, description) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetLoading', value: true }))
-
-    const response = await postWithToken(Endpoints.skripsi.sets, { title, description })
+    
+    const route = Endpoints.api.skripsi + "/sets"
+    const response = await postWithToken(route, { title, description })
     const newSet = response.data.data
 
     dispatch(addSet(newSet))
@@ -114,8 +121,9 @@ export const createSet = (title, description) => async (dispatch) => {
 export const fetchSet = (setId) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSetLoading', value: true }))
-
-    const response = await getWithToken(Endpoints.skripsi.set(setId))
+    
+    const route = Endpoints.api.skripsi + `/sets/${setId}`
+    const response = await getWithToken(route)
     const set = response.data.data
 
     dispatch(setCurrentSet(set))
@@ -133,8 +141,9 @@ export const fetchSet = (setId) => async (dispatch) => {
 
 export const updateSetInfo = (setId, title, description) => async (dispatch) => {
   try {
-
-    const response = await putWithToken(Endpoints.skripsi.set(setId), { title, description })
+    
+    const route = Endpoints.api.skripsi + `/sets/${setId}`
+    const response = await putWithToken(route, { title, description })
     const updatedSet = response.data.data
 
     dispatch(updateSet(updatedSet))
@@ -147,8 +156,9 @@ export const updateSetInfo = (setId, title, description) => async (dispatch) => 
 
 export const deleteSet = (setId) => async (dispatch) => {
   try {
-
-    await deleteWithToken(Endpoints.skripsi.set(setId))
+    
+    const route = Endpoints.api.skripsi + `/sets/${setId}`
+    await deleteWithToken(route)
 
     dispatch(removeSet(setId))
   } catch (err) {
@@ -166,7 +176,8 @@ export const saveSetContent = (setId, editorContent) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSavingContent', value: true }))
 
-    const response = await putWithToken(Endpoints.skripsi.updateSetContent(setId), { editorContent })
+    const route = Endpoints.api.skripsi + `/tabs/${setId}/content`
+    const response = await putWithToken(route, { editorContent })
 
     dispatch(updateSetContent({ setId, editorContent }))
 
@@ -180,7 +191,8 @@ export const saveSetContent = (setId, editorContent) => async (dispatch) => {
 
 export const loadOlderMessages = (tabId, beforeMessageId) => async (dispatch) => {
   try {
-    const response = await getWithToken(Endpoints.skripsi.tabMessages(tabId), {
+    const route = Endpoints.api.skripsi + `/tabs/${tabId}/messages`
+    const response = await getWithToken(route, {
       limit: 50,
       beforeMessageId: beforeMessageId
     })
@@ -200,58 +212,65 @@ export const loadOlderMessages = (tabId, beforeMessageId) => async (dispatch) =>
 // Store active abort controller for stream cancellation
 let activeAbortController = null
 
-export const sendMessage = (tabId, message, onStreamUpdate = null) => async (dispatch) => {
+export const sendMessage = (tabId, message) => async (dispatch) => {
   try {
     dispatch(setLoading({ key: 'isSendingMessage', value: true }))
 
+    // Add user message immediately (optimistic UI)
+    const tempUserMessage = {
+      id: `temp-user-${Date.now()}`,
+      senderType: 'user',
+      content: message,
+      createdAt: new Date().toISOString()
+    }
+    dispatch(addMessage({ tabId, message: tempUserMessage }))
+
     // Create new AbortController for this stream
     activeAbortController = new AbortController()
+    console.log('🆕 Created new AbortController:', activeAbortController)
 
-    // Use streaming for all messages
-    const result = await sendMessageStreaming(tabId, message, dispatch, onStreamUpdate, activeAbortController)
-    return result
+    // Use streaming for all messages (everything handled in Redux)
+    await sendMessageStreaming(tabId, message, dispatch, activeAbortController, tempUserMessage.id)
+    console.log('✅ sendMessageStreaming completed')
   } catch (err) {
     if (err.name === 'AbortError') {
-      console.log('Stream was stopped by user')
-      return null
+      console.log('Skripsi stream was stopped by user')
+      return
     }
+    console.error('❌ sendMessage caught error:', err)
     handleApiError(err, dispatch)
   } finally {
+    console.log('🧹 sendMessage finally block - clearing activeAbortController')
     dispatch(setLoading({ key: 'isSendingMessage', value: false }))
     activeAbortController = null
   }
 }
 
-export const stopStreaming = (tabId, partialContent) => async (dispatch) => {
+// Track if user stopped the stream (module level variable shared with sendMessage)
+let userStoppedStreamFlag = false
+
+export const stopStreaming = () => async (dispatch) => {
   try {
-    // Abort the active stream
+    console.log('⏹️ User clicked stop button')
+    console.log('📋 Current activeAbortController:', activeAbortController)
+
+    userStoppedStreamFlag = true // Set flag so typing animation knows stream was stopped
+
+    // Abort the fetch connection to stop backend from generating more content
     if (activeAbortController) {
+      console.log('🛑 Aborting active stream...')
       activeAbortController.abort()
+      console.log('✅ Stream aborted - backend will save partial content')
+    } else {
+      console.warn('⚠️ No active abort controller found - stream might have already finished')
     }
 
-    // Save partial content to database
-    if (partialContent && partialContent.trim()) {
-      const accessToken = await ensureValidToken()
-      const url = `${API_BASE_URL}/api/v1/skripsi/sets/${tabId}/save-partial-message`
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ content: partialContent })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        console.log('Partial message saved to database')
-        return result.data // Return the saved message with real ID
-      }
-    }
+    // Note: typing animation will continue showing received content
+    // The sendMessage action will handle cleanup when typing completes
     return null
   } catch (error) {
     console.error('Error stopping stream:', error)
+    dispatch(setLoading({ key: 'isSendingMessage', value: false }))
     return null
   }
 }
@@ -288,116 +307,122 @@ const ensureValidToken = async () => {
   return token.accessToken
 }
 
-// Streaming message handler - character-by-character typing
-const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = null, abortController = null) => {
+// Streaming message handler - typing animation with backend pacing (copied from chatbot)
+const sendMessageStreaming = async (tabId, content, dispatch, abortController, optimisticUserId) => {
   // Ensure token is valid and refreshed if needed
   const accessToken = await ensureValidToken()
-
-  const url = Endpoints.skripsi.sendMessage(tabId)
+  const route = API_BASE_URL + Endpoints.api.skripsi + `/tabs/${tabId}/messages`
 
   const streamingMessageId = `streaming-${Date.now()}`
   const messageCreatedAt = new Date().toISOString()
 
-  // Character-by-character streaming state
-  let fullContent = ''
-  let displayedContent = ''
+  // Reset user stopped flag
+  userStoppedStreamFlag = false
+
+  // Typing animation state
+  let fullContent = '' // Complete content from backend chunks
+  let displayedContent = '' // Content currently displayed with typing animation
   let isTyping = false
-  let streamEnded = false
+  let backendSavedMessage = false
   let finalData = null
-  let typingCompleteResolver = null
 
-  // Promise that resolves when typing animation completes
-  const typingCompletePromise = new Promise(resolve => {
-    typingCompleteResolver = resolve
-  })
+  const TYPING_SPEED_MS = 10 // 10ms per character (backend delays based on chunk length × 10ms)
 
-  // Typing speed (milliseconds per character)
-  const TYPING_SPEED = 1
+  // Add initial streaming message
+  dispatch(addMessage({
+    tabId,
+    message: {
+      id: streamingMessageId,
+      senderType: 'ai',
+      content: '',
+      createdAt: messageCreatedAt
+    }
+  }))
 
-  // Define temp messages (used for cleanup even in callback mode)
-  const tempUserMessage = {
-    id: `temp-user-${Date.now()}`,
-    sender_type: 'user',
-    content: content,
-    created_at: messageCreatedAt
-  }
+  // Typing animation - type character by character
+  const typeNextCharacter = () => {
+    // If user stopped stream and we've typed everything received, stop
+    if (userStoppedStreamFlag && displayedContent.length >= fullContent.length) {
+      console.log('✅ Finished typing all received content after stop - keeping messages visible')
+      isTyping = false
 
-  const tempAiMessage = {
-    id: streamingMessageId,
-    sender_type: 'ai',
-    content: '',
-    created_at: messageCreatedAt
-  }
+      // Remove the streaming message and re-add with a non-streaming ID
+      // This makes the stop button disappear while keeping the message visible
+      dispatch(removeMessage({ tabId, messageId: streamingMessageId }))
+      dispatch(addMessage({
+        tabId,
+        message: {
+          id: `partial-${Date.now()}`, // Use 'partial-' prefix instead of 'streaming-'
+          senderType: 'ai',
+          content: displayedContent,
+          createdAt: messageCreatedAt
+        }
+      }))
 
-  // Only add to Redux if no callback provided (for backwards compatibility)
-  if (!onStreamUpdate) {
-    dispatch(addMessage({ tabId, message: tempUserMessage }))
-    dispatch(addMessage({ tabId, message: tempAiMessage }))
-  }
+      // Backend is saving to database in background
+      // When user refreshes, they'll see the saved messages from database
 
-  // Character-by-character display function
-  const displayNextCharacter = () => {
+      dispatch(setLoading({ key: 'isSendingMessage', value: false }))
+      userStoppedStreamFlag = false
+      return
+    }
+
+    // If all characters displayed
     if (displayedContent.length >= fullContent.length) {
       isTyping = false
 
-      // Only finalize when BOTH stream ended AND typing complete
-      if (streamEnded && finalData) {
-        if (!onStreamUpdate) {
-          // Remove temporary messages from Redux
-          dispatch(actions.removeMessage({ tabId, messageId: tempUserMessage.id }))
-          dispatch(actions.removeMessage({ tabId, messageId: streamingMessageId }))
+      // If backend is done and all characters displayed, finalize
+      if (backendSavedMessage && finalData) {
+        dispatch(removeMessage({ tabId, messageId: optimisticUserId }))
+        dispatch(removeMessage({ tabId, messageId: streamingMessageId }))
 
-          // Add final messages to Redux (only when not using callback)
-          if (finalData.userMessage) {
-            dispatch(addMessage({ tabId, message: finalData.userMessage }))
-          }
-          if (finalData.aiMessage) {
-            dispatch(addMessage({ tabId, message: finalData.aiMessage }))
-          }
+        if (finalData.userMessage) {
+          dispatch(addMessage({ tabId, message: finalData.userMessage }))
+        }
+        if (finalData.aiMessage) {
+          dispatch(addMessage({ tabId, message: finalData.aiMessage }))
         }
 
         dispatch(setLoading({ key: 'isSendingMessage', value: false }))
-
-        // Resolve the typing complete promise
-        if (typingCompleteResolver) {
-          typingCompleteResolver()
-        }
+        userStoppedStreamFlag = false
       }
       return
     }
 
     isTyping = true
+    // Display next character
     displayedContent = fullContent.substring(0, displayedContent.length + 1)
 
-    // Update via callback or Redux
-    if (onStreamUpdate) {
-      onStreamUpdate(displayedContent)
-    } else {
-      dispatch(actions.updateMessage({
-        tabId,
-        messageId: streamingMessageId,
-        content: displayedContent
-      }))
-    }
+    dispatch(updateMessage({
+      tabId,
+      messageId: streamingMessageId,
+      content: displayedContent
+    }))
 
-    setTimeout(displayNextCharacter, TYPING_SPEED)
+    // Schedule next character
+    setTimeout(typeNextCharacter, TYPING_SPEED_MS)
   }
 
-  // Add chunk to full content
+  // Add chunk to content and start typing if needed
   const addChunkToContent = (text) => {
+    // If user stopped stream, don't add new chunks
+    if (userStoppedStreamFlag) return
+
     fullContent += text
+
+    // Start typing animation if not already running
     if (!isTyping) {
-      displayNextCharacter()
+      typeNextCharacter()
     }
   }
 
   let buffer = ''
 
   try {
-    console.log('Streaming URL:', url)
+    console.log('Streaming URL:', route)
     console.log('Sending message:', content)
 
-    const response = await fetch(url, {
+    const response = await fetch(route, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -435,12 +460,18 @@ const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = n
             const data = JSON.parse(line.slice(6))
 
             if (data.type === 'chunk') {
-              addChunkToContent(data.data.content)
+              // Only add chunk if user hasn't stopped the stream
+              if (!userStoppedStreamFlag) {
+                addChunkToContent(data.data.content)
+              } else {
+                console.log('⏸️ Ignoring new chunk - user stopped stream')
+              }
             } else if (data.type === 'done') {
-              streamEnded = true
+              // Backend saved to database (full or partial)
+              backendSavedMessage = true
               finalData = data.data
               // Don't finalize here - let the typing animation complete first
-              // The displayNextCharacter function will handle finalization
+              // The typeNextCharacter function will handle finalization
             } else if (data.type === 'error') {
               throw new Error(data.error)
             }
@@ -451,24 +482,21 @@ const sendMessageStreaming = async (tabId, content, dispatch, onStreamUpdate = n
       }
     }
 
-    // Wait for typing animation to complete before returning
-    await typingCompletePromise
   } catch (error) {
-    console.error('Streaming error:', error)
-    // Only remove from Redux if not using callback mode
-    if (!onStreamUpdate) {
-      dispatch(actions.removeMessage({ tabId, messageId: tempUserMessage.id }))
-      dispatch(actions.removeMessage({ tabId, messageId: streamingMessageId }))
+    if (error.name === 'AbortError') {
+      console.log('✅ Stream aborted by user - typing animation will finish showing all received content')
+      // Keep typing animation going to finish displaying all received content
+      // Backend is saving partial message in background
+      // Typing animation will handle setting loading state to false when done
+      // Don't clear messages, don't throw error
+      return null
+    } else {
+      console.error('Streaming error:', error)
+      // Clean up on non-abort errors
+      dispatch(removeMessage({ tabId, messageId: optimisticUserId }))
+      dispatch(removeMessage({ tabId, messageId: streamingMessageId }))
+      dispatch(setLoading({ key: 'isSendingMessage', value: false }))
+      throw error
     }
-    dispatch(setLoading({ key: 'isSendingMessage', value: false }))
-
-    // Resolve typing promise to prevent hanging
-    if (typingCompleteResolver) {
-      typingCompleteResolver()
-    }
-    throw error
   }
-
-  // Return final data when using callback mode (after typing completes)
-  return onStreamUpdate ? finalData : null
 }
