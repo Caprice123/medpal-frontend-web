@@ -31,42 +31,54 @@ export const errorHandler = (err, req, res, next) => {
   // Handle ValidationError (400 Bad Request) - returns custom message
   if (err instanceof ValidationError) {
     return res.status(400).json({
-      error: err.message
+      error: {
+        message: err.message
+      }
     })
   }
 
   // Handle NotFoundError (404 Not Found) - returns custom message
   if (err instanceof NotFoundError) {
     return res.status(404).json({
-      error: err.message
+      error: {
+        messge: err.message 
+      }
     })
   }
 
   if (err instanceof AuthorizationError) {
     return res.status(401).json({
-      error: err.message
+      error: {
+        messge: err.message 
+      }
     })
   }
 
   // Handle custom errors with statusCode property
   if (err.statusCode) {
     return res.status(err.statusCode).json({
-      error: err.message || 'An error occurred'
+      error: {
+        messge: err.message || 'An error occurred'
+      }
     })
   }
 
   // Handle Prisma errors (hide details in production)
   if (err.code && err.code.startsWith('P')) {
     return res.status(400).json({
-      error: process.env.NODE_ENV === 'development'
+      error: {
+        messge: process.env.NODE_ENV === 'development'
         ? `Database error: ${err.message}`
         : 'Database error occurred'
+      }
     })
   }
 
   // Default to 500 Internal Server Error
   // In production, hide error details for security
   return res.status(500).json({
-    error: 'Internal server error'
+    error: {
+      messge: 'Terjadi kesalahan pada sistem'
+    }
   })
 }
