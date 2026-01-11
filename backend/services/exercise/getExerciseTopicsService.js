@@ -48,11 +48,6 @@ export class GetExerciseTopicsService extends BaseService {
                     include: {
                         tags: true
                     }
-                },
-                exercise_questions: {
-                    select: {
-                        id: true
-                    }
                 }
             },
             orderBy: {
