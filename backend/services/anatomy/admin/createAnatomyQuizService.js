@@ -27,6 +27,8 @@ export class CreateAnatomyQuizService extends BaseService {
           create: questions.map((q, index) => ({
             question: q.question,
             answer: q.answer,
+            answer_type: q.answerType || q.answer_type || 'text',
+            choices: q.choices || null,
             order: q.order !== undefined ? q.order : index
           }))
         },
@@ -79,6 +81,27 @@ export class CreateAnatomyQuizService extends BaseService {
     if (!questions || questions.length === 0) {
       throw new ValidationError('At least one question is required')
     }
+
+    // Validate each question
+    questions.forEach((q, index) => {
+      if (!q.question || typeof q.question !== 'string') {
+        throw new ValidationError(`Question ${index + 1}: question text is required`)
+      }
+      if (!q.answer || typeof q.answer !== 'string') {
+        throw new ValidationError(`Question ${index + 1}: answer is required`)
+      }
+
+      const answerType = q.answerType || q.answer_type || 'text'
+      if (answerType === 'multiple_choice') {
+        if (!q.choices || !Array.isArray(q.choices) || q.choices.length < 2) {
+          throw new ValidationError(`Question ${index + 1}: multiple choice questions must have at least 2 choices`)
+        }
+        // Validate that the answer matches one of the choices
+        if (!q.choices.includes(q.answer)) {
+          throw new ValidationError(`Question ${index + 1}: answer must be one of the provided choices`)
+        }
+      }
+    })
 
     // Validate tags exist
     const tagIds = tags.map(t => (typeof t === 'object' ? Number(t.id) : t))

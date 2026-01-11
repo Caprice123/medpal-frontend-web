@@ -28,6 +28,8 @@ export class AnatomyQuizSerializer {
         id: q.id,
         question: q.question,
         answer: q.answer,
+        answerType: q.answer_type || 'text',
+        choices: q.choices || null,
         order: q.order !== undefined ? q.order : index
       }))
     }

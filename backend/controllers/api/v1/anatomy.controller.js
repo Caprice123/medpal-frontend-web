@@ -68,12 +68,15 @@ class AnatomyController {
 
       const userAnswer = answer.answer.trim().toLowerCase()
       const correctAnswer = question.answer.trim().toLowerCase()
+
+      // For both text and multiple_choice, compare normalized strings
       const isCorrect = userAnswer === correctAnswer
 
       if (isCorrect) correctAnswers++
 
       results.push({
         question: question.question,
+        answerType: question.answer_type || 'text',
         userAnswer: answer.answer,
         correctAnswer: question.answer,
         isCorrect

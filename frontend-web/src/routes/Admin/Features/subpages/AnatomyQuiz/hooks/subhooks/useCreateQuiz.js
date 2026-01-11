@@ -90,12 +90,40 @@ export const useCreateQuiz = (closeCallback) => {
       {
         question: '',
         answer: '',
+        answerType: 'text',
+        choices: ['', ''],
+        correctChoiceIndex: null
       }
     ])
   }
 
   const handleRemoveQuestion = (index) => {
     form.setFieldValue('questions', form.values.questions.filter((_, i) => i !== index))
+  }
+
+  const handleAddOption = (questionIndex) => {
+    const currentChoices = form.values.questions[questionIndex].choices || []
+    form.setFieldValue(`questions.${questionIndex}.choices`, [...currentChoices, ''])
+  }
+
+  const handleRemoveOption = (questionIndex, optionIndex) => {
+    const currentChoices = form.values.questions[questionIndex].choices || []
+    const currentCorrectIndex = form.values.questions[questionIndex].correctChoiceIndex
+
+    if (currentChoices.length <= 2) return // Don't allow removing if only 2 options left
+
+    const newChoices = currentChoices.filter((_, i) => i !== optionIndex)
+    form.setFieldValue(`questions.${questionIndex}.choices`, newChoices)
+
+    // Update correctChoiceIndex if needed
+    if (currentCorrectIndex === optionIndex) {
+      // If we removed the selected option, clear the selection
+      form.setFieldValue(`questions.${questionIndex}.correctChoiceIndex`, null)
+      form.setFieldValue(`questions.${questionIndex}.answer`, '')
+    } else if (currentCorrectIndex > optionIndex) {
+      // If we removed an option before the selected one, decrease the index
+      form.setFieldValue(`questions.${questionIndex}.correctChoiceIndex`, currentCorrectIndex - 1)
+    }
   }
 
   const handleImageSelect = async (file) => {
@@ -114,6 +142,8 @@ export const useCreateQuiz = (closeCallback) => {
     handleCancelClose,
     handleAddQuestion,
     handleRemoveQuestion,
+    handleAddOption,
+    handleRemoveOption,
     handleImageSelect,
   }
 }

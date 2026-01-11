@@ -199,12 +199,71 @@ function QuizDetail() {
               <QuestionCard key={question.id} hasError={errors[question.id]}>
                 <QuestionNumber>Question {index + 1}</QuestionNumber>
                 <QuestionLabel>{question.question}</QuestionLabel>
-                <AnswerInput
-                  type="text"
-                  value={answers[question.id] || ''}
-                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                  placeholder="Type your answer here..."
-                />
+
+                {/* Render different UI based on answer type */}
+                {question.answerType === 'multiple_choice' && question.choices && question.choices.length > 0 ? (
+                  // Multiple Choice - Render radio buttons with letter labels
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.75rem' }}>
+                    {question.choices.map((choice, choiceIndex) => (
+                      <label
+                        key={choiceIndex}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '0.75rem',
+                          border: '2px solid',
+                          borderColor: answers[question.id] === choice ? '#6BB9E8' : '#E5E7EB',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          backgroundColor: answers[question.id] === choice ? '#F0F9FF' : 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (answers[question.id] !== choice) {
+                            e.currentTarget.style.borderColor = '#CBD5E1'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (answers[question.id] !== choice) {
+                            e.currentTarget.style.borderColor = '#E5E7EB'
+                          }
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name={`question_${question.id}`}
+                          value={choice}
+                          checked={answers[question.id] === choice}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          style={{
+                            marginRight: '0.75rem',
+                            width: '18px',
+                            height: '18px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        <span style={{
+                          fontWeight: '700',
+                          color: answers[question.id] === choice ? '#6BB9E8' : '#374151',
+                          minWidth: '24px',
+                          marginRight: '0.75rem'
+                        }}>
+                          {String.fromCharCode(65 + choiceIndex)}.
+                        </span>
+                        <span style={{ color: '#1F2937', fontSize: '0.95rem', flex: 1 }}>{choice}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  // Text Input - Render text input field
+                  <AnswerInput
+                    type="text"
+                    value={answers[question.id] || ''}
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    placeholder="Type your answer here..."
+                  />
+                )}
+
                 {errors[question.id] && (
                   <ErrorText>{errors[question.id]}</ErrorText>
                 )}

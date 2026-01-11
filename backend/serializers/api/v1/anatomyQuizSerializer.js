@@ -11,7 +11,9 @@ export class AnatomyQuizSerializer {
       tags: tags,
       anatomy_questions: questions.map(question => ({
         id: question.id,
-        question: question.question
+        question: question.question,
+        answerType: question.answer_type || 'text',
+        choices: question.choices || null
         // IMPORTANT: Do NOT include 'answer' field - that would leak correct answers to client!
       }))
     }

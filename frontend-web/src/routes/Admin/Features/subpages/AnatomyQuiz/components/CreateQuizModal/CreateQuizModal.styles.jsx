@@ -402,3 +402,102 @@ export const Button = styled.button`
     transform: none !important;
   }
 `
+
+export const AnswerTypeToggle = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`
+
+export const AnswerTypeButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid ${props => props.isActive ? '#6BB9E8' : '#d1d5db'};
+  background: ${props => props.isActive ? '#F0F9FF' : 'white'};
+  color: ${props => props.isActive ? '#6BB9E8' : '#374151'};
+
+  &:hover {
+    border-color: #6BB9E8;
+  }
+`
+
+export const OptionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid ${props => props.isSelected ? '#6BB9E8' : '#d1d5db'};
+  border-radius: 8px;
+  background: ${props => props.isSelected ? '#F0F9FF' : 'white'};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #6BB9E8;
+  }
+`
+
+export const OptionRadio = styled.input`
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+`
+
+export const OptionLabel = styled.div`
+  font-weight: 700;
+  color: ${props => props.isSelected ? '#6BB9E8' : '#374151'};
+  min-width: 24px;
+  text-align: center;
+`
+
+export const OptionInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: transparent;
+
+  &:focus {
+    outline: none;
+    border-color: #6BB9E8;
+    background: white;
+  }
+`
+
+export const AddOptionButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #6BB9E8;
+  border: 2px dashed #6BB9E8;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+
+  &:hover {
+    background: #F0F9FF;
+  }
+`
+
+export const RemoveOptionButton = styled.button`
+  padding: 0.25rem 0.75rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #fecaca;
+  }
+`

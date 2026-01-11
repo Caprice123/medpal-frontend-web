@@ -22,7 +22,16 @@ import {
   ErrorText,
   StatusToggle,
   StatusOption,
-  Button
+  Button,
+  AnswerTypeToggle,
+  AnswerTypeButton,
+  OptionContainer,
+  OptionRadio,
+  OptionLabel,
+  OptionInput,
+  AddOptionButton,
+  RemoveOptionButton,
+  HelpText
 } from './UpdateQuizModal.styles'
 import { useSelector } from 'react-redux'
 import { useUpdateQuiz } from '../../hooks/subhooks/useUpdateQuiz'
@@ -31,7 +40,7 @@ const UpdateQuizModal = ({ onClose }) => {
     const { loading } = useSelector(state => state.anatomy)
     const { tags } = useSelector(state => state.tags)
 
-    const { form, handleAddQuestion, handleRemoveQuestion, handleImageSelect } = useUpdateQuiz(onClose)
+    const { form, handleAddQuestion, handleRemoveQuestion, handleAddOption, handleRemoveOption, handleImageSelect } = useUpdateQuiz(onClose)
 
   // Get tags from both university and semester groups - memoized
   const universityTags = useMemo(() =>
@@ -193,17 +202,109 @@ const UpdateQuizModal = ({ onClose }) => {
               </FormSection>
 
               <FormSection>
-                <Label>Correct Answer *</Label>
-                <Input
-                  type="text"
-                  value={question.answer}
-                  onChange={(e) => form.setFieldValue(`questions.${index}.answer`, e.target.value)}
-                  placeholder="e.g., Ventrikel Kiri"
-                />
-                {form.errors[`questions.${index}.answer`] && (
-                  <ErrorText>{form.errors[`questions.${index}.answer`]}</ErrorText>
-                )}
+                <Label>Answer Type *</Label>
+                <AnswerTypeToggle>
+                  <AnswerTypeButton
+                    type="button"
+                    isActive={(question.answerType || 'text') === 'text'}
+                    onClick={() => form.setFieldValue(`questions.${index}.answerType`, 'text')}
+                  >
+                    📝 Text Input
+                  </AnswerTypeButton>
+                  <AnswerTypeButton
+                    type="button"
+                    isActive={(question.answerType || 'text') === 'multiple_choice'}
+                    onClick={() => {
+                      form.setFieldValue(`questions.${index}.answerType`, 'multiple_choice')
+                      // Initialize choices if not already set
+                      if (!question.choices || question.choices.length === 0) {
+                        form.setFieldValue(`questions.${index}.choices`, ['', ''])
+                      }
+                    }}
+                  >
+                    ☑️ Multiple Choice
+                  </AnswerTypeButton>
+                </AnswerTypeToggle>
               </FormSection>
+
+              {(question.answerType || 'text') === 'multiple_choice' ? (
+                <FormSection>
+                  <Label>Options * (minimum 2)</Label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {(question.choices || []).map((choice, choiceIndex) => (
+                      <OptionContainer
+                        key={choiceIndex}
+                        isSelected={choiceIndex === question.correctChoiceIndex}
+                        onClick={() => {
+                          form.setFieldValue(`questions.${index}.correctChoiceIndex`, choiceIndex)
+                          form.setFieldValue(`questions.${index}.answer`, choice)
+                        }}
+                      >
+                        <OptionRadio
+                          type="radio"
+                          name={`correct-${index}`}
+                          checked={choiceIndex === question.correctChoiceIndex}
+                          onChange={() => {
+                            form.setFieldValue(`questions.${index}.correctChoiceIndex`, choiceIndex)
+                            form.setFieldValue(`questions.${index}.answer`, choice)
+                          }}
+                        />
+                        <OptionLabel isSelected={choiceIndex === question.correctChoiceIndex}>
+                          {String.fromCharCode(65 + choiceIndex)}
+                        </OptionLabel>
+                        <OptionInput
+                          type="text"
+                          value={choice}
+                          onChange={(e) => {
+                            e.stopPropagation()
+                            form.setFieldValue(`questions.${index}.choices.${choiceIndex}`, e.target.value)
+                            // Auto-update answer if this is the selected choice
+                            if (question.correctChoiceIndex === choiceIndex) {
+                              form.setFieldValue(`questions.${index}.answer`, e.target.value)
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          placeholder={`Option ${String.fromCharCode(65 + choiceIndex)}`}
+                        />
+                        {(question.choices || []).length > 2 && (
+                          <RemoveOptionButton
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRemoveOption(index, choiceIndex)
+                            }}
+                          >
+                            Remove
+                          </RemoveOptionButton>
+                        )}
+                      </OptionContainer>
+                    ))}
+                    <AddOptionButton
+                      type="button"
+                      onClick={() => handleAddOption(index)}
+                    >
+                      + Add Option
+                    </AddOptionButton>
+                  </div>
+                  <HelpText>Click on an option to mark it as the correct answer</HelpText>
+                  {form.errors[`questions.${index}.answer`] && (
+                    <ErrorText>{form.errors[`questions.${index}.answer`]}</ErrorText>
+                  )}
+                </FormSection>
+              ) : (
+                <FormSection>
+                  <Label>Correct Answer *</Label>
+                  <Input
+                    type="text"
+                    value={question.answer}
+                    onChange={(e) => form.setFieldValue(`questions.${index}.answer`, e.target.value)}
+                    placeholder="e.g., Ventrikel Kiri"
+                  />
+                  {form.errors[`questions.${index}.answer`] && (
+                    <ErrorText>{form.errors[`questions.${index}.answer`]}</ErrorText>
+                  )}
+                </FormSection>
+              )}
             </QuestionCard>
           ))}
         </QuestionsSection>

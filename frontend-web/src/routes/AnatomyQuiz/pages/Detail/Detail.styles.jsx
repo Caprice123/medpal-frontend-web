@@ -438,17 +438,31 @@ export const ResultScoreSection = styled.div`
   text-align: center;
 `
 
+export const CelebrationHeader = styled.div`
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`
+
 export const ScoreDisplay = styled.div`
-  font-size: 4rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #6BB9E8, #3b82f6);
+  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.75rem;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
   position: relative;
   display: inline-block;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
 
   &::after {
     content: attr(data-score);
@@ -466,10 +480,64 @@ export const ScoreDisplay = styled.div`
 `
 
 export const ScoreLabel = styled.p`
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   color: #475569;
-  margin: 0.75rem 0 0 0;
+  margin: 0.5rem 0 1.25rem 0;
   font-weight: 600;
+`
+
+export const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+export const StatCard = styled.div`
+  background: ${props => {
+    if (props.type === 'correct') return '#ECFDF5';
+    if (props.type === 'wrong') return '#FEF2F2';
+    return '#EFF6FF';
+  }};
+  border: 2px solid ${props => {
+    if (props.type === 'correct') return '#10b981';
+    if (props.type === 'wrong') return '#ef4444';
+    return '#6BB9E8';
+  }};
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+`
+
+export const StatIcon = styled.div`
+  font-size: 1.125rem;
+  margin-bottom: 0.375rem;
+`
+
+export const StatValue = styled.div`
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: ${props => {
+    if (props.type === 'correct') return '#047857';
+    if (props.type === 'wrong') return '#dc2626';
+    return '#1e40af';
+  }};
+  margin-bottom: 0.25rem;
+`
+
+export const StatLabel = styled.div`
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
 `
 
 export const AnswersReview = styled.div`

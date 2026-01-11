@@ -26,6 +26,12 @@ import {
   ResultHeader,
   ScoreDisplay,
   ScoreLabel,
+  CelebrationHeader,
+  StatsGrid,
+  StatCard,
+  StatIcon,
+  StatValue,
+  StatLabel,
   AnswersReview,
   AnswerCard,
   AnswerQuestion,
@@ -137,12 +143,72 @@ const AnatomyQuizDetail = () => {
                                 {question.question}
                                 <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>
                               </QuestionLabel>
-                              <QuestionInput
-                                type="text"
-                                value={answers[question.id] || ''}
-                                onChange={(e) => handleInputChange(question.id, e.target.value)}
-                                placeholder="Masukkan jawaban Anda..."
-                              />
+
+                              {/* Render different UI based on answer type */}
+                              {question.answerType === 'multiple_choice' && question.choices && question.choices.length > 0 ? (
+                                // Multiple Choice - Render radio buttons with letter labels
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                  {question.choices.map((choice, choiceIndex) => (
+                                    <label
+                                      key={choiceIndex}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        padding: '0.875rem',
+                                        border: '2px solid',
+                                        borderColor: answers[question.id] === choice ? '#6BB9E8' : '#E5E7EB',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        backgroundColor: answers[question.id] === choice ? '#F0F9FF' : 'white'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (answers[question.id] !== choice) {
+                                          e.currentTarget.style.borderColor = '#CBD5E1'
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (answers[question.id] !== choice) {
+                                          e.currentTarget.style.borderColor = '#E5E7EB'
+                                        }
+                                      }}
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`question_${question.id}`}
+                                        value={choice}
+                                        checked={answers[question.id] === choice}
+                                        onChange={(e) => handleInputChange(question.id, e.target.value)}
+                                        style={{
+                                          marginRight: '0.75rem',
+                                          width: '18px',
+                                          height: '18px',
+                                          cursor: 'pointer'
+                                        }}
+                                      />
+                                      <span style={{
+                                        fontWeight: '700',
+                                        color: answers[question.id] === choice ? '#6BB9E8' : '#374151',
+                                        minWidth: '28px',
+                                        marginRight: '0.75rem',
+                                        fontSize: '0.9375rem'
+                                      }}>
+                                        {String.fromCharCode(65 + choiceIndex)}.
+                                      </span>
+                                      <span style={{ color: '#1F2937', fontSize: '0.9375rem', flex: 1 }}>{choice}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              ) : (
+                                // Text Input - Render text input field
+                                <QuestionInput
+                                  type="text"
+                                  value={answers[question.id] || ''}
+                                  onChange={(e) => handleInputChange(question.id, e.target.value)}
+                                  placeholder="Masukkan jawaban Anda..."
+                                />
+                              )}
+
                               {formErrors[question.id] && (
                                 <ErrorText>{formErrors[question.id]}</ErrorText>
                               )}
@@ -174,12 +240,36 @@ const AnatomyQuizDetail = () => {
                   <>
                     <ResultHeader>
                       <ResultScoreSection>
+                        <CelebrationHeader>
+                          🎉 Kuis Selesai! 🎉
+                        </CelebrationHeader>
+
                         <ScoreDisplay>
                           {quizResult.score}%
                         </ScoreDisplay>
                         <ScoreLabel>
-                          {quizResult.correct_questions} dari {quizResult.totalQuestions} jawaban benar
+                          {quizResult.correctAnswers} dari {quizResult.totalQuestions} jawaban benar
                         </ScoreLabel>
+
+                        <StatsGrid>
+                          <StatCard type="correct">
+                            <StatIcon>✓</StatIcon>
+                            <StatValue type="correct">{quizResult.correctAnswers}</StatValue>
+                            <StatLabel>Benar</StatLabel>
+                          </StatCard>
+
+                          <StatCard type="wrong">
+                            <StatIcon>✗</StatIcon>
+                            <StatValue type="wrong">{quizResult.totalQuestions - quizResult.correctAnswers}</StatValue>
+                            <StatLabel>Salah</StatLabel>
+                          </StatCard>
+
+                          <StatCard type="info">
+                            <StatIcon>📊</StatIcon>
+                            <StatValue type="info">{quizResult.totalQuestions}</StatValue>
+                            <StatLabel>Total Soal</StatLabel>
+                          </StatCard>
+                        </StatsGrid>
                       </ResultScoreSection>
                       <Button
                         variant="primary"

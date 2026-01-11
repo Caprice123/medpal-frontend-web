@@ -52,7 +52,18 @@ export const useUpdateQuiz = (closeCallback) => {
       },
       universityTags: initialUniversityTags,
       semesterTags: initialSemesterTags,
-      questions: selectedQuiz?.questions || [],
+      questions: (selectedQuiz?.questions || []).map(q => {
+        // Initialize correctChoiceIndex based on the answer if it's multiple choice
+        let correctChoiceIndex = q.correctChoiceIndex
+        if (q.answerType === 'multiple_choice' && q.choices && !correctChoiceIndex && correctChoiceIndex !== 0) {
+          correctChoiceIndex = q.choices.findIndex(c => c === q.answer)
+          if (correctChoiceIndex === -1) correctChoiceIndex = null
+        }
+        return {
+          ...q,
+          correctChoiceIndex
+        }
+      }),
       status: selectedQuiz?.status || 'draft'
     },
     onSubmit: (values, { resetForm }) => {
@@ -66,6 +77,8 @@ export const useUpdateQuiz = (closeCallback) => {
           ...(q.id && { id: q.id }),
           question: q.question,
           answer: q.answer,
+          answerType: q.answerType || 'text',
+          choices: q.choices || null,
           order: index
         })),
         status: values.status
@@ -124,6 +137,9 @@ export const useUpdateQuiz = (closeCallback) => {
       {
         question: '',
         answer: '',
+        answerType: 'text',
+        choices: ['', ''],
+        correctChoiceIndex: null,
         tempId: Date.now()
       }
     ])
@@ -131,6 +147,31 @@ export const useUpdateQuiz = (closeCallback) => {
 
   const handleRemoveQuestion = (index) => {
     form.setFieldValue('questions', form.values.questions.filter((_, i) => i !== index))
+  }
+
+  const handleAddOption = (questionIndex) => {
+    const currentChoices = form.values.questions[questionIndex].choices || []
+    form.setFieldValue(`questions.${questionIndex}.choices`, [...currentChoices, ''])
+  }
+
+  const handleRemoveOption = (questionIndex, optionIndex) => {
+    const currentChoices = form.values.questions[questionIndex].choices || []
+    const currentCorrectIndex = form.values.questions[questionIndex].correctChoiceIndex
+
+    if (currentChoices.length <= 2) return // Don't allow removing if only 2 options left
+
+    const newChoices = currentChoices.filter((_, i) => i !== optionIndex)
+    form.setFieldValue(`questions.${questionIndex}.choices`, newChoices)
+
+    // Update correctChoiceIndex if needed
+    if (currentCorrectIndex === optionIndex) {
+      // If we removed the selected option, clear the selection
+      form.setFieldValue(`questions.${questionIndex}.correctChoiceIndex`, null)
+      form.setFieldValue(`questions.${questionIndex}.answer`, '')
+    } else if (currentCorrectIndex > optionIndex) {
+      // If we removed an option before the selected one, decrease the index
+      form.setFieldValue(`questions.${questionIndex}.correctChoiceIndex`, currentCorrectIndex - 1)
+    }
   }
 
   const handleImageSelect = async (file) => {
@@ -149,6 +190,8 @@ export const useUpdateQuiz = (closeCallback) => {
     handleCancelClose,
     handleAddQuestion,
     handleRemoveQuestion,
+    handleAddOption,
+    handleRemoveOption,
     handleImageSelect,
   }
 }
