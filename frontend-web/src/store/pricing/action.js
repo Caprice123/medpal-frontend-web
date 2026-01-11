@@ -11,6 +11,8 @@ const {
   setPurchaseHistory,
   setError,
   clearError,
+  setTransactionDetail,
+  clearTransactionDetail,
 } = actions
 
 /**
@@ -106,6 +108,58 @@ export const purchasePricingPlan = (pricingPlanId, paymentMethod = 'manual') => 
     handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isPurchaseLoading', value: false }))
+  }
+}
+
+/**
+ * User: Fetch user's transaction detail
+ * Requires authentication
+ * @param {number} purchaseId
+ */
+export const fetchUserTransactionDetail = (purchaseId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isTransactionDetailLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(`${Endpoints.pricing.history}/${purchaseId}`)
+
+    dispatch(setTransactionDetail(response.data.data))
+
+    return response.data
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isTransactionDetailLoading', value: false }))
+  }
+}
+
+/**
+ * User: Attach payment evidence to a purchase
+ * Requires authentication
+ * @param {number} purchaseId
+ * @param {number} blobId - The blob ID of the uploaded evidence
+ */
+export const attachPaymentEvidence = (purchaseId, blobId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isAttachingEvidence', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(`${Endpoints.pricing.history}/${purchaseId}/evidence`, {
+      blobId
+    })
+
+    // Refresh transaction detail to show the newly attached evidence
+    dispatch(fetchUserTransactionDetail(purchaseId))
+
+    return response.data
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isAttachingEvidence', value: false }))
   }
 }
 
@@ -213,4 +267,84 @@ export const togglePricingPlanStatus = (planId) => async (dispatch) => {
   }
 }
 
-export { setError, clearError }
+/**
+ * Admin: Fetch transaction detail
+ * Requires admin authentication
+ * @param {number} purchaseId
+ */
+export const fetchTransactionDetail = (purchaseId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isTransactionDetailLoading', value: true }))
+    dispatch(clearError())
+
+    const response = await getWithToken(`${Endpoints.pricing.admin.list}/purchases/${purchaseId}`)
+
+    dispatch(setTransactionDetail(response.data.data))
+
+    return response.data
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isTransactionDetailLoading', value: false }))
+  }
+}
+
+/**
+ * Admin: Approve a purchase transaction
+ * Requires admin authentication
+ * @param {number} purchaseId
+ */
+export const approveTransaction = (purchaseId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isApprovingTransaction', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(
+      `${Endpoints.pricing.admin.list}/purchases/${purchaseId}/approve`,
+      { status: 'completed' }
+    )
+
+    // Update the transaction detail in store
+    dispatch(fetchTransactionDetail(purchaseId))
+
+    return response.data
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isApprovingTransaction', value: false }))
+  }
+}
+
+/**
+ * Admin: Reject a purchase transaction
+ * Requires admin authentication
+ * @param {number} purchaseId
+ */
+export const rejectTransaction = (purchaseId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isRejectingTransaction', value: true }))
+    dispatch(clearError())
+
+    const response = await postWithToken(
+      `${Endpoints.pricing.admin.list}/purchases/${purchaseId}/approve`,
+      { status: 'failed' }
+    )
+
+    // Update the transaction detail in store
+    dispatch(fetchTransactionDetail(purchaseId))
+
+    return response.data
+
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isRejectingTransaction', value: false }))
+  }
+}
+
+export { setError, clearError, clearTransactionDetail }

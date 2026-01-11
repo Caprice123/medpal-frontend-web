@@ -156,30 +156,14 @@ function Dashboard() {
   const dispatch = useDispatch()
 
   // Redux selectors
-  const { balance } = useSelector(state => state.credit)
   const { features } = useSelector(state => state.feature)
   const { isLoadingFeatures } = useSelector(state => state.feature.loading)
   const { userStatus } = useSelector(state => state.pricing)
 
-  const [user, setUser] = useState(null)
-
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = getUserData()
-    setUser(userData)
-
     // Fetch features
-    fetchUserData()
+    dispatch(fetchFeatures())
   }, [dispatch])
-
-  const fetchUserData = async () => {
-    try {
-      // Fetch features
-      await dispatch(fetchFeatures())
-    } catch (error) {
-      console.error('Failed to fetch features:', error)
-    }
-  }
 
   const handleUseFeature = async (feature) => {
       // Determine session type based on feature

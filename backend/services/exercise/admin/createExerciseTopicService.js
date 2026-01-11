@@ -15,6 +15,7 @@ export class CreateExerciseTopicService extends BaseService {
                 description: description || '',
                 content_type: contentType,
                 content: contentType === 'text' ? content : null,
+                question_count: questions.length,
                 status: status || 'draft',
                 created_by: createdBy,
                 exercise_questions: {

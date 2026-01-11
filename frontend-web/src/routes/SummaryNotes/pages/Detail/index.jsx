@@ -6,8 +6,8 @@ import 'react-photo-view/dist/react-photo-view.css'
 import Button from '@components/common/Button'
 import BlockNoteEditor from '@components/BlockNoteEditor'
 import { markdownToBlocks } from '@utils/markdownToBlocks'
-import { getWithToken } from '@utils/requestUtils'
-import Endpoints from '@config/endpoint'
+import { fetchUserSummaryNoteDetail } from '@store/summaryNotes/action'
+import { actions } from '@store/summaryNotes/reducer'
 import {
   Container,
   Content,
@@ -27,48 +27,44 @@ import {
 const SummaryNotesDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [note, setNote] = useState(null)
+  const dispatch = useDispatch()
+  const { detail: note, loading } = useSelector(state => state.summaryNotes)
   const [parsedContent, setParsedContent] = useState(null)
-  const [loading, setLoading] = useState(true)
   const contentRef = useRef(null)
   const [imageList, setImageList] = useState([])
 
   useEffect(() => {
-    const fetchNote = async () => {
-      try {
-        setLoading(true)
-        const response = await getWithToken(`${Endpoints.summaryNotes.list}/${id}`)
-        const noteData = response.data.data
-        setNote(noteData)
-
-        // Parse content - handle both JSON blocks and markdown (legacy)
-        if (noteData?.content) {
-          try {
-            const parsed = JSON.parse(noteData.content)
-            if (Array.isArray(parsed)) {
-              setParsedContent(parsed)
-            }
-          } catch (e) {
-            // If not JSON, convert markdown to blocks
-            const blocks = markdownToBlocks(noteData.content)
-            setParsedContent(blocks)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch note:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (id) {
+      dispatch(fetchUserSummaryNoteDetail(id))
     }
 
-    fetchNote()
-  }, [id])
+    // Cleanup on unmount
+    return () => {
+      dispatch(actions.setDetail(null))
+    }
+  }, [id, dispatch])
+
+  // Parse content when note changes
+  useEffect(() => {
+    if (note?.content) {
+      try {
+        const parsed = JSON.parse(note.content)
+        if (Array.isArray(parsed)) {
+          setParsedContent(parsed)
+        }
+      } catch (e) {
+        // If not JSON, convert markdown to blocks
+        const blocks = markdownToBlocks(note.content)
+        setParsedContent(blocks)
+      }
+    }
+  }, [note])
 
   const handleBack = () => {
     navigate(-1)
   }
 
-  if (loading || !note) {
+  if (loading.isNoteDetailLoading || !note) {
     return (
       <Container>
         <Content>

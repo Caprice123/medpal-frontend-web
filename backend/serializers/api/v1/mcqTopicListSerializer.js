@@ -9,7 +9,7 @@ export class McqTopicListSerializer {
         description: topic.description,
         quizTimeLimit: topic.quiz_time_limit,
         passingScore: topic.passing_score,
-        questionCount: topic.mcq_questions?.length || topic._count?.mcq_questions || 0,
+        questionCount: topic.question_count || 0,
         tags: topicTags.map(tt => ({
           id: tt.tags.id,
           name: tt.tags.name,

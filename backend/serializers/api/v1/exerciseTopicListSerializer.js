@@ -9,7 +9,7 @@ export class ExerciseTopicListSerializer {
         name: t.tags.name,
         tagGroupId: t.tags.tag_group_id
       })),
-      questionCount: topic.exercise_questions?.length || topic._count?.exercise_questions || 0,
+      questionCount: topic.question_count || 0,
       updatedAt: topic.updated_at
     }))
   }

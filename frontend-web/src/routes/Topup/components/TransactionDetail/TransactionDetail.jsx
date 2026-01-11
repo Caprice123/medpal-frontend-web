@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getWithToken, postWithToken } from '@utils/requestUtils'
 import { upload } from '@store/common/action'
-import Endpoints from '@config/endpoint'
+import {
+  fetchUserTransactionDetail,
+  attachPaymentEvidence,
+  clearTransactionDetail
+} from '@store/pricing/action'
 import FileUpload from '@components/common/FileUpload'
 import Button from '@components/common/Button'
 import {
@@ -45,38 +48,25 @@ import {
 
 function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) {
   const dispatch = useDispatch()
-  const [transaction, setTransaction] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const { transactionDetail: transaction, loading, error } = useSelector(state => state.pricing)
   const [uploadedFile, setUploadedFile] = useState(null)
   const [uploadedBlob, setUploadedBlob] = useState(null)
-  const [isAttaching, setIsAttaching] = useState(false)
   const isUploading = useSelector(state => state.common.loading.isUploading)
 
   useEffect(() => {
     if (isOpen && purchaseId) {
-      fetchTransactionDetail()
-    } else {
-      // Reset upload state when modal is closed
-      setUploadedFile(null)
-      setUploadedBlob(null)
+      dispatch(fetchUserTransactionDetail(purchaseId))
     }
-  }, [isOpen, purchaseId])
 
-  const fetchTransactionDetail = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const response = await getWithToken(`${Endpoints.pricing.history}/${purchaseId}`)
-      setTransaction(response.data.data)
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load transaction details')
-      console.error('Error fetching transaction detail:', err)
-    } finally {
-      setLoading(false)
+    // Cleanup on unmount or when modal closes
+    return () => {
+      if (!isOpen) {
+        dispatch(clearTransactionDetail())
+        setUploadedFile(null)
+        setUploadedBlob(null)
+      }
     }
-  }
+  }, [isOpen, purchaseId, dispatch])
 
   const handleModalClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -117,13 +107,7 @@ function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) 
     }
 
     try {
-      setIsAttaching(true)
-      await postWithToken(`${Endpoints.pricing.history}/${purchaseId}/evidence`, {
-        blobId: uploadedBlob.blobId
-      })
-
-      // Refresh transaction details to show newly attached evidence
-      await fetchTransactionDetail()
+      await dispatch(attachPaymentEvidence(purchaseId, uploadedBlob.blobId))
 
       // Clear upload state
       setUploadedFile(null)
@@ -138,8 +122,6 @@ function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) 
     } catch (error) {
       console.error('Error attaching evidence:', error)
       alert(error.response?.data?.error || 'Failed to attach payment evidence. Please try again.')
-    } finally {
-      setIsAttaching(false)
     }
   }
 
@@ -156,7 +138,7 @@ function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) 
         </ModalHeader>
 
         <ModalBody>
-          {loading && (
+          {loading.isTransactionDetailLoading && (
             <LoadingState>
               Memuat detail transaksi...
             </LoadingState>
@@ -168,7 +150,7 @@ function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) 
             </ErrorState>
           )}
 
-          {!loading && !error && transaction && (
+          {!loading.isTransactionDetailLoading && !error && transaction && (
             <>
               <DetailSection>
                 <SectionTitle>Informasi Paket</SectionTitle>
@@ -287,9 +269,9 @@ function TransactionDetail({ isOpen, onClose, purchaseId, onEvidenceUploaded }) 
                         uploadedBlob && (
                           <UploadButton
                             onClick={handleAttachEvidence}
-                            disabled={isAttaching || isUploading}
+                            disabled={loading.isAttachingEvidence || isUploading}
                           >
-                            {isAttaching ? 'Mengirim...' : 'Kirim'}
+                            {loading.isAttachingEvidence ? 'Mengirim...' : 'Kirim'}
                           </UploadButton>
                         )
                       }

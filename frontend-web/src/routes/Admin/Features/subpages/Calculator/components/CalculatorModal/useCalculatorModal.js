@@ -476,17 +476,12 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
       return
     }
 
-    try {
-      if (calculator) {
+    if (calculator) {
         await dispatch(updateCalculatorTopic(calculator.id, formData))
-      } else {
+    } else {
         await dispatch(createCalculatorTopic(formData))
-      }
-      onSuccess()
-    } catch (error) {
-      console.error('Error submitting form:', error)
-      alert('Error saving calculator. Please try again.')
     }
+    onSuccess()
   }
 
   return {

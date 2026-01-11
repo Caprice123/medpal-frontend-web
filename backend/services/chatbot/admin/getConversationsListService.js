@@ -50,7 +50,6 @@ export class GetConversationsListService extends BaseService {
         id: conv.id,
         topic: conv.topic,
         initialMode: conv.initial_mode,
-        messageCount: conv._count.chatbot_messages,
         user: {
           id: conv.users.id,
           name: conv.users.name,

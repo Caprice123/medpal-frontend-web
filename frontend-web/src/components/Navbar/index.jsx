@@ -14,23 +14,13 @@ export const Navbar = () => {
     const navigate = useNavigate()
     const { userStatus } = useSelector(state => state.pricing)
     const [user, setUser] = useState(null)
-    const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     // Get user data
     useEffect(() => {
-        const fetchUserData = async () => {
-          try {
-            // Fetch user status (subscription + credits)
-            await dispatch(fetchUserStatus())
-          } catch (error) {
-            console.error('Failed to fetch user data:', error)
-          }
-        }
-
         const userData = getUserData()
         setUser(userData)
-        fetchUserData()
+        dispatch(fetchUserStatus())
     }, [dispatch])
     
 
@@ -43,14 +33,8 @@ export const Navbar = () => {
     dispatch(logout(onSuccess))
   }
 
-
   const handleTopUp = () => {
     navigate('/topup')
-  }
-
-  const handlePurchaseSuccess = async () => {
-    // Refresh user data after successful purchase
-    await dispatch(fetchUserStatus())
   }
 
 

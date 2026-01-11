@@ -20,11 +20,16 @@ const initialState = {
     perPage: 10,
     isLastPage: true
   },
+  transactionDetail: null,
   loading: {
     isPlansLoading: false,
     isStatusLoading: false,
     isHistoryLoading: false,
     isPurchaseLoading: false,
+    isTransactionDetailLoading: false,
+    isApprovingTransaction: false,
+    isRejectingTransaction: false,
+    isAttachingEvidence: false,
   },
   error: null,
 }
@@ -62,6 +67,12 @@ const { reducer, actions } = createSlice({
     },
     addPurchase: (state, { payload }) => {
       state.purchaseHistory = [payload, ...state.purchaseHistory]
+    },
+    setTransactionDetail: (state, { payload }) => {
+      state.transactionDetail = payload
+    },
+    clearTransactionDetail: (state) => {
+      state.transactionDetail = null
     }
   },
   

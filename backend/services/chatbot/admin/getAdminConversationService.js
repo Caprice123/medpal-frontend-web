@@ -22,13 +22,6 @@ export class GetAdminConversationService extends BaseService {
           },
           orderBy: { created_at: 'asc' }
         },
-        _count: {
-          select: {
-            chatbot_messages: {
-              where: { is_deleted: false }
-            }
-          }
-        }
       }
     })
 
@@ -63,7 +56,6 @@ export class GetAdminConversationService extends BaseService {
       id: conversation.id,
       userId: conversation.user_id,
       topic: conversation.topic,
-      messageCount: conversation._count.chatbot_messages,
       messages: transformedMessages,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt

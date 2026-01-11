@@ -33,11 +33,17 @@ export class UpdateExerciseQuestionsService extends BaseService {
                 }))
             })
 
+            // Update question_count
+            await tx.exercise_topics.update({
+                where: { id: parseInt(topicId) },
+                data: { question_count: questions.length }
+            })
+
             // Fetch and return updated topic
-            return await tx.exerciseTopic.findUnique({
+            return await tx.exercise_topics.findUnique({
                 where: { id: parseInt(topicId) },
                 include: {
-                    questions: {
+                    exercise_questions: {
                         orderBy: { order: 'asc' }
                     }
                 }

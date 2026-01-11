@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
   fetchAnatomyQuizzes,
 } from '@store/anatomy/action'
-import { getWithToken } from '@utils/requestUtils'
-import Endpoints from '@config/endpoint'
+import { fetchTags } from '@store/tags/action'
 import {
   Container,
   Header,
@@ -33,23 +32,12 @@ function AnatomyQuiz() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { quizzes, loading, filters } = useSelector(state => state.anatomy)
-  const [tags, setTags] = useState([])
+  const { tags } = useSelector(state => state.tags)
 
   useEffect(() => {
     dispatch(fetchAnatomyQuizzes(filters))
+    dispatch(fetchTags())
   }, [dispatch, filters])
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const response = await getWithToken(Endpoints.tags)
-        setTags(response.data.data || [])
-      } catch (error) {
-        console.error('Failed to fetch tags:', error)
-      }
-    }
-    fetchTags()
-  }, [])
 
   const handleQuizClick = (quizId) => {
     navigate(`/anatomy/${quizId}`)

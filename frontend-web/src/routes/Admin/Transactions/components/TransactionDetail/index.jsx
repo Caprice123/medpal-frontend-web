@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react'
-import { getWithToken, postWithToken } from '@utils/requestUtils'
-import Endpoints from '@config/endpoint'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  fetchTransactionDetail,
+  approveTransaction,
+  rejectTransaction,
+  clearTransactionDetail
+} from '@store/pricing/action'
 import Button from '@components/common/Button'
 import {
   getStatusLabel,
@@ -41,31 +46,21 @@ import {
 } from './TransactionDetail.styles'
 
 function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange }) {
-  const [transaction, setTransaction] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [processing, setProcessing] = useState(false)
+  const dispatch = useDispatch()
+  const { transactionDetail: transaction, loading, error } = useSelector(state => state.pricing)
 
   useEffect(() => {
     if (isOpen && purchaseId) {
-      fetchTransactionDetail()
+      dispatch(fetchTransactionDetail(purchaseId))
     }
-  }, [isOpen, purchaseId])
 
-  const fetchTransactionDetail = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const response = await getWithToken(`${Endpoints.pricing.admin.list}/purchases/${purchaseId}`)
-      setTransaction(response.data.data)
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to load transaction details')
-      console.error('Error fetching transaction detail:', err)
-    } finally {
-      setLoading(false)
+    // Cleanup on unmount or when modal closes
+    return () => {
+      if (!isOpen) {
+        dispatch(clearTransactionDetail())
+      }
     }
-  }
+  }, [isOpen, purchaseId, dispatch])
 
   const handleModalClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -79,19 +74,13 @@ function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange })
     }
 
     try {
-      setProcessing(true)
-      await postWithToken(`${Endpoints.pricing.admin.list}/purchases/${purchaseId}/approve`, {
-        status: 'completed'
-      })
-
+      await dispatch(approveTransaction(purchaseId))
       alert('Purchase approved successfully!')
       onClose()
       if (onStatusChange) onStatusChange()
     } catch (error) {
       console.error('Error approving purchase:', error)
       alert(error.response?.data?.error || 'Failed to approve purchase')
-    } finally {
-      setProcessing(false)
     }
   }
 
@@ -101,19 +90,13 @@ function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange })
     }
 
     try {
-      setProcessing(true)
-      await postWithToken(`${Endpoints.pricing.admin.list}/purchases/${purchaseId}/approve`, {
-        status: 'failed'
-      })
-
+      await dispatch(rejectTransaction(purchaseId))
       alert('Purchase rejected successfully!')
       onClose()
       if (onStatusChange) onStatusChange()
     } catch (error) {
       console.error('Error rejecting purchase:', error)
       alert(error.response?.data?.error || 'Failed to reject purchase')
-    } finally {
-      setProcessing(false)
     }
   }
 
@@ -130,7 +113,7 @@ function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange })
         </ModalHeader>
 
         <ModalBody>
-          {loading && (
+          {loading.isTransactionDetailLoading && (
             <LoadingState>
               Loading transaction details...
             </LoadingState>
@@ -142,7 +125,7 @@ function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange })
             </ErrorState>
           )}
 
-          {!loading && !error && transaction && (
+          {!loading.isTransactionDetailLoading && !error && transaction && (
             <>
               <DetailSection>
                 <SectionTitle>User Information</SectionTitle>
@@ -256,16 +239,16 @@ function AdminTransactionDetail({ isOpen, onClose, purchaseId, onStatusChange })
                   <Button
                     variant="primary"
                     onClick={handleApprove}
-                    disabled={processing}
+                    disabled={loading.isApprovingTransaction || loading.isRejectingTransaction}
                   >
-                    {processing ? 'Processing...' : '✓ Approve'}
+                    {loading.isApprovingTransaction ? 'Processing...' : '✓ Approve'}
                   </Button>
                   <Button
                     variant="danger"
                     onClick={handleReject}
-                    disabled={processing}
+                    disabled={loading.isApprovingTransaction || loading.isRejectingTransaction}
                   >
-                    {processing ? 'Processing...' : '✗ Reject'}
+                    {loading.isRejectingTransaction ? 'Processing...' : '✗ Reject'}
                   </Button>
                 </ActionButtons>
               )}

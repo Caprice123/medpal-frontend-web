@@ -157,16 +157,17 @@ model exercise_topic_tags {
 }
 
 model exercise_topics {
-  id           Int      @id @default(autoincrement())
-  title        String
-  description  String?
-  content_type String
-  content      String?
-  status       String   @default("draft")
-  is_active    Boolean  @default(true)
-  created_by   Int
-  created_at   DateTime @default(now())
-  updated_at   DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String?
+  content_type   String
+  content        String?
+  question_count Int?
+  status         String   @default("draft")
+  is_active      Boolean  @default(true)
+  created_by     Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
 
   exercise_session    exercise_sessions[]
   exercise_questions  exercise_questions[]

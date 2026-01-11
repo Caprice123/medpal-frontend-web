@@ -30,14 +30,9 @@ export const useCalculator = () => {
   }
 
   const handleCalculatorClick = async (calculator) => {
-    try {
-      const fullCalculator = await dispatch(fetchAdminCalculatorTopic(calculator.id))
-      setCalculatorToEdit(fullCalculator)
-      setIsModalOpen(true)
-    } catch (error) {
-      console.error('Failed to fetch calculator details:', error)
-      alert('Failed to load calculator details')
-    }
+    const fullCalculator = await dispatch(fetchAdminCalculatorTopic(calculator.id))
+    setCalculatorToEdit(fullCalculator)
+    setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
@@ -53,13 +48,8 @@ export const useCalculator = () => {
   const handleDelete = async (e, calculatorId) => {
     e.stopPropagation()
     if (confirm('Are you sure you want to delete this calculator?')) {
-      try {
         await dispatch(deleteCalculatorTopic(calculatorId))
         await dispatch(fetchAdminCalculatorTopics())
-      } catch (error) {
-        console.error('Error deleting calculator:', error)
-        alert('Error deleting calculator. Please try again.')
-      }
     }
   }
 

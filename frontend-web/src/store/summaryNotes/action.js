@@ -44,6 +44,26 @@ export const fetchSummaryNotes = (filters, page, perPage) => async (dispatch, ge
   }
 }
 
+/**
+ * User-facing: Fetch single summary note detail
+ * Uses public API endpoint
+ */
+export const fetchUserSummaryNoteDetail = (noteId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isNoteDetailLoading', value: true }))
+
+    const route = Endpoints.api.summaryNotes + `/${noteId}`
+    const response = await getWithToken(route)
+    const note = response.data.data
+    dispatch(setDetail(note))
+    return note
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isNoteDetailLoading', value: false }))
+  }
+}
+
 // ============= Admin Endpoints =============
 
 export const fetchAdminSummaryNotes = () => async (dispatch, getState) => {

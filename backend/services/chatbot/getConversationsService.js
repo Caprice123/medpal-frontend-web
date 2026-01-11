@@ -37,13 +37,6 @@ export class GetConversationsService extends BaseService {
             created_at: true
           }
         },
-        _count: {
-          select: {
-            chatbot_messages: {
-              where: { is_deleted: false }
-            }
-          }
-        }
       },
       orderBy: {
         updated_at: 'desc'
@@ -56,7 +49,6 @@ export class GetConversationsService extends BaseService {
     const transformedConversations = paginatedConversations.map(conv => ({
       id: conv.id,
       topic: conv.topic,
-      messageCount: conv._count.chatbot_messages,
       lastMessage: conv.chatbot_messages[0] || null,
       createdAt: conv.created_at,
       updatedAt: conv.updated_at

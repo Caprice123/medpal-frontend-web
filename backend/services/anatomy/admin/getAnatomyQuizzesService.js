@@ -74,7 +74,6 @@ export class GetAnatomyQuizzesService extends BaseService {
       ]
     }
 
-    // Optimized query with _count instead of loading all question IDs
     const quizzes = await prisma.anatomy_quizzes.findMany({
       where,
       take,
@@ -89,11 +88,6 @@ export class GetAnatomyQuizzesService extends BaseService {
             }
           }
         },
-        _count: {
-          select: {
-            anatomy_questions: true
-          }
-        }
       },
       orderBy: {
         created_at: 'desc'

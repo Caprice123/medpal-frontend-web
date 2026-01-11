@@ -5,7 +5,7 @@ export class ExerciseTopicListSerializer {
       title: topic.title,
       description: topic.description,
       status: topic.status,
-      questionCount: topic.exercise_questions?.length || topic._count?.exercise_questions || 0,
+      questionCount: topic.question_count || 0,
       tags: (topic.exercise_topic_tags || []).map(t => ({
         id: t.tags.id,
         name: t.tags.name,

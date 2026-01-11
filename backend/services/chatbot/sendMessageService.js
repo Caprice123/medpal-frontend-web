@@ -239,29 +239,6 @@ export class SendMessageService extends BaseService {
       })
     }
 
-    const messageCountKey = `chatbot_${mode}_message_count`
-    const currentCount = await prisma.constants.findUnique({
-      where: { key: messageCountKey }
-    })
-
-    if (currentCount) {
-      await prisma.constants.update({
-        where: { key: messageCountKey },
-        data: {
-          value: String(parseInt(currentCount.value) + 1),
-          updated_at: new Date()
-        }
-      })
-    } else {
-      // Create if not exists
-      await prisma.constants.create({
-        data: {
-          key: messageCountKey,
-          value: '1'
-        }
-      })
-    }
-
     // Update conversation updated_at
     await prisma.chatbot_conversations.update({
       where: { id: conversationId },

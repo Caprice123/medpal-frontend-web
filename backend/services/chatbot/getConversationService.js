@@ -11,15 +11,6 @@ export class GetConversationService extends BaseService {
         id: conversationId,
         is_deleted: false
       },
-      include: {
-        _count: {
-          select: {
-            chatbot_messages: {
-              where: { is_deleted: false }
-            }
-          }
-        }
-      }
     })
 
     if (!conversation) {
@@ -34,7 +25,6 @@ export class GetConversationService extends BaseService {
     return {
       id: conversation.id,
       topic: conversation.topic,
-      messageCount: conversation._count.chatbot_messages,
       createdAt: conversation.created_at,
       updatedAt: conversation.updated_at
     }

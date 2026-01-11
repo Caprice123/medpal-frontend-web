@@ -146,6 +146,16 @@ export class UpdateExerciseTopicService extends BaseService {
                         where: { id: { in: questionsToDelete } }
                     })
                 }
+
+                // 4. Update question_count after all question operations
+                const questionCount = await tx.exercise_questions.count({
+                    where: { topic_id: parseInt(topicId) }
+                })
+
+                await tx.exercise_topics.update({
+                    where: { id: parseInt(topicId) },
+                    data: { question_count: questionCount }
+                })
             }
 
             // Fetch and return updated topic with all relations

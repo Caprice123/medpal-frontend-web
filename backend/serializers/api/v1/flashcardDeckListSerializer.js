@@ -12,7 +12,7 @@ export class FlashcardDeckListSerializer {
           name: t.tags.tag_group.name
         } : null
       })),
-      cardCount: deck.flashcard_cards?.length || deck._count?.flashcard_cards || 0,
+      cardCount: deck.flashcard_count || 0,
       updatedAt: deck.updated_at
     }))
   }
