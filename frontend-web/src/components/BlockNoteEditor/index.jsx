@@ -3,13 +3,25 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useRef, useState } from 'react'
-import { BlockNoteEditor as x } from "@blocknote/core"
 import { EditorContainer, EditorWrapper, ModeToggle, ModeButton } from './BlockNoteEditor.styles'
-
+import { createEmbedBlock } from './customBlocks/EmbedBlock'
+import { insertEmbed } from './customBlocks/EmbedSlashMenu'
+import {
+  SuggestionMenuController,
+  getDefaultReactSlashMenuItems,
+} from "@blocknote/react";
+import { filterSuggestionItems } from "@blocknote/core/extensions";
+import { BlockNoteSchema, defaultBlockSpecs } from "@blocknote/core";
 
 
 function BlockNoteEditor({ initialContent, onChange, editable = true, placeholder, showModeToggle = false, onImageUpload }) {
   const [viewMode, setViewMode] = useState('structured') // 'structured' or 'aesthetic'
+  const schema = BlockNoteSchema.create({
+    blockSpecs: {
+        ...defaultBlockSpecs,
+        embed: createEmbedBlock(),
+    },
+  });
   const editor = useCreateBlockNote({
     initialContent: initialContent || [
       {
@@ -17,6 +29,7 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
         content: "",
       },
     ],
+    schema: schema,
     uploadFile: onImageUpload ? async (file) => {
       try {
         const url = await onImageUpload(file)
@@ -27,6 +40,20 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
       }
     } : undefined,
   });
+
+  const slashItems = [
+    ...getDefaultReactSlashMenuItems(editor),
+    {
+      title: "Embed",
+      subtext: "Embed any website, video, or interactive content",
+      aliases: ["iframe", "video", "figma", "youtube", "reactflow"],
+      group: "Embeds",
+      icon: '🔗',
+      onItemClick: () => {
+        insertEmbed(editor); // you already wrote this helper
+      },
+    },
+  ];
 
   const previousContentRef = useRef(null)
   const isInternalUpdateRef = useRef(false) // Track if update is from user typing
@@ -119,16 +146,23 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
 
       <EditorWrapper $isStructured={viewMode === 'structured'}>
         <BlockNoteView
-          editor={editor}
-          theme={"black"}
-          editable={editable}
-          onKeyDown={(e) => {
-            // Prevent tab from leaving the editor
-            if (e.key === 'Tab') {
-              e.stopPropagation()
-            }
-          }}
-        />
+            editor={editor}
+            theme={"black"}
+            editable={editable}
+            onKeyDown={(e) => {
+                if (e.key === 'Tab') {
+                e.stopPropagation()
+                }
+            }}
+            >
+            <SuggestionMenuController
+                triggerCharacter="/"
+                getItems={async (query) =>
+                filterSuggestionItems(slashItems, query)
+                }
+            />
+            </BlockNoteView>
+
       </EditorWrapper>
     </EditorContainer>
   )
