@@ -100,7 +100,7 @@ const ChatInputSection = memo(({
 // Track streaming state changes for debugging
 let lastStreamingState = false
 
-const ChatPanel = memo(({ currentTab }) => {
+const ChatPanel = memo(({ currentTab, style }) => {
   const dispatch = useAppDispatch()
   const chatMessagesRef = useRef(null)
   const [isLoadingOlder, setIsLoadingOlder] = useState(false)
@@ -186,7 +186,7 @@ const ChatPanel = memo(({ currentTab }) => {
   }, [currentTab, dispatch])
 
   return (
-    <StyledChatPanel>
+    <StyledChatPanel style={style}>
       <ChatMessages ref={chatMessagesRef} onScroll={handleScroll}>
         {isLoadingOlder && hasMore && (
           <div style={{ textAlign: 'center', padding: '10px', color: '#9ca3af', fontSize: '13px' }}>

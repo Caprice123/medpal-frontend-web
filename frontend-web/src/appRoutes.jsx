@@ -20,10 +20,15 @@ const AdminPanel = lazy(() => import('@routes/Admin/AdminPanel'));
 const UITest = lazy(() => import('@routes/UITest'));
 const EditorTest = lazy(() => import('@routes/EditorTest'));
 const HtmlToDocxExample = lazy(() => import('@components/HtmlToDocxExample'));
+const DiagramBuilderMockup = lazy(() => import('@mockups/DiagramBuilder/DiagramBuilderMockup'));
+const ExcalidrawBuilderMockup = lazy(() => import('@mockups/ExcalidrawBuilder/ExcalidrawBuilderMockup'));
+const JointJSBuilderMockup = lazy(() => import('@mockups/JointJSBuilder/JointJSBuilderMockup'));
+const JointJSTest = lazy(() => import('@mockups/JointJSBuilder/JointJSTest'));
+const JointJSSimple = lazy(() => import('@mockups/JointJSBuilder/JointJSSimple'));
 
 // Wrapper to add Suspense to each route
 const withSuspense = (Component) => (
-    <Suspense fallback={<PageLoader fullScreen={true} text="Loading..." size={200} />}>
+    <Suspense fallback={<PageLoader text="Loading..." size={200} />}>
         {Component}
     </Suspense>
 );
@@ -34,6 +39,11 @@ const appRoutes = [
     { path: '/ui-test', element: withSuspense(<UITest />) },
     { path: '/editor-test', element: withSuspense(<EditorTest />) },
     { path: '/docx-test', element: withSuspense(<HtmlToDocxExample />) },
+    { path: '/diagram-mockup', element: withSuspense(<DiagramBuilderMockup />) },
+    { path: '/excalidraw-mockup', element: withSuspense(<ExcalidrawBuilderMockup />) },
+    { path: '/jointjs-mockup', element: withSuspense(<JointJSBuilderMockup />) },
+    { path: '/jointjs-test', element: withSuspense(<JointJSTest />) },
+    { path: '/jointjs-simple', element: withSuspense(<JointJSSimple />) },
     {
         path: "/",
         element: <PrivateRoute />,

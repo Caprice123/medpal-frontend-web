@@ -97,6 +97,19 @@ const skripsiSlice = createSlice({
         state.currentTab.messages = messages
       }
     },
+    setDiagrams: (state, action) => {
+      const { tabId, diagrams } = action.payload
+      if (state.currentSet) {
+        const tab = state.currentSet.tabs.find(t => t.id === tabId)
+        if (tab) {
+          tab.diagrams = diagrams
+        }
+      }
+      // Also update currentTab if it matches
+      if (state.currentTab && state.currentTab.id === tabId) {
+        state.currentTab.diagrams = diagrams
+      }
+    },
     prependMessages: (state, action) => {
       const { tabId, messages } = action.payload
       if (state.currentSet) {

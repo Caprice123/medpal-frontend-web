@@ -1,6 +1,4 @@
 import { GetExerciseTopicsService } from '#services/exercise/getExerciseTopicsService'
-import { GetListAttemptsService } from '#services/exercise/attempts/getListAttemptsService'
-import { CreateNewAttemptService } from '#services/exercise/attempts/createNewAttemptService'
 import { StartExerciseTopicService } from '#services/exercise/startExerciseTopicService'
 import { SubmitExerciseProgressService } from '#services/exercise/submitExerciseProgressService'
 import { ExerciseTopicListSerializer } from '#serializers/api/v1/exerciseTopicListSerializer'

@@ -10,6 +10,7 @@ import { Container, EditorArea, LoadingState } from './Editor.styles'
 import TopBar from './components/TopBar'
 import TabBar from './components/TabBar'
 import ChatPanel from './components/ChatPanel'
+import DiagramBuilderPanel from './components/DiagramBuilderPanel'
 import EditorPanel from './components/EditorPanel'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
@@ -186,9 +187,16 @@ const SkripsiEditor = () => {
       />
 
       <EditorArea>
+        {/* Keep both panels mounted to preserve state, toggle with CSS */}
+        <DiagramBuilderPanel
+          currentTab={currentTab}
+          style={{ display: currentTab?.tabType === 'diagram_builder' ? 'flex' : 'none' }}
+        />
+
         <ChatPanel
           currentTab={currentTab}
           isSendingMessage={isSendingMessage}
+          style={{ display: currentTab?.tabType !== 'diagram_builder' ? 'flex' : 'none' }}
         />
 
         <EditorPanel

@@ -16,6 +16,7 @@ const {
   removeSet,
   updateSetContent,
   setTabMessages,
+  setDiagrams,
   addMessage,
   updateMessage,
   removeMessage,
@@ -529,5 +530,64 @@ const sendMessageStreaming = async (tabId, content, dispatch, abortController, o
       dispatch(setLoading({ key: 'isSendingMessage', value: false }))
       throw error
     }
+  }
+}
+
+// ============= Diagram Builder =============
+
+export const generateDiagram = (tabId, diagramConfig) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isGeneratingDiagram', value: true }))
+
+    const route = Endpoints.api.skripsi + `/tabs/${tabId}/diagrams`
+    const response = await postWithToken(route, diagramConfig)
+
+    const { diagramId, diagram } = response.data.data
+
+    // Refresh diagram history after generation
+    await dispatch(fetchDiagramHistory(tabId))
+
+    return { diagramId, diagram }
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isGeneratingDiagram', value: false }))
+  }
+}
+
+export const fetchDiagramHistory = (tabId) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isDiagramHistoryLoading', value: true }))
+
+    const route = Endpoints.api.skripsi + `/tabs/${tabId}/diagrams`
+    const response = await getWithToken(route)
+
+    const diagrams = response.data.data || []
+
+    // Store as tab diagrams
+    dispatch(setDiagrams({ tabId, diagrams }))
+
+    return diagrams
+  } catch (err) {
+    handleApiError(err, dispatch)
+  } finally {
+    dispatch(setLoading({ key: 'isDiagramHistoryLoading', value: false }))
+  }
+}
+
+export const updateDiagram = (diagramId, diagramData) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isUpdatingDiagram', value: true }))
+
+    const route = Endpoints.api.skripsi + `/diagrams/${diagramId}`
+    const response = await putWithToken(route, { diagramData })
+
+    return response.data.data
+  } catch (err) {
+    handleApiError(err, dispatch)
+    throw err
+  } finally {
+    dispatch(setLoading({ key: 'isUpdatingDiagram', value: false }))
   }
 }
