@@ -42,7 +42,6 @@ function Features() {
   }
 
   const renderFeaturePage = () => {
-    console.log(selectedFeature)
     switch (selectedFeature.sessionType) {
         case "exercise":
             return <Exercise onBack={handleBackToList} />

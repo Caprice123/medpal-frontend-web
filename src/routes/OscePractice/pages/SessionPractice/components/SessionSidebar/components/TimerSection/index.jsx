@@ -10,10 +10,18 @@ const TimerSection = ({ onEndSession }) => {
     useEffect(() => {
         if (!sessionDetail) return
 
+        // Only start timer if session is actually started
+        if (sessionDetail.status !== 'started') {
+            setTimeRemaining(sessionDetail.topic.remainingTime || 0)
+            return
+        }
+
         // Initialize timer
         const durationInSeconds = sessionDetail.topic.remainingTime || 0
         setTimeRemaining(durationInSeconds)
-        if (durationInSeconds <= 0) {
+
+        // Only auto-end if session is started and time is actually up
+        if (durationInSeconds <= 1) {
             handleTimeUp()
             return
         }
@@ -47,8 +55,8 @@ const TimerSection = ({ onEndSession }) => {
         if (timerRef.current) {
             clearInterval(timerRef.current)
         }
-        alert('Waktu habis! Sesi akan berakhir.')
-        onEndSession()
+        // Pass true to indicate auto-end (skip confirmation)
+        onEndSession(true)
     }
 
   return (
