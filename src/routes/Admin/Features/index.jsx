@@ -18,6 +18,7 @@ import {
   ErrorMessage
 } from './Features.styles'
 import { useDispatch, useSelector } from 'react-redux'
+import OscePracticeAdminPage from './subpages/OscePractice'
 
 function Features() {
   const { features, loading } = useSelector(state => state.feature)
@@ -58,6 +59,8 @@ function Features() {
             return <Chatbot onBack={handleBackToList} />
         case "skripsi_builder":
             return <SkripsiBuilder onBack={handleBackToList} />
+        case "osce_practice":
+            return <OscePracticeAdminPage onBack={handleBackToList} />
         default:
             return null
     }

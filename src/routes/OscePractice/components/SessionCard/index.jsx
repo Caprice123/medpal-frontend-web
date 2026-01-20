@@ -1,0 +1,125 @@
+import { useNavigate } from 'react-router-dom'
+import {
+  Card,
+  CardHeader,
+  TopicInfo,
+  TopicTitle,
+  TopicDescription,
+  DateBadge,
+  StatsRow,
+  StatItem,
+  StatLabel,
+  StatValue,
+  CardActions,
+  ActionButton,
+  TagList,
+  Tag,
+} from './SessionCard.styles'
+
+function SessionCard({ session }) {
+    const navigate = useNavigate()
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
+  }
+
+  // Format duration
+  const formatDuration = (minutes) => {
+    if (!minutes) return '-'
+    return `${minutes} menit`
+  }
+
+  const onViewSession = (session) => {
+    if (session.status == "created") {
+        navigate(`/osce-practice/session/${session.uniqueId}/preparation`)
+    } else if (session.status == "completed") {
+        navigate(`/osce-practice/session/${session.uniqueId}/result`)
+    } else {
+        navigate(`/osce-practice/session/${session.uniqueId}/practice`)
+    }
+  }
+
+  const getTextLabel = (session) => {
+    const label = {
+        created: "Mulai kerjakan",
+        expired: "Selesai dan lihat hasil",
+        started: "Lanjutkan",
+        completed: "Lihat hasil"
+    }
+    return label[session.status]
+  }
+  
+  const topicTags = session.tags?.filter(tag => tag.tagGroup?.name === 'topic') || []
+  const batchTags = session.tags?.filter(tag => tag.tagGroup?.name === 'batch') || []
+
+  return (
+    <Card>
+      <CardHeader>
+        <TopicInfo>
+          <TopicTitle>{session.topicTitle || 'Untitled Topic'}</TopicTitle>
+          {session.topicDescription && (
+            <TopicDescription>{session.topicDescription}</TopicDescription>
+          )}
+        </TopicInfo>
+        <DateBadge>{formatDate(session.createdAt)}</DateBadge>
+      </CardHeader>
+
+      <div style={{flex: 1}}></div>
+
+      {/* University Tags */}
+      {topicTags.length > 0 && (
+        <TagList>
+          {topicTags.map((tag) => (
+            <Tag key={tag.id} university>
+              🏛️ {tag.name}
+            </Tag>
+          ))}
+        </TagList>
+      )}
+
+      {/* Semester Tags */}
+      {batchTags.length > 0 && (
+        <TagList>
+          {batchTags.map((tag) => (
+            <Tag key={tag.id} semester>
+              📚 {tag.name}
+            </Tag>
+          ))}
+        </TagList>
+      )}
+
+      <StatsRow>
+        <StatItem>
+          <StatLabel>Durasi</StatLabel>
+          <StatValue>{formatDuration(session.durationMinutes)}</StatValue>
+        </StatItem>
+        {session.totalScore !== null && session.totalScore !== undefined && (
+          <StatItem>
+            <StatLabel>Skor</StatLabel>
+            <StatValue>
+              {session.totalScore}
+              {session.maxScore && ` / ${session.maxScore}`}
+            </StatValue>
+          </StatItem>
+        )}
+      </StatsRow>
+
+      <CardActions>
+        <ActionButton onClick={() => onViewSession(session)}>
+          {getTextLabel(session)}
+        </ActionButton>
+      </CardActions>
+    </Card>
+  )
+}
+
+export default SessionCard
