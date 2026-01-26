@@ -2,8 +2,8 @@ import { actions } from '@store/chatbot/reducer'
 import Endpoints from '@config/endpoint'
 import { handleApiError } from '@utils/errorUtils'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
-import { getToken, setToken } from '@utils/authToken'
-import api from '@config/api'
+import { getToken } from '@utils/authToken'
+import { refreshAccessToken } from '../../config/api'
 
 const {
   setLoading,
@@ -16,6 +16,7 @@ const {
   setCurrentMode,
   setAvailableModes,
   setCosts,
+  setUserInformation,
   setPagination,
   addConversation,
   updateConversation,
@@ -32,6 +33,9 @@ export const fetchChatbotConfig = () => async (dispatch) => {
 
     dispatch(setAvailableModes(config.availableModes))
     dispatch(setCosts(config.costs))
+    if (config.userInformation) {
+      dispatch(setUserInformation(config.userInformation))
+    }
 
     return config
   } catch (err) {
@@ -187,16 +191,7 @@ const ensureValidToken = async () => {
 
   // If access token is expired, refresh it using axios
   if (isTokenExpired(token.accessTokenExpiresAt)) {
-    try {
-      const refreshResponse = await api.post('/api/v1/refresh', {
-        refreshToken: token.refreshToken,
-      })
-      const newToken = refreshResponse.data.data
-      setToken(newToken)
-      return newToken.accessToken
-    } catch (_e) {
-      throw new Error('Failed to refresh token')
-    }
+    return await refreshAccessToken()
   }
 
   return token.accessToken
@@ -294,7 +289,7 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, opt
   let backendSavedMessage = false
   let finalData = null
 
-  const TYPING_SPEED_MS = 10 // 10ms per character (backend delays based on chunk length × 10ms)
+  const TYPING_SPEED_MS = 1 // 3ms per character (~333 chars/sec) - fast but still smooth
 
   // Add initial streaming message (no sources initially)
   dispatch(addMessage({

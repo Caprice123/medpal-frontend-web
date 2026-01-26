@@ -22,6 +22,7 @@ export const useFeatureSetting = (onClose) => {
       chatbot_normal_last_message_count: '10',
       chatbot_normal_prompt: 'Kamu adalah asisten AI medis yang membantu mahasiswa kedokteran dan profesional kesehatan. Berikan jawaban yang informatif, akurat, dan mudah dipahami.',
       chatbot_normal_message_count: '0',
+      chatbot_normal_user_information: 'Respon cepat dengan AI tanpa pencarian basis data. Cocok untuk pertanyaan umum dan percakapan ringan.',
       
       // Validated Search Mode
       chatbot_validated_enabled: true,
@@ -30,9 +31,12 @@ export const useFeatureSetting = (onClose) => {
       chatbot_validated_cost: '8',
       chatbot_validated_last_message_count: '10',
       chatbot_validated_system_prompt: 'Kamu harus HANYA menggunakan informasi dari summary notes yang diberikan sebagai konteks. Selalu sertakan sitasi [1], [2] dll untuk sumber yang kamu gunakan. Jika informasi tidak ada di konteks, katakan bahwa kamu tidak memiliki informasi tersebut.',
-      chatbot_validated_max_context: '5',
+      chatbot_validated_search_count: '5',
       chatbot_validated_threshold: '0.3',
       chatbot_validated_message_count: '0',
+      chatbot_validated_rewrite_enabled: true,
+      chatbot_validated_rewrite_prompt: 'Kamu adalah asisten yang membantu mereformulasi pertanyaan pengguna agar lebih jelas dan spesifik untuk pencarian informasi. Tulis ulang pertanyaan dengan menambahkan konteks dari riwayat percakapan jika pertanyaan tidak jelas atau menggunakan kata ganti.',
+      chatbot_validated_user_information: 'Menggunakan basis pengetahuan yang telah divalidasi. Jawaban lebih akurat dan terverifikasi dari sumber terpercaya.',
 
       // Research Mode
       chatbot_research_enabled: true,
@@ -50,7 +54,8 @@ export const useFeatureSetting = (onClose) => {
       chatbot_research_published_after: '',
       chatbot_research_published_before: '',
       chatbot_research_updated_after: '',
-      chatbot_research_updated_before: ''
+      chatbot_research_updated_before: '',
+      chatbot_research_user_information: 'Pencarian mendalam dengan multiple sumber dan analisis komprehensif. Cocok untuk topik kompleks yang membutuhkan riset detail.'
     },
     onSubmit: async (values) => {
       try {
@@ -60,6 +65,7 @@ export const useFeatureSetting = (onClose) => {
           chatbot_is_active: String(values.chatbot_is_active),
           chatbot_normal_enabled: String(values.chatbot_normal_enabled),
           chatbot_validated_enabled: String(values.chatbot_validated_enabled),
+          chatbot_validated_rewrite_enabled: String(values.chatbot_validated_rewrite_enabled),
           chatbot_research_enabled: String(values.chatbot_research_enabled),
           chatbot_research_domain_filter_enabled: String(values.chatbot_research_domain_filter_enabled)
         }
@@ -84,15 +90,19 @@ export const useFeatureSetting = (onClose) => {
         'chatbot_normal_last_message_count',
         'chatbot_normal_prompt',
         'chatbot_normal_message_count',
+        'chatbot_normal_user_information',
         'chatbot_validated_enabled',
         'chatbot_validated_model',
         'chatbot_validated_embedding_model',
         'chatbot_validated_cost',
         'chatbot_validated_last_message_count',
         'chatbot_validated_system_prompt',
-        'chatbot_validated_max_context',
+        'chatbot_validated_search_count',
         'chatbot_validated_threshold',
         'chatbot_validated_message_count',
+        'chatbot_validated_rewrite_enabled',
+        'chatbot_validated_rewrite_prompt',
+        'chatbot_validated_user_information',
         'chatbot_research_enabled',
         'chatbot_research_model',
         'chatbot_research_cost',
@@ -108,7 +118,8 @@ export const useFeatureSetting = (onClose) => {
         'chatbot_research_published_after',
         'chatbot_research_published_before',
         'chatbot_research_updated_after',
-        'chatbot_research_updated_before'
+        'chatbot_research_updated_before',
+        'chatbot_research_user_information'
       ]
 
       try {
@@ -121,6 +132,7 @@ export const useFeatureSetting = (onClose) => {
           chatbot_is_active: constants.chatbot_is_active === 'true',
           chatbot_normal_enabled: constants.chatbot_normal_enabled === 'true',
           chatbot_validated_enabled: constants.chatbot_validated_enabled === 'true',
+          chatbot_validated_rewrite_enabled: constants.chatbot_validated_rewrite_enabled === 'true',
           chatbot_research_enabled: constants.chatbot_research_enabled === 'true',
           chatbot_research_domain_filter_enabled: constants.chatbot_research_domain_filter_enabled === 'true'
         }

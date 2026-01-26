@@ -2,8 +2,8 @@ import { actions } from '@store/skripsi/reducer'
 import Endpoints from '@config/endpoint'
 import { handleApiError } from '@utils/errorUtils'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
-import { getToken, setToken } from '@utils/authToken'
-import api from '@config/api'
+import { getToken } from '@utils/authToken'
+import { refreshAccessToken } from '../../config/api'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -324,16 +324,7 @@ const ensureValidToken = async () => {
 
   // If access token is expired, refresh it using axios
   if (isTokenExpired(token.accessTokenExpiresAt)) {
-    try {
-      const refreshResponse = await api.post('/api/v1/refresh', {
-        refreshToken: token.refreshToken,
-      })
-      const newToken = refreshResponse.data.data
-      setToken(newToken)
-      return newToken.accessToken
-    } catch (_e) {
-      throw new Error('Failed to refresh token')
-    }
+    return await refreshAccessToken()
   }
 
   return token.accessToken
@@ -358,7 +349,7 @@ const sendMessageStreaming = async (tabId, content, dispatch, abortController, o
   let backendSavedMessage = false
   let finalData = null
 
-  const TYPING_SPEED_MS = 10 // 10ms per character (backend delays based on chunk length × 10ms)
+  const TYPING_SPEED_MS = 1 // 1ms per character (~1000 chars/sec) - fast but still smooth
 
   // Add initial streaming message
   dispatch(addMessage({
