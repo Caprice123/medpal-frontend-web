@@ -1,23 +1,25 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '@store/store'
 import { shallowEqual } from 'react-redux'
 import { fetchSet, switchTab, saveSetContent } from '@store/skripsi/action'
 import { upload } from '@store/common/action'
 import { convertHtmlToDocxReliable } from '@utils/htmlToDocx'
 import { blocksToHTML, htmlToBlocks } from '@utils/blockNoteConversion'
-import { Container, EditorArea, LoadingState } from './Editor.styles'
+import { Container, EditorArea, LoadingState, Wrapper } from './Editor.styles'
 import TopBar from './components/TopBar'
 import TabBar from './components/TabBar'
 import ChatPanel from './components/ChatPanel'
 import DiagramBuilderPanel from './components/DiagramBuilderPanel'
 import EditorPanel from './components/EditorPanel'
+import UnsavedChangesDialog from './components/UnsavedChangesDialog'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
 const SkripsiEditor = () => {
   const { setId } = useParams()
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   // Use separate selectors with shallowEqual to prevent unnecessary re-renders
   const currentSet = useAppSelector((state) => state.skripsi.currentSet, shallowEqual)
@@ -32,6 +34,8 @@ const SkripsiEditor = () => {
     },
   ])
   const [isLoadingContent, setIsLoadingContent] = useState(false)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const [isSavingBeforeLeave, setIsSavingBeforeLeave] = useState(false)
 
   // Image upload handler
   const handleImageUpload = useCallback(async (file) => {
@@ -100,11 +104,11 @@ const SkripsiEditor = () => {
   const currentTabId = useMemo(() => currentTab?.id, [currentTab?.id])
   const isSavingContent = useMemo(() => loading.isSavingContent, [loading.isSavingContent])
 
-  const handleTabSwitch = useCallback((tab) => {
+  const handleTabSwitch = (tab) => {
     dispatch(switchTab(tab))
-  }, [dispatch])
+  }
 
-  const handleSave = useCallback(async (showAlert = true) => {
+  const handleSave = useCallback(async () => {
     if (!currentSet) return
 
     try {
@@ -112,14 +116,8 @@ const SkripsiEditor = () => {
       const htmlContent = await blocksToHTML(editorContent)
       await dispatch(saveSetContent(currentSet.id, htmlContent))
       setHasUnsavedChanges(false)
-      if (showAlert) {
-        alert('Berhasil disimpan!')
-      }
     } catch (error) {
       console.error('Failed to save:', error)
-      if (showAlert) {
-        alert('Gagal menyimpan konten')
-      }
     }
   }, [currentSet, editorContent, dispatch])
 
@@ -127,7 +125,7 @@ const SkripsiEditor = () => {
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
       if (hasUnsavedChanges && currentSet) {
-        handleSave(false) // Don't show alert for auto-save
+        handleSave() // Don't show alert for auto-save
       }
     }, 30000) // 30 seconds
 
@@ -153,6 +151,41 @@ const SkripsiEditor = () => {
     }
   }, [currentSet, editorContent])
 
+  // Handle back button click
+  const handleBackClick = useCallback(() => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedDialog(true)
+    } else {
+      navigate('/sets')
+    }
+  }, [hasUnsavedChanges, navigate])
+
+  // Handle save and leave
+  const handleSaveAndLeave = async () => {
+    setIsSavingBeforeLeave(true)
+    try {
+      await handleSave()
+      navigate('/sets')
+    } catch (error) {
+      console.error('Failed to save before leaving:', error)
+      alert('Gagal menyimpan perubahan')
+    } finally {
+      setIsSavingBeforeLeave(false)
+      setShowUnsavedDialog(false)
+    }
+  }
+
+  // Handle leave without saving
+  const handleLeaveWithoutSaving = () => {
+    setShowUnsavedDialog(false)
+    navigate('/sets')
+  }
+
+  // Handle cancel navigation
+  const handleCancelNavigation = () => {
+    setShowUnsavedDialog(false)
+  }
+
   if (loading.isSetLoading) {
     return (
       <Container>
@@ -170,45 +203,56 @@ const SkripsiEditor = () => {
   }
 
   return (
-    <Container>
-      <TopBar
-        currentSet={currentSet}
-        hasUnsavedChanges={hasUnsavedChanges}
-        isSavingContent={isSavingContent}
-        onSave={handleSave}
-        onExportWord={handleExportWord}
-      />
-
-      <TabBar
-        tabs={tabs}
-        currentTabId={currentTabId}
-        onTabSwitch={handleTabSwitch}
-      />
-
-      <EditorArea>
-        {/* Keep both panels mounted to preserve state, toggle with CSS */}
-        <DiagramBuilderPanel
-          currentTab={currentTab}
-          style={{ display: currentTab?.tabType === 'diagram_builder' ? 'flex' : 'none' }}
+    <Wrapper>
+        <Container>
+        <TopBar
+            currentSet={currentSet}
+            hasUnsavedChanges={hasUnsavedChanges}
+            isSavingContent={isSavingContent}
+            onSave={handleSave}
+            onExportWord={handleExportWord}
+            onBackClick={handleBackClick}
         />
 
-        <ChatPanel
-          currentTab={currentTab}
-          style={{ display: currentTab?.tabType !== 'diagram_builder' ? 'flex' : 'none' }}
+        <TabBar
+            tabs={tabs}
+            currentTabId={currentTabId}
+            onTabSwitch={handleTabSwitch}
         />
 
-        <EditorPanel
-          editorContent={editorContent}
-          onContentChange={handleContentChange}
-          onImageUpload={handleImageUpload}
-          hasUnsavedChanges={hasUnsavedChanges}
-          isSavingContent={isSavingContent}
-          onSave={handleSave}
-          onExportWord={handleExportWord}
-          isLoadingContent={isLoadingContent}
+        <EditorArea>
+            {/* Keep both panels mounted to preserve state, toggle with CSS */}
+            <DiagramBuilderPanel
+            currentTab={currentTab}
+            style={{ display: currentTab?.tabType === 'diagram_builder' ? 'flex' : 'none' }}
+            />
+
+            <ChatPanel
+            currentTab={currentTab}
+            style={{ display: currentTab?.tabType !== 'diagram_builder' ? 'flex' : 'none' }}
+            />
+
+            <EditorPanel
+            editorContent={editorContent}
+            onContentChange={handleContentChange}
+            onImageUpload={handleImageUpload}
+            hasUnsavedChanges={hasUnsavedChanges}
+            isSavingContent={isSavingContent}
+            onSave={handleSave}
+            onExportWord={handleExportWord}
+            isLoadingContent={isLoadingContent}
+            />
+        </EditorArea>
+
+        <UnsavedChangesDialog
+            isOpen={showUnsavedDialog}
+            onSaveAndLeave={handleSaveAndLeave}
+            onLeaveWithoutSaving={handleLeaveWithoutSaving}
+            onCancel={handleCancelNavigation}
+            isSaving={isSavingBeforeLeave}
         />
-      </EditorArea>
-    </Container>
+        </Container>
+    </Wrapper>
   )
 }
 

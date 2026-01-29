@@ -23,7 +23,7 @@ export const DiagramBuilderContainer = styled.div`
   @media (max-width: 768px) {
     width: 100%;
     min-width: 100%;
-    height: 100vh;
+    height: ${props => props.$activeSubTab === 'preview' ? '600px' : '100vh'};
     flex-shrink: 0;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
@@ -87,10 +87,7 @@ export const FormContent = styled.div`
 `;
 
 export const ConfigSection = styled.div`
-  border: 1px solid #06b6d4;
-  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 16px;
 `;
 
 export const ConfigHeader = styled.div`
@@ -113,7 +110,6 @@ export const ConfigTitle = styled.span`
 `;
 
 export const ConfigBody = styled.div`
-  padding: 16px;
   background: white;
 `;
 
@@ -261,6 +257,13 @@ export const GenerateButton = styled.button`
     padding: 0.75rem;
     font-size: 0.875rem;
   }
+`;
+
+export const GenerateButtonWrapper = styled.div`
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 `;
 
 // History Subtab Styles
@@ -522,6 +525,10 @@ export const PreviewContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    max-height: 600px;
+  }
 `;
 
 export const PreviewToolbar = styled.div`
@@ -613,8 +620,6 @@ export const DiagramPreviewPanel = styled.div`
   overflow: hidden;
 
   @media (max-width: 768px) {
-    min-height: 100vh;
-    height: 100vh;
     flex-shrink: 0;
   }
 `;

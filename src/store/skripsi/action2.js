@@ -23,8 +23,6 @@ const {
   prependMessagesToTab,
   setDiagramsForTab,
   resetTabMessages,
-  setStreamingState,
-  clearStreamingState,
   setLoading,
   setTabLoading,
   setPagination,
@@ -270,8 +268,9 @@ export const loadOlderMessages = (tabId, beforeMessageId) => async (dispatch) =>
 
 // Store abort controllers per tab for stream cancellation
 const abortControllersByTab = {}
+const userStoppedStreamByTab = {}
 
-export const sendMessage = (tabId, message) => async (dispatch, getState) => {
+export const sendMessage = (tabId, message) => async (dispatch) => {
   try {
     // Set loading state for THIS specific tab
     dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: true }))
@@ -285,27 +284,12 @@ export const sendMessage = (tabId, message) => async (dispatch, getState) => {
     }
     dispatch(addMessageToTab({ tabId, message: tempUserMessage }))
 
-    // Initialize streaming state for this tab
-    dispatch(setStreamingState({
-      tabId,
-      isSending: true,
-      isTyping: false,
-      userStopped: false,
-      userMessage: message,
-      streamingMessageId: null,
-      optimisticUserId: tempUserMessage.id,
-      realMessageId: null,
-      realUserMessageId: null,
-      displayedContent: '',
-      displayedLength: 0
-    }))
-
     // Create new AbortController for this tab's stream
     abortControllersByTab[tabId] = new AbortController()
     console.log(`🆕 Created new AbortController for tab ${tabId}`)
 
     // Use streaming for all messages (everything handled in Redux)
-    await sendMessageStreaming(tabId, message, dispatch, getState, abortControllersByTab[tabId], tempUserMessage.id)
+    await sendMessageStreaming(tabId, message, dispatch, abortControllersByTab[tabId], tempUserMessage.id)
     console.log('✅ sendMessageStreaming completed')
   } catch (err) {
     if (err.name === 'AbortError') {
@@ -322,105 +306,22 @@ export const sendMessage = (tabId, message) => async (dispatch, getState) => {
   }
 }
 
-export const finalizeMessage = (tabId, messageId, content, isComplete) => async (dispatch) => {
-  try {
-    console.log(`📝 Finalizing message ${messageId} as ${isComplete ? 'completed' : 'truncated'}`)
-
-    const route = Endpoints.api.skripsi + `/tabs/${tabId}/messages/${messageId}/finalize`
-    const response = await postWithToken(route, {
-      content: content,
-      isComplete: isComplete
-    })
-
-    console.log('✅ Message finalized successfully')
-    return response.data
-  } catch (err) {
-    console.error('❌ Error finalizing message:', err)
-    throw err
-  }
-}
-
-export const stopStreaming = (tabId) => async (dispatch, getState) => {
+export const stopStreaming = (tabId) => async (dispatch) => {
   try {
     console.log(`⏹️ User clicked stop button for tab ${tabId}`)
 
-    // Set flag to stop receiving new chunks and typing
-    dispatch(setStreamingState({
-      tabId,
-      userStopped: true,
-      isTyping: false
-    }))
+    // Set flag so typing animation knows stream was stopped
+    userStoppedStreamByTab[tabId] = true
 
     // Abort the fetch for this specific tab
     const controller = abortControllersByTab[tabId]
     if (controller) {
       console.log(`🛑 Aborting stream for tab ${tabId}...`)
       controller.abort()
-      console.log('✅ Stream aborted')
+      console.log('✅ Stream aborted - backend will save partial content')
     } else {
       console.warn(`⚠️ No active abort controller found for tab ${tabId}`)
     }
-
-    // Get the streaming state from redux
-    const state = getState()
-    const streamingState = state.skripsi.streamingStateByTab[tabId]
-
-    if (streamingState && streamingState.realMessageId && streamingState.displayedContent) {
-      console.log(`📝 Finalizing truncated message: messageId=${streamingState.realMessageId}, content length=${streamingState.displayedContent.length}`)
-
-      // Call finalize endpoint with the exact displayed content
-      try {
-        const response = await dispatch(finalizeMessage(
-          tabId,
-          streamingState.realMessageId,
-          streamingState.displayedContent,
-          false // isComplete = false (truncated)
-        ))
-
-        // Remove temporary messages
-        if (streamingState.streamingMessageId) {
-          dispatch(removeMessageFromTab({ tabId, messageId: streamingState.streamingMessageId }))
-        }
-        if (streamingState.optimisticUserId) {
-          dispatch(removeMessageFromTab({ tabId, messageId: streamingState.optimisticUserId }))
-        }
-
-        // Add the user message with real ID
-        if (streamingState.userMessage && streamingState.realUserMessageId) {
-          dispatch(addMessageToTab({
-            tabId,
-            message: {
-              id: streamingState.realUserMessageId,
-              senderType: 'user',
-              content: streamingState.userMessage,
-              createdAt: new Date().toISOString()
-            }
-          }))
-        }
-
-        // Add the AI message with truncated content
-        if (response.data) {
-          dispatch(addMessageToTab({
-            tabId,
-            message: {
-              id: response.data.id,
-              senderType: 'ai',
-              content: response.data.content,
-              createdAt: response.data.updatedAt
-            }
-          }))
-        }
-
-      } catch (err) {
-        console.error('❌ Error finalizing message:', err)
-      }
-    } else {
-      console.log('⚠️ No streaming state found, cannot finalize')
-    }
-
-    // Clean up streaming state
-    dispatch(clearStreamingState(tabId))
-    dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
 
     return null
   } catch (error) {
@@ -453,8 +354,8 @@ const ensureValidToken = async () => {
   return token.accessToken
 }
 
-// Streaming message handler - typing animation with backend pacing (same as chatbot)
-const sendMessageStreaming = async (tabId, content, dispatch, getState, abortController, optimisticUserId) => {
+// Streaming message handler - typing animation with backend pacing (copied from chatbot)
+const sendMessageStreaming = async (tabId, content, dispatch, abortController, optimisticUserId) => {
   // Ensure token is valid and refreshed if needed
   const accessToken = await ensureValidToken()
   const route = API_BASE_URL + Endpoints.api.skripsi + `/tabs/${tabId}/messages`
@@ -462,20 +363,19 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
   const streamingMessageId = `streaming-${Date.now()}`
   const messageCreatedAt = new Date().toISOString()
 
+  // Reset user stopped flag for this tab
+  userStoppedStreamByTab[tabId] = false
+
   // Typing animation state
   let fullContent = '' // Complete content from backend chunks
   let displayedContent = '' // Content currently displayed with typing animation
   let isTyping = false
   let backendSavedMessage = false
   let finalData = null
+  let frozenCharCount = null // Character count when user clicked stop
+  let savedMessageId = null // Store messageId when 'done' arrives
 
   const TYPING_SPEED_MS = 1 // 1ms per character (~1000 chars/sec) - fast but still smooth
-
-  // Update streaming state with streamingMessageId
-  dispatch(setStreamingState({
-    tabId,
-    streamingMessageId
-  }))
 
   // Add initial streaming message
   dispatch(addMessageToTab({
@@ -490,13 +390,19 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
 
   // Typing animation - type character by character
   const typeNextCharacter = () => {
-    // Check if user stopped stream from Redux state
-    const state = getState()
-    const streamingState = state.skripsi.streamingStateByTab[tabId]
+    // If user stopped stream, freeze immediately at current position
+    if (userStoppedStreamByTab[tabId]) {
+      if (frozenCharCount === null) {
+        // Record the character count when user stopped (first time flag is detected)
+        frozenCharCount = displayedContent.length
+        console.log(`⏸️ User stopped - freezing at ${frozenCharCount} characters`)
+      }
 
-    if (streamingState?.userStopped) {
-      console.log('⏹️ User stopped - stopping typing immediately')
+      // Stop typing animation immediately
       isTyping = false
+
+      // Wait for backend to send message ID, then we'll truncate in the 'done' handler
+      // Don't finalize yet - wait for backend
       return
     }
 
@@ -506,42 +412,18 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
 
       // If backend is done and all characters displayed, finalize
       if (backendSavedMessage && finalData) {
-        // Call finalize endpoint with complete content
-        const finalizeAsync = async () => {
-          try {
-            await dispatch(finalizeMessage(
-              tabId,
-              finalData.aiMessage.id,
-              fullContent,
-              true // isComplete = true
-            ))
+        dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
+        dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
 
-            // Remove temp messages
-            dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
-            dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
-
-            // Add final messages
-            if (finalData.userMessage) {
-              dispatch(addMessageToTab({ tabId, message: finalData.userMessage }))
-            }
-            if (finalData.aiMessage) {
-              dispatch(addMessageToTab({
-                tabId,
-                message: {
-                  ...finalData.aiMessage,
-                  content: fullContent // Use full content
-                }
-              }))
-            }
-
-            dispatch(clearStreamingState(tabId))
-            dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
-          } catch (error) {
-            console.error('❌ Error finalizing completed message:', error)
-          }
+        if (finalData.userMessage) {
+          dispatch(addMessageToTab({ tabId, message: finalData.userMessage }))
+        }
+        if (finalData.aiMessage) {
+          dispatch(addMessageToTab({ tabId, message: finalData.aiMessage }))
         }
 
-        finalizeAsync()
+        dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
+        userStoppedStreamByTab[tabId] = false
       }
       return
     }
@@ -556,37 +438,14 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
       updates: { content: displayedContent }
     }))
 
-    // Update streaming state with current displayed content
-    if (finalData && finalData.aiMessage && finalData.aiMessage.id) {
-      dispatch(setStreamingState({
-        tabId,
-        realMessageId: finalData.aiMessage.id,
-        realUserMessageId: finalData.userMessage ? finalData.userMessage.id : null,
-        displayedContent: displayedContent,
-        displayedLength: displayedContent.length,
-        isTyping: true
-      }))
-    } else {
-      // Just update typing state
-      dispatch(setStreamingState({
-        tabId,
-        displayedContent: displayedContent,
-        displayedLength: displayedContent.length,
-        isTyping: true
-      }))
-    }
-
     // Schedule next character
     setTimeout(typeNextCharacter, TYPING_SPEED_MS)
   }
 
   // Add chunk to content and start typing if needed
   const addChunkToContent = (text) => {
-    // Check if user stopped stream from Redux state
-    const state = getState()
-    const streamingState = state.skripsi.streamingStateByTab[tabId]
-
-    if (streamingState?.userStopped) return
+    // If user stopped stream, don't add new chunks
+    if (userStoppedStreamByTab[tabId]) return
 
     fullContent += text
 
@@ -639,75 +498,39 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
           try {
             const data = JSON.parse(line.slice(6))
 
-            if (data.type === 'started') {
-              // Backend created message records - store their IDs
-              const { userMessage, aiMessage } = data.data
-              dispatch(setStreamingState({
-                tabId,
-                realUserMessageId: userMessage.id,
-                realMessageId: aiMessage.id,
-              }))
-              console.log('🆔 Stored real message IDs:', { userMessageId: userMessage.id, aiMessageId: aiMessage.id })
-            } else if (data.type === 'chunk') {
+            if (data.type === 'chunk') {
               // Only add chunk if user hasn't stopped the stream
-              const state = getState()
-              const streamingState = state.skripsi.streamingStateByTab[tabId]
-
-              if (!streamingState?.userStopped) {
+              if (!userStoppedStreamByTab[tabId]) {
                 addChunkToContent(data.data.content)
               } else {
                 console.log('⏸️ Ignoring new chunk - user stopped stream')
               }
             } else if (data.type === 'done') {
-              // Backend created messages with status='streaming'
+              // Backend saved to database (full or partial)
               backendSavedMessage = true
               finalData = data.data
 
-              // Store messageId for finalization
+              // Store messageId for potential truncation in abort handler
               if (data.data.aiMessage) {
                 savedMessageId = data.data.aiMessage.id
               }
 
-              console.log('✅ Backend created streaming messages:', data.data)
+              console.log('✅ Backend saved messages:', data.data)
 
               // If typing animation already caught up, finalize immediately
               if (!isTyping && displayedContent.length >= fullContent.length) {
-                // Call finalize endpoint with complete content
-                const finalizeAsync = async () => {
-                  try {
-                    await dispatch(finalizeMessage(
-                      tabId,
-                      data.data.aiMessage.id,
-                      fullContent,
-                      true // isComplete = true
-                    ))
+                dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
+                dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
 
-                    // Remove temp messages
-                    dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
-                    dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
-
-                    // Add final messages
-                    if (data.data.userMessage) {
-                      dispatch(addMessageToTab({ tabId, message: data.data.userMessage }))
-                    }
-                    if (data.data.aiMessage) {
-                      dispatch(addMessageToTab({
-                        tabId,
-                        message: {
-                          ...data.data.aiMessage,
-                          content: fullContent // Use full content
-                        }
-                      }))
-                    }
-
-                    dispatch(clearStreamingState(tabId))
-                    dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
-                  } catch (error) {
-                    console.error('❌ Error finalizing completed message:', error)
-                  }
+                if (data.data.userMessage) {
+                  dispatch(addMessageToTab({ tabId, message: data.data.userMessage }))
+                }
+                if (data.data.aiMessage) {
+                  dispatch(addMessageToTab({ tabId, message: data.data.aiMessage }))
                 }
 
-                finalizeAsync()
+                dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
+                userStoppedStreamByTab[tabId] = false
                 return data.data
               }
               // Otherwise, let typing animation finish and it will finalize
@@ -724,15 +547,49 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
   } catch (error) {
     if (error.name === 'AbortError') {
       console.log('✅ Stream aborted by user')
-      // stopStreaming action will handle finalization with Redux streaming state
-      console.log('⏸️ User stopped - stopStreaming will handle finalization')
+
+      // Record the frozen character count at abort time
+      const charCount = displayedContent.length
+      console.log(`⏸️ User stopped at ${charCount} characters`)
+
+      // If we have the messageId (done event already arrived), truncate NOW
+      if (savedMessageId && charCount > 0) {
+        console.log(`✂️ Truncating message ${savedMessageId} to ${charCount} characters`)
+
+        try {
+          const truncateUrl = `${Endpoints.api.skripsi}/tabs/${tabId}/messages/${savedMessageId}/truncate`
+          await patchWithToken(truncateUrl, { characterCount: charCount })
+          console.log('✅ Message truncated successfully')
+
+          // Update final data content
+          if (finalData && finalData.aiMessage) {
+            finalData.aiMessage.content = finalData.aiMessage.content.substring(0, charCount)
+          }
+
+          // Finalize UI
+          dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
+          dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
+
+          if (finalData.userMessage) {
+            dispatch(addMessageToTab({ tabId, message: finalData.userMessage }))
+          }
+          if (finalData.aiMessage) {
+            dispatch(addMessageToTab({ tabId, message: finalData.aiMessage }))
+          }
+
+          dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
+          userStoppedStreamByTab[tabId] = false
+        } catch (truncateError) {
+          console.error('❌ Failed to truncate message:', truncateError)
+        }
+      }
+
       return null
     } else {
       console.error('Streaming error:', error)
       // Clean up on non-abort errors
       dispatch(removeMessageFromTab({ tabId, messageId: optimisticUserId }))
       dispatch(removeMessageFromTab({ tabId, messageId: streamingMessageId }))
-      dispatch(clearStreamingState(tabId))
       dispatch(setTabLoading({ tabId, key: 'isSendingMessage', value: false }))
       throw error
     }
