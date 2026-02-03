@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Container, Content } from './List.styles'
 import { useMultipleChoiceList } from './useMultipleChoiceList'
 import { Filter } from './components/Filter'
@@ -9,28 +8,27 @@ const List = () => {
   const {
     filteredTopics,
     loading,
-    filters,
-    universities,
-    semesters,
     pagination,
-    handleFilterChange,
-    handleSelectMode,
     handlePageChange
   } = useMultipleChoiceList()
+
+  const hasMorePages = !pagination.isLastPage || pagination.page > 1
 
   return (
     <Container>
       <Content>
         <Filter />
         <TopicList topics={filteredTopics} />
-        <Pagination
-          currentPage={pagination.page}
-          isLastPage={pagination.isLastPage}
-          onPageChange={handlePageChange}
-          isLoading={loading.isTopicsLoading}
-          variant="admin"
-          language="id"
-        />
+        {!loading.isTopicsLoading && filteredTopics.length > 0 && hasMorePages && (
+          <Pagination
+            currentPage={pagination.page}
+            isLastPage={pagination.isLastPage}
+            onPageChange={handlePageChange}
+            isLoading={loading.isTopicsLoading}
+            variant="admin"
+            language="id"
+          />
+        )}
       </Content>
     </Container>
   )

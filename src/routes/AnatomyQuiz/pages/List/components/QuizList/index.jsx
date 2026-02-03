@@ -1,11 +1,9 @@
 import { useSelector } from 'react-redux'
 import { Card, CardHeader, CardBody } from '@components/common/Card'
 import Button from '@components/common/Button'
+import EmptyState from '@components/common/EmptyState'
+import { LearningContentSkeletonGrid } from '@components/common/SkeletonCard'
 import {
-  LoadingOverlay,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateText,
   QuizzesGrid,
   QuizDescription,
   QuizStats,
@@ -22,18 +20,18 @@ function QuizList() {
   const { quizzes, loading } = useSelector((state) => state.anatomy)
   const navigate = useNavigate()
 
-  // Loading state
-  if (loading?.isGetListAnatomyQuizLoading) {
-    return <LoadingOverlay>Loading quizzes...</LoadingOverlay>
+  // Loading state - show skeleton when loading OR when we don't know loading state yet
+  if (loading?.isGetListAnatomyQuizLoading || (quizzes.length === 0 && loading?.isGetListAnatomyQuizLoading !== false)) {
+    return <LearningContentSkeletonGrid count={6} statsCount={2} />
   }
 
-  // Empty state
+  // Empty state - only show when we're sure loading is complete
   if (quizzes.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateIcon>📋</EmptyStateIcon>
-        <EmptyStateText>No quizzes found</EmptyStateText>
-      </EmptyState>
+      <EmptyState
+        icon="📋"
+        title="No quizzes found"
+      />
     )
   }
 

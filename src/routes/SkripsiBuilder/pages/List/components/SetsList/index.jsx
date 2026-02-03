@@ -5,13 +5,12 @@ import { FaTrash } from 'react-icons/fa'
 import { Card, CardHeader, CardBody } from '@components/common/Card'
 import Button from '@components/common/Button'
 import Modal from '@components/common/Modal'
+import EmptyState from '@components/common/EmptyState'
+import { SkripsiSetSkeletonGrid } from '@components/common/SkeletonCard'
 import { useAppDispatch } from '@store/store'
 import { deleteSet } from '@store/skripsi/action'
 import {
   LoadingOverlay,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateText,
   SetsGrid,
   SetDescription,
   CardActions,
@@ -45,16 +44,16 @@ function SetsList() {
 
   // Loading state
   if (loading?.isSetsLoading) {
-    return <LoadingOverlay>Memuat data...</LoadingOverlay>
+    return <SkripsiSetSkeletonGrid count={6} />
   }
 
   // Empty state
   if (sets.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateIcon>📝</EmptyStateIcon>
-        <EmptyStateText>Tidak ada set skripsi ditemukan</EmptyStateText>
-      </EmptyState>
+      <EmptyState
+        icon="📝"
+        title="Tidak ada set skripsi ditemukan"
+      />
     )
   }
 

@@ -13,12 +13,14 @@ import {
 function FlashcardListPage() {
   useFlashcardList()
   const dispatch = useDispatch()
-  const { pagination, loading } = useSelector(state => state.flashcard)
+  const { pagination, loading, decks } = useSelector(state => state.flashcard)
 
   const handlePageChange = (page) => {
     dispatch(actions.setPage(page))
     dispatch(fetchFlashcardDecks())
   }
+
+  const hasMorePages = !pagination.isLastPage || pagination.page > 1
 
   return (
     <Container>
@@ -27,14 +29,16 @@ function FlashcardListPage() {
 
         <DeckList />
 
-        <Pagination
-          currentPage={pagination.page}
-          isLastPage={pagination.isLastPage}
-          onPageChange={handlePageChange}
-          isLoading={loading.isGetListDecksLoading}
-          variant="user"
-          language="id"
-        />
+        {!loading.isGetListDecksLoading && decks.length > 0 && hasMorePages && (
+          <Pagination
+            currentPage={pagination.page}
+            isLastPage={pagination.isLastPage}
+            onPageChange={handlePageChange}
+            isLoading={loading.isGetListDecksLoading}
+            variant="admin"
+            language="id"
+          />
+        )}
       </DeckSelectionContainer>
     </Container>
   )

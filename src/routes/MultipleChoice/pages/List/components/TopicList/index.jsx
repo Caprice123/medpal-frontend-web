@@ -2,12 +2,10 @@ import { useSelector } from 'react-redux'
 import { generatePath, useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardBody } from '@components/common/Card'
 import Button from '@components/common/Button'
+import EmptyState from '@components/common/EmptyState'
+import { LearningContentSkeletonGrid } from '@components/common/SkeletonCard'
 import { MultipleChoiceRoute } from '../../../../routes'
 import {
-  LoadingOverlay,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateText,
   TopicsGrid,
   TopicDescription,
   TopicStats,
@@ -29,16 +27,16 @@ function TopicList() {
 
   // Loading state
   if (loading?.isTopicsLoading) {
-    return <LoadingOverlay>Memuat topik...</LoadingOverlay>
+    return <LearningContentSkeletonGrid count={6} hasTwoButtons={true} statsCount={3} />
   }
 
   // Empty state
   if (topics.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateIcon>📝</EmptyStateIcon>
-        <EmptyStateText>Tidak ada topik ditemukan</EmptyStateText>
-      </EmptyState>
+      <EmptyState
+        icon="📝"
+        title="Tidak ada topik ditemukan"
+      />
     )
   }
 

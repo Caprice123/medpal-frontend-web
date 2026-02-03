@@ -24,6 +24,7 @@ export const fetchFlashcardDecks = () => async (dispatch, getState) => {
       page: pagination.page,
       perPage: pagination.perPage
     }
+    if (filters.search) queryParams.search = filters.search
     if (filters.university) queryParams.university = filters.university
     if (filters.semester) queryParams.semester = filters.semester
 
@@ -37,8 +38,6 @@ export const fetchFlashcardDecks = () => async (dispatch, getState) => {
     if (paginationData) {
       dispatch(updatePagination(paginationData))
     }
-  } catch (err) {
-    handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isGetListDecksLoading', value: false }))
   }
@@ -55,8 +54,6 @@ export const fetchFlashcardDeck = (deckId, onSuccess) => async (dispatch) => {
     dispatch(setDetail(deck))
     if (onSuccess) onSuccess()
     return deck
-  } catch (err) {
-    handleApiError(err, dispatch)
   } finally {
     dispatch(setLoading({ key: 'isGetDetailFlashcardDeckLoading', value: false }))
   }

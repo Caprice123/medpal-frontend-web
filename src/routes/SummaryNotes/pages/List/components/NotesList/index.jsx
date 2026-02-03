@@ -1,11 +1,9 @@
 import { useSelector } from 'react-redux'
 import { Card, CardHeader, CardBody } from '@components/common/Card'
 import Button from '@components/common/Button'
+import EmptyState from '@components/common/EmptyState'
+import { SummaryNoteSkeletonGrid } from '@components/common/SkeletonCard'
 import {
-  LoadingOverlay,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateText,
   NotesGrid,
   NoteDescription,
   TagList,
@@ -21,16 +19,16 @@ function NotesList() {
 
   // Loading state
   if (loading?.isNotesLoading) {
-    return <LoadingOverlay>Memuat ringkasan...</LoadingOverlay>
+    return <SummaryNoteSkeletonGrid count={6} />
   }
 
   // Empty state
   if (notes.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateIcon>📚</EmptyStateIcon>
-        <EmptyStateText>Tidak ada ringkasan ditemukan</EmptyStateText>
-      </EmptyState>
+      <EmptyState
+        icon="📚"
+        title="Tidak ada ringkasan ditemukan"
+      />
     )
   }
 

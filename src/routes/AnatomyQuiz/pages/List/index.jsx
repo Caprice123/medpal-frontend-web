@@ -16,7 +16,7 @@ import Pagination from '@components/Pagination'
 
 function AnatomyQuizPage() {
   const dispatch = useDispatch()
-  const { loading, pagination } = useSelector(state => state.anatomy)
+  const { loading, pagination, quizzes } = useSelector(state => state.anatomy)
 
   // Fetch quizzes on mount
   useEffect(() => {
@@ -25,11 +25,13 @@ function AnatomyQuizPage() {
     dispatch(fetchTags())
   }, [dispatch])
 
-  
+
   const handlePageChange = (page) => {
     dispatch(actions.setPage(page))
     dispatch(fetchAdminAnatomyQuizzes())
   }
+
+  const hasMorePages = !pagination.isLastPage || pagination.page > 1
 
 
     return (
@@ -39,15 +41,16 @@ function AnatomyQuizPage() {
 
           <QuizList />
 
-          
-        <Pagination
-            currentPage={pagination.page}
-            isLastPage={pagination.isLastPage}
-            onPageChange={handlePageChange}
-            isLoading={loading.isGetListAnatomyQuizLoading}
-            variant="admin"
-            language="id"
-        />
+          {!loading.isGetListAnatomyQuizLoading && quizzes.length > 0 && hasMorePages && (
+            <Pagination
+              currentPage={pagination.page}
+              isLastPage={pagination.isLastPage}
+              onPageChange={handlePageChange}
+              isLoading={loading.isGetListAnatomyQuizLoading}
+              variant="admin"
+              language="id"
+            />
+          )}
 
         </Content>
       </Container>
