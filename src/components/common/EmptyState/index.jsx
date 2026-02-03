@@ -6,7 +6,7 @@ import {
   EmptyStateDescription,
   EmptyStateActions
 } from './EmptyState.styles'
-
+ 
 /**
  * Reusable EmptyState component for list pages
  *
