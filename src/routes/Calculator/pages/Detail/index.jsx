@@ -26,7 +26,13 @@ import {
   ClinicalReferenceBox,
   FormLabel,
   LabelWithDescription,
-  ClinicalReferenceItem
+  ClinicalReferenceItem,
+  OptionCard,
+  OptionLabel,
+  OptionContent,
+  OptionImageContainer,
+  OptionImage,
+  OptionTextContent
 } from './Detail.styles'
 import Button from '@components/common/Button'
 import Dropdown from '@components/common/Dropdown'
@@ -35,6 +41,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { calculateResult, getCalculatorTopicDetail } from '../../../../store/calculator/action'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Col, Row } from '../../../../components/common/Grid/Grid.styles'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
+import 'react-photo-view/dist/react-photo-view.css'
 
 const CalculatorDetail = () => {
     const dispatch = useDispatch()
@@ -42,7 +50,7 @@ const CalculatorDetail = () => {
 
     const { id } = useParams()
     const { detail, loading } = useSelector(state => state.calculator)
-    const [inputs, setInputs] = useState({})
+    const [inputs, setInputs] = useState({}) // Stores full option objects for dropdown/radio, raw values for text/number
     const [formErrors, setFormErrors] = useState({})
 
     // Calculation state
@@ -57,15 +65,87 @@ const CalculatorDetail = () => {
         dispatch(getCalculatorTopicDetail(id))
     }, [dispatch, id])
 
-    
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
+    // Clear hidden field values when inputs change
+    useEffect(() => {
+        if (!detail?.calculator_fields) return
+
+        const visibleFieldKeys = detail.calculator_fields
+            .filter(shouldDisplayField)
+            .map(field => field.key)
+
+        // Remove inputs for hidden fields
+        setInputs(prev => {
+            const newInputs = { ...prev }
+            Object.keys(newInputs).forEach(key => {
+                if (!visibleFieldKeys.includes(key)) {
+                    delete newInputs[key]
+                }
+            })
+            return newInputs
+        })
+    }, [detail?.calculator_fields, inputs])
+
+    // Evaluate display conditions for a field
+    const shouldDisplayField = (field) => {
+        if (!field.display_conditions || field.display_conditions.length === 0) {
+            return true // No conditions means always show
+        }
+
+        let result = true
+        for (let i = 0; i < field.display_conditions.length; i++) {
+            const condition = field.display_conditions[i]
+            const input = inputs[condition.field_key]
+            const value = typeof input === 'object' && input !== null ? input.value : input
+
+            let conditionMet = false
+            const condValue = condition.value
+
+            switch (condition.operator) {
+                case '==':
+                    conditionMet = String(value) === String(condValue)
+                    break
+                case '!=':
+                    conditionMet = String(value) !== String(condValue)
+                    break
+                case '>':
+                    conditionMet = parseFloat(value) > parseFloat(condValue)
+                    break
+                case '<':
+                    conditionMet = parseFloat(value) < parseFloat(condValue)
+                    break
+                case '>=':
+                    conditionMet = parseFloat(value) >= parseFloat(condValue)
+                    break
+                case '<=':
+                    conditionMet = parseFloat(value) <= parseFloat(condValue)
+                    break
+                default:
+                    conditionMet = false
+            }
+
+            if (i === 0) {
+                result = conditionMet
+            } else {
+                const prevLogicalOperator = field.display_conditions[i - 1].logical_operator
+                if (prevLogicalOperator === 'AND') {
+                    result = result && conditionMet
+                } else if (prevLogicalOperator === 'OR') {
+                    result = result || conditionMet
+                }
+            }
+        }
+
+        return result
+    }
+
+
+    const handleInputChange = (name, value) => {
         setInputs(prev => ({
           ...prev,
           [name]: value
         }))
-    
-        // Clear error for this field when user starts typing
+
+        // Clear error for this field when user changes value
         if (formErrors[name]) {
           setFormErrors(prev => ({
             ...prev,
@@ -76,13 +156,16 @@ const CalculatorDetail = () => {
     
       const validateInputs = () => {
         const errors = {}
-    
+
         if (!detail) return false
-    
-        detail.calculator_fields.forEach(field => {
-          const value = inputs[field.key]
-    
-          if (field.is_required && (!value || value.trim() === '')) {
+
+        // Only validate visible fields
+        detail.calculator_fields.filter(shouldDisplayField).forEach(field => {
+          const input = inputs[field.key]
+          // Extract value from object or use raw value
+          const value = typeof input === 'object' && input !== null ? input.value : input
+
+          if (field.is_required && (!value || (typeof value === 'string' && value.trim() === ''))) {
             errors[field.key] = `${field.label} is required`
           } else if (value && field.type === 'number') {
             const numValue = parseFloat(value)
@@ -91,19 +174,30 @@ const CalculatorDetail = () => {
             }
           }
         })
-    
+
         setFormErrors(errors)
         return Object.keys(errors).length === 0
       }
     
       const handleCalculate = async (e) => {
         e.preventDefault()
-    
+
         if (!validateInputs()) {
           return
         }
 
-        const response = await dispatch(calculateResult(id, inputs))
+        // Extract values from inputs - only include visible fields
+        const calculationInputs = {}
+        const visibleFields = detail.calculator_fields.filter(shouldDisplayField)
+
+        visibleFields.forEach(field => {
+          const input = inputs[field.key]
+          if (input !== undefined && input !== null && input !== '') {
+            calculationInputs[field.key] = typeof input === 'object' && input !== null ? input.value : input
+          }
+        })
+
+        const response = await dispatch(calculateResult(id, calculationInputs))
         setResult(response)
       }
       if (!detail) {
@@ -141,7 +235,7 @@ const CalculatorDetail = () => {
                 <form onSubmit={handleCalculate}>
                 <InputsSection>
                     <Row>
-                    {detail.calculator_fields?.map(field => (
+                    {detail.calculator_fields?.filter(shouldDisplayField).map(field => (
                         <Col xs={12} md={6} key={field.key}>
                         <FormGroup>
                             <LabelWithDescription>
@@ -157,42 +251,74 @@ const CalculatorDetail = () => {
     
                             {field.type === 'dropdown' ? (
                             <Dropdown
-                                options={field.field_options?.map(opt => ({
-                                value: opt.value,
-                                label: opt.label
+                                options={field.field_options?.map((opt, idx) => ({
+                                value: `${opt.id || idx}_${opt.value}`, // Use id or index + value as unique key
+                                label: opt.label,
+                                originalValue: opt.value,
+                                originalOption: opt
                                 })) || []}
                                 value={inputs[field.key] ? {
-                                value: inputs[field.key],
-                                label: field.field_options?.find(opt => opt.value === inputs[field.key])?.label || inputs[field.key]
+                                value: `${inputs[field.key].id || ''}_${inputs[field.key].value}`,
+                                label: inputs[field.key].label
                                 } : null}
-                                onChange={(option) => handleInputChange({
-                                target: { name: field.key, value: option?.value || '' }
-                                })}
+                                onChange={(option) => {
+                                    if (option) {
+                                        handleInputChange(field.key, option.originalOption)
+                                    } else {
+                                        handleInputChange(field.key, '')
+                                    }
+                                }}
                                 placeholder={field.placeholder || `Select ${field.label}`}
                             //   usePortal={true}
                             />
                             ) : field.type === 'radio' ? (
-                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '8px' }}>
-                                {field.field_options && field.field_options.map(option => (
-                                <label key={option.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                    <input
-                                    type="radio"
-                                    name={field.key}
-                                    value={option.value}
-                                    checked={inputs[field.key] === option.value}
-                                    onChange={handleInputChange}
-                                    style={{ cursor: 'pointer' }}
-                                    />
-                                    <span>{option.label}</span>
-                                </label>
-                                ))}
-                            </div>
+                            <PhotoProvider>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                                    {field.field_options && field.field_options.map((option, idx) => {
+                                        // Use unique identifier: id if available, otherwise index + value
+                                        const optionKey = option.id || `${idx}_${option.value}`
+                                        const selectedKey = inputs[field.key]?.id || (typeof inputs[field.key] === 'object' ? `${inputs[field.key]?.value}` : inputs[field.key])
+                                        const isSelected = inputs[field.key] && (
+                                            (option.id && inputs[field.key].id === option.id) ||
+                                            (inputs[field.key].value === option.value && inputs[field.key].label === option.label)
+                                        )
+                                        return (
+                                        <OptionCard
+                                            key={optionKey}
+                                            selected={isSelected}
+                                            onClick={() => handleInputChange(field.key, option)}
+                                        >
+                                            <OptionLabel>
+                                                <input
+                                                    type="radio"
+                                                    name={field.key}
+                                                    value={optionKey}
+                                                    checked={isSelected}
+                                                    onChange={() => handleInputChange(field.key, option)}
+                                                    style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                                                />
+                                            </OptionLabel>
+                                            <OptionContent>
+                                                {option.label && <OptionTextContent>{option.label}</OptionTextContent>}
+                                                {option.image && (
+                                                    <PhotoView src={option.image.url}>
+                                                        <OptionImageContainer>
+                                                            <OptionImage src={option.image.url} alt={option.label || 'Option image'} />
+                                                        </OptionImageContainer>
+                                                    </PhotoView>
+                                                )}
+                                            </OptionContent>
+                                        </OptionCard>
+                                        )
+                                    })}
+                                </div>
+                            </PhotoProvider>
                             ) : field.type === 'number' ? (
                             <TextInput
                                 type="number"
                                 name={field.key}
                                 value={inputs[field.key] || ''}
-                                onChange={handleInputChange}
+                                onChange={(e) => handleInputChange(field.key, e.target.value)}
                                 placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                                 step="any"
                             />
@@ -201,7 +327,7 @@ const CalculatorDetail = () => {
                                 type="text"
                                 name={field.key}
                                 value={inputs[field.key] || ''}
-                                onChange={handleInputChange}
+                                onChange={(e) => handleInputChange(field.key, e.target.value)}
                                 placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                             />
                             )}
