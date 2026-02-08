@@ -1,5 +1,6 @@
 import { actions } from '@store/skripsi/reducer'
 import { actions as commonActions } from '@store/common/reducer'
+import { actions as pricingActions } from '@store/pricing/reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
 import { getToken } from '@utils/authToken'
@@ -391,6 +392,7 @@ export const stopStreaming = (tabId) => async (dispatch, getState) => {
               id: response.data.id,
               senderType: 'ai',
               content: response.data.content,
+              sources: response.data.sources || [],
               createdAt: response.data.updatedAt
             }
           }))
@@ -453,6 +455,8 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
   let isTyping = false
   let backendSavedMessage = false
   let finalData = null
+  const sources = [] // Collect citations as they come in
+  let showSources = false // Only show after streaming completes
 
   const TYPING_SPEED_MS = 1 // 1ms per character (~1000 chars/sec) - fast but still smooth
 
@@ -469,6 +473,7 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
       id: streamingMessageId,
       senderType: 'ai',
       content: '',
+      sources: [],
       createdAt: messageCreatedAt
     }
   }))
@@ -494,7 +499,7 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
         // Call finalize endpoint with complete content
         const finalizeAsync = async () => {
           try {
-            await dispatch(finalizeMessage(
+            const response = await dispatch(finalizeMessage(
               tabId,
               finalData.aiMessage.id,
               fullContent,
@@ -509,12 +514,14 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
             if (finalData.userMessage) {
               dispatch(addMessageToTab({ tabId, message: finalData.userMessage }))
             }
+            console.log(response)
             if (finalData.aiMessage) {
               dispatch(addMessageToTab({
                 tabId,
                 message: {
                   ...finalData.aiMessage,
-                  content: fullContent // Use full content
+                  content: fullContent, // Use full content
+                  sources: response.data.sources || [],
                 }
               }))
             }
@@ -538,7 +545,10 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
     dispatch(updateMessageInTab({
       tabId,
       messageId: streamingMessageId,
-      updates: { content: displayedContent }
+      updates: {
+        content: displayedContent,
+        sources: (showSources) ? sources : [] // Only show sources after typing completes
+      }
     }))
 
     // Update streaming state with current displayed content
@@ -634,6 +644,12 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
               }))
               console.log('🆔 Stored real message IDs:', { userMessageId: userMessage.id, aiMessageId: aiMessage.id })
             } else if (data.type === 'chunk') {
+              // Check if first chunk contains userQuota and update credit balance
+              if (data.data?.userQuota && data.data.userQuota.balance !== undefined) {
+                dispatch(pricingActions.updateCreditBalance(data.data.userQuota.balance))
+                console.log('💎 Credit balance updated:', data.data.userQuota.balance)
+              }
+
               // Only add chunk if user hasn't stopped the stream
               const state = getState()
               const streamingState = state.skripsi.streamingStateByTab[tabId]
@@ -643,10 +659,25 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
               } else {
                 console.log('⏸️ Ignoring new chunk - user stopped stream')
               }
+            } else if (data.type === 'citation') {
+              // Collect citation but don't show yet (wait until streaming completes)
+              const newSource = {
+                url: data.data.url,
+                title: data.data.title
+              }
+              sources.push(newSource)
+              console.log('📚 Citation received:', newSource)
             } else if (data.type === 'done') {
               // Backend created messages with status='streaming'
               backendSavedMessage = true
               finalData = data.data
+              showSources = true // Now we can show sources since streaming is complete
+
+              // Use filtered sources from backend (only citations actually used in the response)
+              if (data.data.sources && data.data.sources.length > 0) {
+                sources.length = 0 // Clear all collected citations
+                sources.push(...data.data.sources) // Use only filtered sources from backend
+              }
 
               // Store messageId for finalization
               if (data.data.aiMessage) {
@@ -654,13 +685,14 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
               }
 
               console.log('✅ Backend created streaming messages:', data.data)
+              console.log('✅ Filtered citations ready to display:', sources.length)
 
               // If typing animation already caught up, finalize immediately
               if (!isTyping && displayedContent.length >= fullContent.length) {
                 // Call finalize endpoint with complete content
                 const finalizeAsync = async () => {
                   try {
-                    await dispatch(finalizeMessage(
+                    const response = await dispatch(finalizeMessage(
                       tabId,
                       data.data.aiMessage.id,
                       fullContent,
@@ -675,12 +707,14 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
                     if (data.data.userMessage) {
                       dispatch(addMessageToTab({ tabId, message: data.data.userMessage }))
                     }
+                    console.log("SOURCES", response.data.sources)
                     if (data.data.aiMessage) {
                       dispatch(addMessageToTab({
                         tabId,
                         message: {
                           ...data.data.aiMessage,
-                          content: fullContent // Use full content
+                          content: fullContent, // Use full content
+                          sources: response.data.sources // Include collected sources
                         }
                       }))
                     }
@@ -721,7 +755,7 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
           console.log(`💾 Saving partial message due to error: ${fullContent.length} characters`)
 
           // Finalize with partial content
-          await dispatch(finalizeMessage(
+          const response = await dispatch(finalizeMessage(
             tabId,
             finalData.aiMessage.id,
             fullContent,
@@ -737,11 +771,13 @@ const sendMessageStreaming = async (tabId, content, dispatch, getState, abortCon
             dispatch(addMessageToTab({ tabId, message: finalData.userMessage }))
           }
 
+          console.log("RESPONSE: ", response.data)
           dispatch(addMessageToTab({
             tabId,
             message: {
               ...finalData.aiMessage,
               content: '', // Empty as saved in backend
+              sources: response.data.sources, // Include collected sources
               status: 'error' // Mark as error status
             }
           }))

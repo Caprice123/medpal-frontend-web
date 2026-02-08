@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { selectMessagesForCurrentConversation } from '@store/chatbot/reducer'
 import { ChatbotMessagesSkeleton } from '@components/common/SkeletonCard'
@@ -50,12 +50,12 @@ const MessageItem = memo(({ message, formatTime, getModeInfo, processContentWith
             <SourcesSection>
               <div className="sources-title">📚 Sumber:</div>
               {message.sources.map((source, index) => (
-                <>
-                    <SourceItem href={source.url} key={index} target='_blank'>
+                <React.Fragment key={index}>
+                  <SourceItem href={source.url} target='_blank' rel='noopener noreferrer'>
                     [{index + 1}] {source.title || source.url}
-                    </SourceItem>
-                    <br />
-                </>
+                  </SourceItem>
+                  <br />
+                </React.Fragment>
               ))}
             </SourcesSection>
           )}
@@ -96,7 +96,7 @@ const MessageItem = memo(({ message, formatTime, getModeInfo, processContentWith
   return true
 })
 
-function MessageList({ isLoading, isSending, scrollTrigger }) {
+function MessageList({ isLoading, isStreaming, scrollTrigger }) {
   // Subscribe to messages for current conversation only
   const messages = useSelector(selectMessagesForCurrentConversation)
   const messagesEndRef = useRef(null)
@@ -171,7 +171,7 @@ function MessageList({ isLoading, isSending, scrollTrigger }) {
         />
       ))}
 
-      {isSending && (
+      {isStreaming && (
         <MessageBubble isUser={false}>
           <AIMessage>
             <TypingIndicator>

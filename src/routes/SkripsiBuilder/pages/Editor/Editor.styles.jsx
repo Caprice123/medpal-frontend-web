@@ -2,6 +2,50 @@ import styled from 'styled-components'
 
 export const Wrapper = styled.div`
     background: #f0fdfa;
+
+    /* Resize handle styles */
+    .resize-handle-skripsi {
+      width: 4px;
+      background: #e5e7eb;
+      cursor: col-resize;
+      position: relative;
+      transition: background 0.2s;
+      user-select: none;
+
+      &:hover {
+        background: #06b6d4;
+      }
+
+      &[data-resize-handle-active="pointer"],
+      &[data-resize-handle-active="keyboard"] {
+        background: #0891b2;
+      }
+
+      /* Visual indicator */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 40px;
+        background: transparent;
+        border-left: 2px dotted #9ca3af;
+        border-right: 2px dotted #9ca3af;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+
+      &:hover::after {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
 `
 
 export const Container = styled.div`
@@ -282,9 +326,9 @@ export const EditorArea = styled.div`
 `
 
 export const ChatPanel = styled.div`
-  width: 400px;
+  width: 100%;
+  height: 100%;
   background: white;
-  border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
 
@@ -484,6 +528,29 @@ export const MessageTime = styled.span`
   margin-top: 4px;
 `
 
+export const SourcesSection = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+
+  .sources-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+`
+
+export const SourceItem = styled.a`
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+
+  &:hover {
+    color: #3b82f6;
+  }
+`
+
 export const ChatInputArea = styled.div`
   padding: 16px;
   border-top: 1px solid #e5e7eb;
@@ -523,6 +590,11 @@ export const ChatInput = styled.textarea`
 
   &::placeholder {
     color: #9ca3af;
+  }
+
+  &:disabled {
+    background: #f9fafb;
+    cursor: not-allowed;
   }
 
   @media (max-width: 768px) {

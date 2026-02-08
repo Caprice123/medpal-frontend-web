@@ -1,5 +1,6 @@
 import { actions } from '@store/chatbot/reducer'
 import { actions as commonActions } from '@store/common/reducer'
+import { actions as pricingActions } from '@store/pricing/reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
 import { getToken } from '@utils/authToken'
@@ -568,6 +569,11 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, get
             const data = JSON.parse(line.slice(6))
 
             if (data.type === 'chunk') {
+              // Check if first chunk contains userQuota and update credit balance
+              if (data.data.userQuota && data.data.userQuota.balance !== undefined) {
+                dispatch(pricingActions.updateCreditBalance(data.data.userQuota.balance))
+                console.log('💎 Credit balance updated:', data.data.userQuota.balance)
+              }
               addChunkToContent(data.data.content)
             } else if (data.type == "started") {
                 const { userMessage, aiMessage } = data.data
@@ -590,8 +596,14 @@ const sendMessageStreaming = async (conversationId, content, mode, dispatch, get
               finalData = data.data
               showSources = true // Now we can show sources since streaming is complete
 
+              // Use filtered sources from backend (only citations actually used in the response)
+              if (data.data.sources && data.data.sources.length > 0) {
+                sources.length = 0 // Clear all collected citations
+                sources.push(...data.data.sources) // Use only filtered sources from backend
+              }
+
               console.log('✅ Backend saved messages:', data.data)
-              console.log('✅ Citations ready to display:', sources.length)
+              console.log('✅ Filtered citations ready to display:', sources.length)
 
               // Store the real message IDs for potential truncation
               if (data.data.aiMessage && data.data.aiMessage.id) {
