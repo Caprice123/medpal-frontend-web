@@ -112,27 +112,29 @@ function ExerciseList({ onEdit, onDelete, onCreateFirst }) {
                 <Button variant="secondary" fullWidth onClick={() => onEdit(topic)}>
                   Edit
                 </Button>
-                <Button
+                {/* <Button
                   variant="danger"
                   fullWidth
-                  onClick={() => onDelete(topic.id)}
+                  onClick={() => onDelete(topic.uniqueId)}
                   disabled={loading?.isDeletingTopic}
                 >
                   Delete
-                </Button>
+                </Button> */}
               </CardActions>
             </TopicCard>
           )
         })}
       </TopicsGrid>
 
-      <Pagination
-        currentPage={pagination.page}
-        totalPages={pagination.totalPages || 1}
-        totalItems={pagination.totalCount || 0}
-        itemsPerPage={pagination.perPage}
-        onPageChange={handlePageChange}
-      />
+      {(pagination.totalPages || 1) > 1 && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages || 1}
+          totalItems={pagination.totalCount || 0}
+          itemsPerPage={pagination.perPage}
+          onPageChange={handlePageChange}
+        />
+      )}
     </>
   )
 }

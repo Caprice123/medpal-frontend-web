@@ -146,27 +146,29 @@ function Calculator({ onBack }) {
                     <Button variant="secondary" fullWidth onClick={() => handleCalculatorClick(calculator)}>
                       Edit
                     </Button>
-                    <Button
+                    {/* <Button
                       variant="danger"
                       fullWidth
-                      onClick={(e) => handleDelete(e, calculator.id)}
+                      onClick={(e) => handleDelete(e, calculator.uniqueId)}
                     >
                       Delete
-                    </Button>
+                    </Button> */}
                   </CardActions>
                 </TopicCard>
               )
             })}
           </TopicsGrid>
 
-          <Pagination
-            currentPage={pagination.page}
-            isLastPage={pagination.isLastPage}
-            onPageChange={handlePageChange}
-            isLoading={loading.isGetListCalculatorsLoading}
-            variant="admin"
-            language="id"
-          />
+          {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+            <Pagination
+              currentPage={pagination.page}
+              isLastPage={pagination.isLastPage}
+              onPageChange={handlePageChange}
+              isLoading={loading.isGetListCalculatorsLoading}
+              variant="admin"
+              language="id"
+            />
+          )}
         </>
       )}
 

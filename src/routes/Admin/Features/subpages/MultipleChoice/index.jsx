@@ -35,7 +35,7 @@ function MultipleChoice({ onBack }) {
   }
 
   const handleEditTopic = async (topic) => {
-    await dispatch(fetchMcqTopicDetail(topic.id, () => {
+    await dispatch(fetchMcqTopicDetail(topic.uniqueId, () => {
       setUiState({
         ...uiState,
         isTopicModalOpen: true,
@@ -50,7 +50,7 @@ function MultipleChoice({ onBack }) {
     }
 
     try {
-      await dispatch(deleteMcqTopic(topic.id))
+      await dispatch(deleteMcqTopic(topic.uniqueId))
       await dispatch(fetchAdminMcqTopics())
     } catch (error) {
       console.error('Failed to delete topic:', error)
@@ -84,14 +84,16 @@ function MultipleChoice({ onBack }) {
         onCreateFirst={() => setUiState({ ...uiState, isTopicModalOpen: true, mode: "create", selectedTopic: null })}
       />
 
-      <Pagination
-        currentPage={pagination.page}
-        isLastPage={pagination.isLastPage}
-        onPageChange={handlePageChange}
-        isLoading={loading.isTopicsLoading}
-        variant="admin"
-        language="id"
-      />
+      {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isTopicsLoading}
+          variant="admin"
+          language="id"
+        />
+      )}
 
       { uiState.isTopicModalOpen && uiState.mode === "create" && (
         <CreateTopicModal onClose={() => setUiState({ ...uiState, isTopicModalOpen: false, mode: null, selectedTopic: null })} />

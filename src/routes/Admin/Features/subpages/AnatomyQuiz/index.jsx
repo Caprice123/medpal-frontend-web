@@ -34,7 +34,7 @@ function AnatomyQuiz({ onBack }) {
 
   const handleEditQuiz = async (quiz) => {
     // Fetch full quiz details including questions
-    await dispatch(fetchAdminAnatomyQuiz(quiz.id, () => {
+    await dispatch(fetchAdminAnatomyQuiz(quiz.uniqueId, () => {
         setUiState({
           ...uiState,
           isCalculatorModalOpen: true,
@@ -72,14 +72,16 @@ function AnatomyQuiz({ onBack }) {
         onCreateFirst={() => setUiState({ ...uiState, isCalculatorModalOpen: true, mode: "create", selectedQuiz: null })}
       />
 
-      <Pagination
-        currentPage={pagination.page}
-        isLastPage={pagination.isLastPage}
-        onPageChange={handlePageChange}
-        isLoading={loading.isGetListAnatomyQuizLoading}
-        variant="admin"
-        language="id"
-      />
+      {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isGetListAnatomyQuizLoading}
+          variant="admin"
+          language="id"
+        />
+      )}
 
       { uiState.isCalculatorModalOpen && uiState.mode == "create" && (
         <CreateQuizModal onClose={() => setUiState({ ...uiState, isCalculatorModalOpen: false, mode: null, selectedQuiz: null })} />

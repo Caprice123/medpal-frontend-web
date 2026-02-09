@@ -215,7 +215,7 @@ function TopicSelectionModal({ onClose }) {
                         variant="primary"
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleSelectTopic(topic.id)
+                          handleSelectTopic(topic.uniqueId)
                         }}
                         fullWidth
                         disabled={loading.isCreatingSession}
@@ -230,16 +230,18 @@ function TopicSelectionModal({ onClose }) {
 
             <div style={{ flex: 1 }}></div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-              <Pagination
-                currentPage={pagination.page}
-                isLastPage={pagination.isLastPage}
-                onPageChange={handlePageChange}
-                isLoading={loading.isLoadingUserTopics}
-                variant="admin"
-                language="id"
-              />
-            </div>
+            {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <Pagination
+                  currentPage={pagination.page}
+                  isLastPage={pagination.isLastPage}
+                  onPageChange={handlePageChange}
+                  isLoading={loading.isLoadingUserTopics}
+                  variant="admin"
+                  language="id"
+                />
+              </div>
+            )}
           </>
         )}
       </ModalContent>

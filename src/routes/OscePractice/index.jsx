@@ -77,13 +77,13 @@ function OscePracticePage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.25rem' }}>
                   {userSessions.map((session) => (
                   <SessionCard
-                      key={session.id}
+                      key={session.uniqueId}
                       session={session}
                   />
                   ))}
               </div>
 
-              {!loading.isLoadingUserSessions && (
+              {!loading.isLoadingUserSessions && (sessionsPagination.page > 1 || (sessionsPagination.page === 1 && !sessionsPagination.isLastPage)) && (
                 <Pagination
                   currentPage={sessionsPagination.page}
                   isLastPage={sessionsPagination.isLastPage}

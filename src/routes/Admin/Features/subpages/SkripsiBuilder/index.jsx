@@ -48,7 +48,7 @@ const SkripsiBuilderAdmin = ({ onBack }) => {
     }
 
     try {
-      await dispatch(deleteAdminSet(set.id))
+      await dispatch(deleteAdminSet(set.uniqueId))
       await dispatch(fetchAdminSets({}, pagination.page, 20))
     } catch (error) {
       console.error('Failed to delete set:', error)
@@ -86,14 +86,16 @@ const SkripsiBuilderAdmin = ({ onBack }) => {
         onDelete={handleDeleteSet}
       />
 
-      <Pagination
-        currentPage={pagination.page}
-        isLastPage={pagination.isLastPage}
-        onPageChange={handlePageChange}
-        isLoading={loading.isSetsLoading}
-        variant="admin"
-        language="id"
-      />
+      {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isSetsLoading}
+          variant="admin"
+          language="id"
+        />
+      )}
 
       {uiState.isSettingsModalOpen && (
         <SettingsModal

@@ -33,7 +33,7 @@ function FlashcardAdminPage({ onBack }) {
   }
 
   const handleEditFlashcard = async (deck) => {
-    await dispatch(fetchFlashcardDeck(deck.id, () => {
+    await dispatch(fetchFlashcardDeck(deck.uniqueId, () => {
       setUiState({
         ...uiState,
         isDeckModalOpen: true,
@@ -71,14 +71,16 @@ function FlashcardAdminPage({ onBack }) {
         onCreateFirst={() => setUiState({ ...uiState, isDeckModalOpen: true, mode: "create", selectedDeck: null })}
       />
 
-      <Pagination
-        currentPage={pagination.page}
-        isLastPage={pagination.isLastPage}
-        onPageChange={handlePageChange}
-        isLoading={loading.isGetListDecksLoading}
-        variant="admin"
-        language="id"
-      />
+      {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isGetListDecksLoading}
+          variant="admin"
+          language="id"
+        />
+      )}
 
       { uiState.isDeckModalOpen && uiState.mode === "create" && (
         <CreateFlashcardModal onClose={() => setUiState({ ...uiState, isDeckModalOpen: false, mode: null, selectedDeck: null })} />

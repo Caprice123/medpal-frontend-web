@@ -49,7 +49,7 @@ function TopicList() {
         const semesterTags = topic.tags?.filter(tag => tag.tagGroup?.name === 'semester') || []
 
         return (
-          <Card key={topic.id} shadow hoverable>
+          <Card key={topic.uniqueId} shadow hoverable>
             <CardHeader title={topic.title} divider={false} />
 
             <CardBody padding="0 1.25rem 1.25rem 1.25rem">
@@ -100,10 +100,10 @@ function TopicList() {
               </TopicStats>
 
               <ModeButtonContainer>
-                <Button variant="secondary" onClick={() => handleSelectMode(topic.id, 'learning')} style={{ flex: 1 }}>
+                <Button variant="secondary" onClick={() => handleSelectMode(topic.uniqueId, 'learning')} style={{ flex: 1 }}>
                   📖 Learning
                 </Button>
-                <Button variant="primary" onClick={() => handleSelectMode(topic.id, 'quiz')} style={{ flex: 1 }}>
+                <Button variant="primary" onClick={() => handleSelectMode(topic.uniqueId, 'quiz')} style={{ flex: 1 }}>
                   ⏱️ Quiz
                 </Button>
               </ModeButtonContainer>

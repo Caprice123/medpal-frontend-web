@@ -52,7 +52,7 @@ function Chatbot({ onBack }) {
     }
 
     try {
-      await dispatch(deleteAdminConversation(conversation.id))
+      await dispatch(deleteAdminConversation(conversation.uniqueId))
       await dispatch(fetchAdminConversations({}, pagination.page, 20))
     } catch (error) {
       console.error('Failed to delete conversation:', error)
@@ -91,14 +91,16 @@ function Chatbot({ onBack }) {
         onDelete={handleDeleteConversation}
       />
 
-      <Pagination
-        currentPage={pagination.page}
-        isLastPage={pagination.isLastPage}
-        onPageChange={handlePageChange}
-        isLoading={loading.isConversationsLoading}
-        variant="admin"
-        language="id"
-      />
+      {(pagination.page > 1 || (pagination.page === 1 && !pagination.isLastPage)) && (
+        <Pagination
+          currentPage={pagination.page}
+          isLastPage={pagination.isLastPage}
+          onPageChange={handlePageChange}
+          isLoading={loading.isConversationsLoading}
+          variant="admin"
+          language="id"
+        />
+      )}
 
       {uiState.isSettingsModalOpen && (
         <ChatbotSettingsModal
