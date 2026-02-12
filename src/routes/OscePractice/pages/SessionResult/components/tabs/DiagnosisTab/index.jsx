@@ -9,8 +9,12 @@ import { EmptyListText, FormSection, ItemCard, ItemsList, ItemText, SectionTitle
 function DiagnosisTab() {
   const { sessionDetail, loading } = useSelector(state => state.oscePractice)
 
-  const mainDiagnosis = sessionDetail.userAnswer.diagnoses.find(d => d.type === 'utama')
-  const differentialDiagnoses = sessionDetail.userAnswer.diagnoses.filter(d => d.type === 'pembanding')
+  const diagnosis = sessionDetail.userAnswer.diagnosis || { utama: '', pembanding: [] }
+  const mainDiagnosis = diagnosis.utama
+  const differentialDiagnoses = diagnosis.pembanding || []
+
+  // Check if utama is array (psikiatri) or string
+  const isUtamaArray = Array.isArray(mainDiagnosis)
 
   if (loading.isLoadingSessionDetail) {
     return (
@@ -22,47 +26,37 @@ function DiagnosisTab() {
 
   return (
     <Container>
-      {/* <Section>
-        <SectionTitle>
-          Diagnosis Utama
-          <Badge primary>Utama</Badge>
-        </SectionTitle>
-        {mainDiagnosis ? (
-          <DiagnosisCard>{mainDiagnosis.diagnosis}</DiagnosisCard>
-        ) : (
-          <EmptyState>Belum ada diagnosis utama yang dicatat.</EmptyState>
-        )}
-      </Section>
-
-      <Section>
-        <SectionTitle>
-          Diagnosis Pembanding
-          <Badge>Pembanding</Badge>
-        </SectionTitle>
-        {differentialDiagnoses.length > 0 ? (
-          <DiagnosisList>
-            {differentialDiagnoses.map((diagnosis, index) => (
-              <DiagnosisItem key={diagnosis.id}>
-                <DiagnosisNumber>{index + 1}</DiagnosisNumber>
-                <DiagnosisText>{diagnosis.diagnosis}</DiagnosisText>
-              </DiagnosisItem>
-            ))}
-          </DiagnosisList>
-        ) : (
-          <EmptyState>Belum ada diagnosis pembanding yang dicatat.</EmptyState>
-        )}
-      </Section> */}
-
       {/* Diagnosa Utama */}
       <FormSection>
         <SectionTitle>
           DIAGNOSA UTAMA
         </SectionTitle>
-        <TextInput
-          placeholder="Masukkan diagnosa utama..."
-          value={mainDiagnosis?.diagnosis}
-          disabled
-        />
+
+        {isUtamaArray ? (
+          // Array format for Psikiatri
+          mainDiagnosis.length > 0 ? (
+            <ItemsList>
+              {mainDiagnosis.map((diagnosisItem, index) => (
+                <ItemCard key={index}>
+                  <ItemText>
+                    {index + 1}. {diagnosisItem}
+                  </ItemText>
+                </ItemCard>
+              ))}
+            </ItemsList>
+          ) : (
+            <EmptyListText>
+              Belum ada diagnosa utama
+            </EmptyListText>
+          )
+        ) : (
+          // Single input for non-Psikiatri
+          <TextInput
+            placeholder="Masukkan diagnosa utama..."
+            value={mainDiagnosis}
+            disabled
+          />
+        )}
       </FormSection>
 
       {/* Diagnosa Pembanding */}
@@ -73,10 +67,10 @@ function DiagnosisTab() {
 
         {differentialDiagnoses.length > 0 ? (
           <ItemsList>
-            {differentialDiagnoses.map((diagnosis, index) => (
+            {differentialDiagnoses.map((diagnosisItem, index) => (
               <ItemCard key={index}>
                 <ItemText>
-                  {index + 1}. {diagnosis.diagnosis}
+                  {index + 1}. {diagnosisItem}
                 </ItemText>
               </ItemCard>
             ))}
