@@ -53,7 +53,7 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
     {
       title: "Embed",
       subtext: "Embed any website, video, or interactive content",
-      aliases: ["iframe", "video", "figma", "youtube"],
+      aliases: ["iframe", "video", "figma", "youtube", "reactflow"],
       group: "Embeds",
       icon: '🔗',
       onItemClick: () => {
