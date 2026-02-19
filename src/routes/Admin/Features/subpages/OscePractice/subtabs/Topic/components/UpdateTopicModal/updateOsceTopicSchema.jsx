@@ -18,7 +18,7 @@ export const updateOsceTopicSchema = Yup.object().shape({
     .required('Duration is required')
     .positive('Duration must be positive')
     .integer('Duration must be a whole number'),
-  topicTags: Yup.array(),
-  batchTags: Yup.array(),
+  topicTags: Yup.array().min(1, 'At least one topic tag is required'),
+  batchTags: Yup.array().min(1, 'At least one batch tag is required'),
   status: Yup.string().oneOf(['draft', 'published'])
 })

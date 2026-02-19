@@ -18,7 +18,7 @@ export const createOscePracticeSchema = Yup.object().shape({
     .required('Duration is required')
     .positive('Duration must be positive')
     .integer('Duration must be a whole number'),
-  universityTags: Yup.array(),
-  semesterTags: Yup.array(),
+  universityTags: Yup.array().min(1, 'At least one university tag is required'),
+  semesterTags: Yup.array().min(1, 'At least one semester tag is required'),
   status: Yup.string().oneOf(['draft', 'published'])
 })

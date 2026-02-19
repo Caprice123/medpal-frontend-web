@@ -1,4 +1,4 @@
-# MedPalm - Medical AI Platform Setup Guide
+# MedPal - Medical AI Platform Setup Guide
 
 A medical-themed web application with Google OAuth authentication, credit-based features, and AI-powered medical catalogs.
 
