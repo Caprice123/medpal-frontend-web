@@ -5,7 +5,7 @@ import Button from '@components/common/Button'
 import { useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { actions } from "@/store/flashcard/reducer"
-import { fetchFlashcardDecks } from '@store/flashcard/action'
+import { fetchFlashcardDecks } from '@store/flashcard/userAction'
 
 export const Filter = () => {
     const dispatch = useDispatch()
@@ -32,7 +32,6 @@ export const Filter = () => {
         dispatch(actions.setPage(1))
         dispatch(fetchFlashcardDecks())
     }
-    console.log(filters)
 
     return (
         <div style={{
