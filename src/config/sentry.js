@@ -31,10 +31,10 @@ export const initSentry = () => {
         matchRoutes,
       }),
       // Session replay — records user interactions on error
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+    //   Sentry.replayIntegration({
+    //     maskAllText: true,
+    //     blockAllMedia: true,
+    //   }),
     ],
 
     // Capture 10% of transactions for performance monitoring
