@@ -44,8 +44,8 @@ export const initSentry = () => {
     tracePropagationTargets: [import.meta.env.VITE_API_BASE_URL],
 
     // Capture 10% of sessions, 100% of sessions with errors
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
+    // replaysSessionSampleRate: 0.1,
+    // replaysOnErrorSampleRate: 1.0,
 
     // Ignore noise / non-actionable errors
     ignoreErrors: [
