@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(npx prisma:*)",
+      "Bash(node_modules/.bin/prisma migrate:*)",
+      "Bash(backend/node_modules/.bin/prisma migrate:*)",
+      "Bash(npm run:*)",
+      "Bash(node_modules/.bin/prisma db:*)"
+    ]
+  }
+}
