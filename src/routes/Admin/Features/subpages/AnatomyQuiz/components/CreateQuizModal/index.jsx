@@ -36,23 +36,13 @@ const CreateQuizModal = ({ onClose }) => {
 
     const { form, handleImageSelect, handleAddQuestion, handleRemoveQuestion, handleAddOption, handleRemoveOption } = useCreateQuiz(onClose)
 
-  // Get tags from both university and semester groups - memoized
-  const universityTags = useMemo(() =>
-    tags.find(t => t.name === 'university')?.tags || [],
-    [tags]
-  )
-  const semesterTags = useMemo(() =>
-    tags.find(t => t.name === 'semester')?.tags || [],
+  const anatomyTopicTags = useMemo(() =>
+    tags.find(t => t.name === 'anatomy_topic')?.tags || [],
     [tags]
   )
 
-  // Handlers for tag changes - now directly update separate fields
-  const handleUniversityTagsChange = (newTags) => {
-    form.setFieldValue('universityTags', newTags)
-  }
-
-  const handleSemesterTagsChange = (newTags) => {
-    form.setFieldValue('semesterTags', newTags)
+  const handleAnatomyTopicTagsChange = (newTags) => {
+    form.setFieldValue('anatomyTopicTags', newTags)
   }
 
   const handleModalClose = () => {
@@ -187,27 +177,15 @@ const CreateQuizModal = ({ onClose }) => {
           </FormSection>
         )}
 
-        {/* University Tags Section */}
+        {/* Anatomy Topic Tags Section */}
         <FormSection>
-          <Label>Universitas</Label>
+          <Label>Topik Anatomi</Label>
           <TagSelector
-            allTags={universityTags}
-            selectedTags={form.values.universityTags}
-            onTagsChange={handleUniversityTagsChange}
-            placeholder="-- Pilih Universitas --"
-            helpText="Pilih universitas untuk membantu mengorganisir quiz"
-          />
-        </FormSection>
-
-        {/* Semester Tags Section */}
-        <FormSection>
-          <Label>Semester</Label>
-          <TagSelector
-            allTags={semesterTags}
-            selectedTags={form.values.semesterTags || []}
-            onTagsChange={handleSemesterTagsChange}
-            placeholder="-- Pilih Semester --"
-            helpText="Pilih semester untuk membantu mengorganisir quiz"
+            allTags={anatomyTopicTags}
+            selectedTags={form.values.anatomyTopicTags}
+            onTagsChange={handleAnatomyTopicTagsChange}
+            placeholder="-- Pilih Topik Anatomi --"
+            helpText="Pilih topik anatomi untuk mengorganisir quiz"
           />
         </FormSection>
 

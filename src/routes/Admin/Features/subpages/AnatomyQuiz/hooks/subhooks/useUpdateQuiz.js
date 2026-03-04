@@ -14,30 +14,19 @@ export const useUpdateQuiz = (closeCallback) => {
   const { detail: selectedQuiz } = useSelector(state => state.anatomy)
   const { tags } = useSelector(state => state.tags)
 
-  // Get university and semester tags from Redux
-  const universityTags = useMemo(() =>
-    tags.find(t => t.name === 'university')?.tags || [],
-    [tags]
-  )
-  const semesterTags = useMemo(() =>
-    tags.find(t => t.name === 'semester')?.tags || [],
+  // Get anatomy topic tags from Redux
+  const anatomyTopicTags = useMemo(() =>
+    tags.find(t => t.name === 'anatomy_topic')?.tags || [],
     [tags]
   )
 
-  // Split quiz tags into university and semester when quiz is provided
-  const initialUniversityTags = useMemo(() => {
+  // Split quiz tags into anatomy topic tags when quiz is provided
+  const initialAnatomyTopicTags = useMemo(() => {
     if (!selectedQuiz?.tags) return []
     return selectedQuiz.tags.filter(tag =>
-      universityTags.find(ut => ut.id === tag.id)
+      anatomyTopicTags.find(ut => ut.id === tag.id)
     )
-  }, [selectedQuiz, universityTags])
-
-  const initialSemesterTags = useMemo(() => {
-    if (!selectedQuiz?.tags) return []
-    return selectedQuiz.tags.filter(tag =>
-      semesterTags.find(st => st.id === tag.id)
-    )
-  }, [selectedQuiz, semesterTags])
+  }, [selectedQuiz, anatomyTopicTags])
 
   const form = useFormik({
     enableReinitialize: true,
@@ -53,8 +42,8 @@ export const useUpdateQuiz = (closeCallback) => {
       },
       embedUrl: selectedQuiz?.embedUrl || '',
       questionCount: selectedQuiz?.embedUrl ? (selectedQuiz?.questionCount || '') : '',
-      universityTags: initialUniversityTags,
-      semesterTags: initialSemesterTags,
+      anatomyTopicTags: initialAnatomyTopicTags,
+      
       questions: (selectedQuiz?.questions || []).map(q => {
         // Initialize correctChoiceIndex based on the answer if it's multiple choice
         let correctChoiceIndex = q.correctChoiceIndex
@@ -77,7 +66,7 @@ export const useUpdateQuiz = (closeCallback) => {
         blobId: values.mediaType === 'upload' ? values.blob.id : null,
         embedUrl: values.mediaType === 'embed' ? values.embedUrl : null,
         questionCount: values.mediaType === 'embed' ? (parseInt(values.questionCount) || 0) : undefined,
-        tags: [...values.universityTags, ...values.semesterTags].map(tag => tag.id),
+        tags: [...values.anatomyTopicTags].map(tag => tag.id),
         questions: values.questions.map((q, index) => ({
           ...(q.id && { id: q.id }),
           question: q.question,

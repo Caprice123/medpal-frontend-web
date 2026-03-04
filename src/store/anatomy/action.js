@@ -17,11 +17,9 @@ export const fetchAnatomyQuizzes = () => async (dispatch, getState) => {
     const { filter, pagination } = getState().anatomy
 
     const queryParams = {}
-    if (filter.university) queryParams.university = filter.university
-    if (filter.semester) queryParams.semester = filter.semester
+    if (filter.topic) queryParams.topic = filter.topic
     if (filter.search) queryParams.search = filter.search
 
-    // Add pagination parameters
     queryParams.page = filter.page || pagination.page
     queryParams.perPage = filter.perPage || pagination.perPage
 

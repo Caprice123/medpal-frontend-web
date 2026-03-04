@@ -17,12 +17,11 @@ export const fetchAdminAnatomyQuizzes = () => async (dispatch, getState) => {
     const { filter, pagination } = getState().anatomy
 
     const queryParams = {}
-    if (filter.university) queryParams.university = filter.university
-    if (filter.semester) queryParams.semester = filter.semester
+    if (filter.topic) queryParams.topic = filter.topic
+    
     if (filter.status) queryParams.status = filter.status
     if (filter.name) queryParams.search = filter.name
 
-    // Add pagination parameters
     queryParams.page = pagination.page
     queryParams.perPage = pagination.perPage
 
@@ -59,7 +58,6 @@ export const createAnatomyQuiz = (quizData, onSuccess) => async (dispatch) => {
     const route = Endpoints.admin.anatomy
     await postWithToken(route, quizData)
 
-    // Refresh the list and close modal
     if (onSuccess) onSuccess()
   } finally {
     dispatch(setLoading({ key: 'isCreateAnatomyQuizLoading', value: false }))
@@ -73,7 +71,6 @@ export const updateAnatomyQuiz = (quizId, quizData, onSuccess) => async (dispatc
     const route = Endpoints.admin.anatomy + `/${quizId}`
     await putWithToken(route, quizData)
 
-    // Refresh the list to show updated quiz
     if (onSuccess) onSuccess()
   } finally {
     dispatch(setLoading({ key: 'isUpdateAnatomyQuizLoading', value: false }))

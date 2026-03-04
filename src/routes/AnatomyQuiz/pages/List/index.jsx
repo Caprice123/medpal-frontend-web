@@ -21,7 +21,7 @@ function AnatomyQuizPage() {
   // Fetch quizzes on mount
   useEffect(() => {
     dispatch(fetchAnatomyQuizzes())
-    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
+    dispatch(tagActions.updateFilter({ key: "tagGroupNames", value: ["anatomy_topic"]}))
     dispatch(fetchTags())
   }, [dispatch])
 

@@ -41,7 +41,7 @@ function AnatomyQuiz() {
   }, [dispatch, filters])
 
   const handleQuizClick = (quizId) => {
-    navigate(`/anatomy/${quizId}`)
+    navigate(`/anatomy-quiz/${quizId}`)
   }
 
   const getTagName = (tagId) => {
@@ -55,8 +55,8 @@ function AnatomyQuiz() {
   return (
     <Container>
       <Header>
-        <Title>Anatomy Quizzes</Title>
-        <Subtitle>Test your knowledge on anatomical structures</Subtitle>
+        <Title>Anatomy Quiz</Title>
+        <Subtitle>Test your anatomy knowledge</Subtitle>
       </Header>
 
       <FilterSection>

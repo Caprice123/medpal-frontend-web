@@ -29,6 +29,7 @@ const AVAILABLE_FEATURES = [
   { value: 'exercise', label: 'Exercise' },
   { value: 'flashcard', label: 'Flashcard' },
   { value: 'calculator', label: 'Calculator' },
+  { value: 'diagnostic', label: 'Diagnostic Quiz' },
   { value: 'anatomy', label: 'Anatomy Quiz' },
   { value: 'mcq', label: 'Multiple Choice' },
   { value: 'chatbot', label: 'Chatbot' },

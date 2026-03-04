@@ -24,8 +24,8 @@ export const useCreateQuiz = (closeCallback) => {
       },
       embedUrl: '',
       questionCount: '',
-      universityTags: [],
-      semesterTags: [],
+      anatomyTopicTags: [],
+      
       questions: [],
       status: 'draft'
     },
@@ -37,7 +37,7 @@ export const useCreateQuiz = (closeCallback) => {
         blobId: values.mediaType === 'upload' ? values.blob.id : null,
         embedUrl: values.mediaType === 'embed' ? values.embedUrl : null,
         questionCount: values.mediaType === 'embed' ? (parseInt(values.questionCount) || 0) : undefined,
-        tags: [...values.universityTags, ...values.semesterTags].map(tag => tag.id),
+        tags: [...values.anatomyTopicTags].map(tag => tag.id),
         questions: values.questions,
         status: values.status
       }

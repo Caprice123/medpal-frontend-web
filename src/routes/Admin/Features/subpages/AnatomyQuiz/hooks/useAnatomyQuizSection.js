@@ -17,7 +17,7 @@ export const useAnatomyQuizSection = () => {
   // Fetch quizzes and tags on mount
   useEffect(() => {
     dispatch(fetchAdminAnatomyQuizzes())
-    dispatch(actions.updateFilter({ key: "tagGroupNames", value: ["university", "semester"]}))
+    dispatch(actions.updateFilter({ key: "tagGroupNames", value: ["anatomy_topic"]}))
     dispatch(fetchAdminTags())
   }, [dispatch])
 

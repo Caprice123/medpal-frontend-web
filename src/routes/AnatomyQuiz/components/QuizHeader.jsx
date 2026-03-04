@@ -8,8 +8,7 @@ import {
 } from '../pages/Detail/Detail.styles'
 
 function QuizHeader({ quiz, onBack }) {
-  const universityTags = (quiz?.tags || []).filter(tag => tag.tagGroupId === 4)
-  const semesterTags = (quiz?.tags || []).filter(tag => tag.tagGroupId === 5)
+  const anatomyTopicTags = (quiz?.tags || []).filter(tag => tag.tagGroupName === 'anatomy_topic')
 
   return (
     <FormHeader>
@@ -21,18 +20,10 @@ function QuizHeader({ quiz, onBack }) {
         <h2>{quiz.title}</h2>
         {quiz.description && <p>{quiz.description}</p>}
 
-        {universityTags.length > 0 && (
+        {anatomyTopicTags.length > 0 && (
           <TagList>
-            {universityTags.map(tag => (
-              <Tag key={tag.id} university>{tag.name}</Tag>
-            ))}
-          </TagList>
-        )}
-
-        {semesterTags.length > 0 && (
-          <TagList>
-            {semesterTags.map(tag => (
-              <Tag key={tag.id} semester>{tag.name}</Tag>
+            {anatomyTopicTags.map(tag => (
+              <Tag key={tag.id}>🫀 {tag.name}</Tag>
             ))}
           </TagList>
         )}

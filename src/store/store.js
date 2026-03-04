@@ -13,6 +13,7 @@ import feature from "./feature/reducer";
 import pricing from "./pricing/reducer";
 import summaryNotes from "./summaryNotes";
 import user from "./user";
+import diagnostic from "./diagnostic";
 import anatomy from "./anatomy";
 import mcq from "./mcq";
 import constant from "./constant";
@@ -36,6 +37,7 @@ export const rootReducer = combineReducers({
     pricing,
     summaryNotes,
     user,
+    diagnostic,
     anatomy,
     mcq,
     chatbot,

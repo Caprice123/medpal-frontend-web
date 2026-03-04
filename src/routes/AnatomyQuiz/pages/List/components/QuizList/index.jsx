@@ -50,23 +50,12 @@ function QuizList() {
               {quiz.description || 'Tidak ada deskripsi'}
             </QuizDescription>
 
-            {/* University Tags */}
-            {quiz.universityTags && quiz.universityTags.length > 0 && (
+            {/* Anatomy Topic Tags */}
+            {quiz.anatomyTopicTags && quiz.anatomyTopicTags.length > 0 && (
               <TagList>
-                {quiz.universityTags.map((tag) => (
-                  <Tag key={tag.id} university>
-                    🏛️ {tag.name}
-                  </Tag>
-                ))}
-              </TagList>
-            )}
-
-            {/* Semester Tags */}
-            {quiz.semesterTags && quiz.semesterTags.length > 0 && (
-              <TagList>
-                {quiz.semesterTags.map((tag) => (
-                  <Tag key={tag.id} semester>
-                    📚 {tag.name}
+                {quiz.anatomyTopicTags.map((tag) => (
+                  <Tag key={tag.id}>
+                    🫀 {tag.name}
                   </Tag>
                 ))}
               </TagList>

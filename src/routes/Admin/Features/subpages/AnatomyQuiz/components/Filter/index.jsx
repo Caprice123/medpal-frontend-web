@@ -16,12 +16,8 @@ export const Filter = () => {
         dispatch(fetchAdminAnatomyQuizzes())
     }
 
-    const universityTags = useMemo(() => {
-        return tags?.find(tag => tag.name == "university")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
-    }, [tags])
-
-    const semesterTags = useMemo(() => {
-        return tags?.find(tag => tag.name == "semester")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
+    const anatomyTopicTags = useMemo(() => {
+        return tags?.find(tag => tag.name === 'anatomy_topic')?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
     }, [tags])
 
     return (
@@ -53,22 +49,12 @@ export const Filter = () => {
                     </FilterComponent.Group>
 
                     <FilterComponent.Group>
-                        <FilterComponent.Label>Universitas</FilterComponent.Label>
+                        <FilterComponent.Label>Topik Anatomi</FilterComponent.Label>
                         <Dropdown
-                            options={universityTags}
-                            value={filter.university ? universityTags.find(t => t.value === filter.university) : null}
-                            onChange={(option) => dispatch(actions.updateFilter({ key: "university", value: option?.value || "" }))}
-                            placeholder="Filter berdasarkan universitas..."
-                        />
-                    </FilterComponent.Group>
-
-                    <FilterComponent.Group>
-                        <FilterComponent.Label>Semester</FilterComponent.Label>
-                        <Dropdown
-                            options={semesterTags}
-                            value={filter.semester ? semesterTags.find(t => t.value === filter.semester) : null}
-                            onChange={(option) => dispatch(actions.updateFilter({ key: "semester", value: option?.value || "" }))}
-                            placeholder="Filter berdasarkan semester..."
+                            options={anatomyTopicTags}
+                            value={filter.topic ? anatomyTopicTags.find(t => t.value === filter.topic) : null}
+                            onChange={(option) => dispatch(actions.updateFilter({ key: "topic", value: option?.value || "" }))}
+                            placeholder="Filter berdasarkan topik..."
                         />
                     </FilterComponent.Group>
                 </FilterComponent>

@@ -5,8 +5,8 @@ const initialState = {
   quizzes: [],
   filter: {
     search: undefined,
-    university: undefined,
-    semester: undefined,
+    topic: undefined,
+    
     status: undefined
   },
   detail: undefined,
@@ -57,7 +57,7 @@ const { reducer, actions } = createSlice({
   extraReducers: (builder) => {
     builder.addCase(resetAllState, (state) => ({
         ...initialState,
-        loading: state.loading, // 🔥 preserve current loading state
+        loading: state.loading,
     }));
   },
 })
