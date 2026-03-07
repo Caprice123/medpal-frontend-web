@@ -13,10 +13,8 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
     description: '',
     clinical_references: [],
     tags: [],
-    formula: '',
-    result_label: '',
-    result_unit: '',
     fields: [],
+    results: [],
     classifications: [],
     status: 'draft'
   })
@@ -48,12 +46,14 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
         description: calculator.description || '',
         clinical_references: calculator.clinical_references || [],
         tags: calculator.tags || [],
-        formula: calculator.formula,
-        result_label: calculator.result_label,
-        result_unit: calculator.result_unit || '',
         fields: (calculator.fields || []).map(field => ({
           ...field,
           _id: field._id || `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        })),
+        results: (calculator.results || []).map(result => ({
+          ...result,
+          _id: result._id || `result_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          conditional_formulas: result.conditional_formulas || []
         })),
         classifications: calculator.classifications || [],
         status: calculator.status || 'draft'
@@ -66,10 +66,8 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
         description: '',
         clinical_references: [],
         tags: [],
-        formula: '',
-        result_label: '',
-        result_unit: '',
         fields: [],
+        results: [],
         classifications: [],
         status: 'draft'
       }
@@ -106,38 +104,19 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
   const validateForm = () => {
     const newErrors = {}
 
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required'
-    }
-
-    if (!formData.formula.trim()) {
-      newErrors.formula = 'Formula is required'
-    } else {
-      formData.fields.forEach(field => {
-        if (!new RegExp(`\\b${field.key}\\b`).test(formData.formula)) {
-          newErrors.formula = `Formula must reference field key '${field.key}'`
-        }
-      })
-    }
-
-    if (!formData.result_label.trim()) {
-      newErrors.result_label = 'Result label is required'
-    }
-
-    if (formData.fields.length === 0) {
-      newErrors.fields = 'At least one field is required'
-    }
+    if (!formData.title.trim()) newErrors.title = 'Title is required'
+    if (formData.fields.length === 0) newErrors.fields = 'At least one field is required'
+    if (formData.results.length === 0) newErrors.results = 'At least one result is required'
 
     formData.fields.forEach((field, index) => {
-      if (!field.key?.trim()) {
-        newErrors[`field_${index}_key`] = 'Key is required'
-      }
-      if (!field.label?.trim()) {
-        newErrors[`field_${index}_label`] = 'Label is required'
-      }
-      if (!field.placeholder?.trim()) {
-        newErrors[`field_${index}_placeholder`] = 'Placeholder is required'
-      }
+      if (!field.key?.trim()) newErrors[`field_${index}_key`] = 'Key is required'
+      if (!field.label?.trim()) newErrors[`field_${index}_label`] = 'Label is required'
+      if (!field.placeholder?.trim()) newErrors[`field_${index}_placeholder`] = 'Placeholder is required'
+    })
+
+    formData.results.forEach((result, index) => {
+      if (!result.formula?.trim()) newErrors[`result_${index}_formula`] = 'Formula is required'
+      if (!result.result_label?.trim()) newErrors[`result_${index}_result_label`] = 'Label is required'
     })
 
     setErrors(newErrors)
@@ -177,7 +156,8 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
           unit: '',
           display_conditions: [],
           is_required: true,
-          options: []
+          options: [],
+          image: null
         }
       ]
     }))
@@ -304,6 +284,42 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
     }))
   }, [])
 
+  const handleFieldImageUpload = useCallback(async (fieldIndex, file) => {
+    try {
+      const result = await dispatch(upload(file, 'calculator'))
+      setFormData(prev => ({
+        ...prev,
+        fields: prev.fields.map((f, i) =>
+          i === fieldIndex
+            ? {
+                ...f,
+                image: {
+                  id: result.blobId,
+                  url: result.url,
+                  key: result.key,
+                  filename: result.filename,
+                  contentType: result.contentType,
+                  byteSize: result.byteSize,
+                }
+              }
+            : f
+        )
+      }))
+    } catch (error) {
+      console.error('Failed to upload field image:', error)
+      alert('Failed to upload image. Please try again.')
+    }
+  }, [dispatch])
+
+  const handleFieldImageRemove = useCallback((fieldIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      fields: prev.fields.map((f, i) =>
+        i === fieldIndex ? { ...f, image: null } : f
+      )
+    }))
+  }, [])
+
   // Display conditions management
   const addDisplayCondition = useCallback((fieldIndex) => {
     setFormData(prev => ({
@@ -352,73 +368,159 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
     }))
   }, [])
 
-  // Classification management
-  const addClassification = useCallback(() => {
+  // Result management
+  const addResult = useCallback(() => {
     setFormData(prev => ({
       ...prev,
-      classifications: [
-        ...prev.classifications,
+      results: [
+        ...prev.results,
         {
-          name: '',
-          options: [
-            {
-              value: '',
-              label: '',
-              conditions: [
-                {
-                    result_key: 'result',
-                    operator: '>',
-                    value: '',
-                    logical_operator: 'AND'
-                }
-              ]
-            }
-          ]
+          _id: `result_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          key: '',
+          formula: '',
+          result_label: '',
+          result_unit: '',
+          conditional_formulas: []
         }
       ]
     }))
   }, [])
 
-  const removeClassification = useCallback((index) => {
+  const removeResult = useCallback((resultIndex) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.filter((_, i) => i !== index)
+      results: prev.results.filter((_, i) => i !== resultIndex)
     }))
   }, [])
 
-  const handleClassificationChange = useCallback((index, fieldName, value) => {
+  const handleResultChange = useCallback((resultIndex, fieldName, value) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === index ? { ...c, [fieldName]: value } : c
+      results: prev.results.map((r, i) =>
+        i === resultIndex ? { ...r, [fieldName]: value } : r
       )
     }))
   }, [])
 
-  // Classification option management
+  // Conditional formula management (per result)
+  const addConditionalFormula = useCallback((resultIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? { ...r, conditional_formulas: [...(r.conditional_formulas || []), { formula: '', conditions: [{ field_key: '', operator: '==', value: '', logical_operator: null }] }] }
+          : r
+      )
+    }))
+  }, [])
+
+  const removeConditionalFormula = useCallback((resultIndex, cfIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? { ...r, conditional_formulas: (r.conditional_formulas || []).filter((_, j) => j !== cfIndex) }
+          : r
+      )
+    }))
+  }, [])
+
+  const handleConditionalFormulaChange = useCallback((resultIndex, cfIndex, value) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? { ...r, conditional_formulas: (r.conditional_formulas || []).map((cf, j) => j === cfIndex ? { ...cf, formula: value } : cf) }
+          : r
+      )
+    }))
+  }, [])
+
+  const addCFCondition = useCallback((resultIndex, cfIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? {
+              ...r,
+              conditional_formulas: (r.conditional_formulas || []).map((cf, j) =>
+                j === cfIndex
+                  ? { ...cf, conditions: [...(cf.conditions || []), { field_key: '', operator: '==', value: '', logical_operator: 'AND' }] }
+                  : cf
+              )
+            }
+          : r
+      )
+    }))
+  }, [])
+
+  const removeCFCondition = useCallback((resultIndex, cfIndex, condIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? {
+              ...r,
+              conditional_formulas: (r.conditional_formulas || []).map((cf, j) =>
+                j === cfIndex
+                  ? { ...cf, conditions: (cf.conditions || []).filter((_, k) => k !== condIndex) }
+                  : cf
+              )
+            }
+          : r
+      )
+    }))
+  }, [])
+
+  const handleCFConditionChange = useCallback((resultIndex, cfIndex, condIndex, fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      results: prev.results.map((r, i) =>
+        i === resultIndex
+          ? {
+              ...r,
+              conditional_formulas: (r.conditional_formulas || []).map((cf, j) =>
+                j === cfIndex
+                  ? { ...cf, conditions: (cf.conditions || []).map((cond, k) => k === condIndex ? { ...cond, [fieldName]: value } : cond) }
+                  : cf
+              )
+            }
+          : r
+      )
+    }))
+  }, [])
+
+  // Classification management (topic-level)
+  const addClassification = useCallback(() => {
+    setFormData(prev => ({
+      ...prev,
+      classifications: [
+        ...(prev.classifications || []),
+        { name: '', options: [{ value: '', label: '', conditions: [{ result_key: 'result', operator: '>', value: '', logical_operator: 'AND' }] }] }
+      ]
+    }))
+  }, [])
+
+  const removeClassification = useCallback((classIndex) => {
+    setFormData(prev => ({
+      ...prev,
+      classifications: prev.classifications.filter((_, j) => j !== classIndex)
+    }))
+  }, [])
+
+  const handleClassificationChange = useCallback((classIndex, fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      classifications: prev.classifications.map((c, j) => j === classIndex ? { ...c, [fieldName]: value } : c)
+    }))
+  }, [])
+
   const addClassificationOption = useCallback((classIndex) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
-          ? {
-              ...c,
-              options: [
-                ...(c.options || []),
-                {
-                  value: '',
-                  label: '',
-                  conditions: [
-                    {
-                      result_key: 'result',
-                      operator: '<',
-                      value: '',
-                      logical_operator: null
-                    }
-                  ]
-                }
-              ]
-            }
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex
+          ? { ...c, options: [...(c.options || []), { value: '', label: '', conditions: [{ result_key: 'result', operator: '<', value: '', logical_operator: null }] }] }
           : c
       )
     }))
@@ -427,13 +529,8 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
   const removeClassificationOption = useCallback((classIndex, optIndex) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
-          ? {
-              ...c,
-              options: c.options.filter((_, j) => j !== optIndex)
-            }
-          : c
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex ? { ...c, options: c.options.filter((_, k) => k !== optIndex) } : c
       )
     }))
   }, [])
@@ -441,41 +538,24 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
   const handleClassificationOptionChange = useCallback((classIndex, optIndex, fieldName, value) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
-          ? {
-              ...c,
-              options: c.options.map((opt, j) =>
-                j === optIndex ? { ...opt, [fieldName]: value } : opt
-              )
-            }
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex
+          ? { ...c, options: c.options.map((opt, k) => k === optIndex ? { ...opt, [fieldName]: value } : opt) }
           : c
       )
     }))
   }, [])
 
-  // Condition management (for classification options)
   const addCondition = useCallback((classIndex, optIndex) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex
           ? {
               ...c,
-              options: c.options.map((opt, j) =>
-                j === optIndex
-                  ? {
-                      ...opt,
-                      conditions: [
-                        ...(opt.conditions || []),
-                        {
-                          result_key: 'result',
-                          operator: '>',
-                          value: '',
-                          logical_operator: 'AND'
-                        }
-                      ]
-                    }
+              options: c.options.map((opt, k) =>
+                k === optIndex
+                  ? { ...opt, conditions: [...(opt.conditions || []), { result_key: 'result', operator: '>', value: '', logical_operator: 'AND' }] }
                   : opt
               )
             }
@@ -487,19 +567,9 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
   const removeCondition = useCallback((classIndex, optIndex, condIndex) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
-          ? {
-              ...c,
-              options: c.options.map((opt, j) =>
-                j === optIndex
-                  ? {
-                      ...opt,
-                      conditions: opt.conditions.filter((_, k) => k !== condIndex)
-                    }
-                  : opt
-              )
-            }
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex
+          ? { ...c, options: c.options.map((opt, k) => k === optIndex ? { ...opt, conditions: opt.conditions.filter((_, l) => l !== condIndex) } : opt) }
           : c
       )
     }))
@@ -508,18 +578,13 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
   const handleConditionChange = useCallback((classIndex, optIndex, condIndex, fieldName, value) => {
     setFormData(prev => ({
       ...prev,
-      classifications: prev.classifications.map((c, i) =>
-        i === classIndex
+      classifications: prev.classifications.map((c, j) =>
+        j === classIndex
           ? {
               ...c,
-              options: c.options.map((opt, j) =>
-                j === optIndex
-                  ? {
-                      ...opt,
-                      conditions: opt.conditions.map((cond, k) =>
-                        k === condIndex ? { ...cond, [fieldName]: value } : cond
-                      )
-                    }
+              options: c.options.map((opt, k) =>
+                k === optIndex
+                  ? { ...opt, conditions: opt.conditions.map((cond, l) => l === condIndex ? { ...cond, [fieldName]: value } : cond) }
                   : opt
               )
             }
@@ -563,20 +628,25 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
       return
     }
 
-    // Transform formData to send only blobIds for option images
     const submitData = {
       ...formData,
       fields: formData.fields.map(field => {
         const { _id, ...fieldWithoutId } = field
         return {
           ...fieldWithoutId,
+          blobId: field.image?.id || null,
           options: field.options?.map(option => ({
             value: option.value,
             label: option.label,
             blobId: option.image?.id || null
           })) || []
         }
-      })
+      }),
+      results: formData.results.map(result => {
+        const { _id, ...resultWithoutId } = result
+        return resultWithoutId
+      }),
+      classifications: formData.classifications
     }
 
     if (calculator) {
@@ -613,9 +683,23 @@ export const useCalculatorModal = ({ isOpen, calculator, onSuccess, onClose }) =
     handleFieldOptionChange,
     handleOptionImageUpload,
     handleOptionImageRemove,
+    handleFieldImageUpload,
+    handleFieldImageRemove,
     addDisplayCondition,
     removeDisplayCondition,
     handleDisplayConditionChange,
+    // Results
+    addResult,
+    removeResult,
+    handleResultChange,
+    // Conditional formulas (per result)
+    addConditionalFormula,
+    removeConditionalFormula,
+    handleConditionalFormulaChange,
+    addCFCondition,
+    removeCFCondition,
+    handleCFConditionChange,
+    // Classifications (topic-level)
     addClassification,
     removeClassification,
     handleClassificationChange,
