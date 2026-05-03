@@ -131,41 +131,70 @@ export const RequirementsList = styled.div`
   font-size: 0.8125rem;
 `
 
-export const WebinarBanner = styled.div`
-  background: linear-gradient(135deg, #0369a1 0%, #15803d 100%);
+export const BannerCarousel = styled.div`
+  margin-bottom: 2rem;
+
+  .swiper {
+    padding-bottom: 2rem;
+  }
+
+  .swiper-pagination-bullet {
+    background: #06b6d4;
+    opacity: 0.4;
+    transition: all 0.25s;
+  }
+
+  .swiper-pagination-bullet-active {
+    opacity: 1;
+    width: 20px;
+    border-radius: 4px;
+  }
+`
+
+export const BannerCard = styled.div`
   border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  background: ${props => props.$gradientStart && props.$gradientEnd
+    ? `linear-gradient(135deg, ${props.$gradientStart} 0%, ${props.$gradientEnd} 100%)`
+    : 'linear-gradient(135deg, #0369a1 0%, #15803d 100%)'};
   padding: 1.75rem 2rem;
-  margin-bottom: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
   color: white;
-  box-shadow: 0 4px 20px rgba(3, 105, 161, 0.35);
 
   @media (max-width: 640px) {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
     padding: 1.25rem;
   }
 `
 
-export const WebinarBannerLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-
-  @media (max-width: 480px) {
-    gap: 0.875rem;
-  }
-`
-
-export const WebinarBannerIcon = styled.div`
-  font-size: 2.5rem;
+export const BannerButtonPrimary = styled.button`
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
   flex-shrink: 0;
+  background: white;
+  color: #0369a1;
+  border: none;
+  cursor: pointer;
+  pointer-events: all;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.9; }
+
+  @media (max-width: 640px) { align-self: flex-start; }
 `
 
-export const WebinarBannerText = styled.div`
+
+
+export const BannerText = styled.div`
   h2 {
     font-size: 1.25rem;
     font-weight: 700;
@@ -178,50 +207,6 @@ export const WebinarBannerText = styled.div`
   }
 `
 
-export const WebinarBannerActions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  flex-shrink: 0;
-
-  @media (max-width: 640px) {
-    width: 100%;
-    flex-direction: column;
-  }
-`
-
-export const WebinarBannerButtonPrimary = styled.button`
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  white-space: nowrap;
-  background: white;
-  color: #4a9cc7;
-  transition: background 0.15s;
-
-  &:hover { background: #f0fdfa; }
-
-  @media (max-width: 640px) { width: 100%; }
-`
-
-export const WebinarBannerButtonOutline = styled.button`
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  background: rgba(255, 255, 255, 0.18);
-  color: white;
-  border: 1.5px solid rgba(255, 255, 255, 0.65);
-  transition: background 0.15s;
-
-  &:hover { background: rgba(255, 255, 255, 0.28); }
-
-  @media (max-width: 640px) { width: 100%; }
-`
 
 
 export const RequirementItem = styled.div`
