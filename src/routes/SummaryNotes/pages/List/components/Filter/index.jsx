@@ -13,6 +13,7 @@ export const Filter = () => {
     const { tags } = useSelector(state => state.tags)
 
     const onSearch = () => {
+        dispatch(actions.setPage(1))
         dispatch(fetchSummaryNotes())
     }
 
@@ -22,10 +23,6 @@ export const Filter = () => {
 
     const semesterTags = useMemo(() => {
         return tags?.find(tag => tag.name == "semester")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
-    }, [tags])
-
-    const topicTags = useMemo(() => {
-        return tags?.find(tag => tag.name == "topic")?.tags?.map((tag) => ({ label: tag.name, value: tag.id })) || []
     }, [tags])
 
     const departmentTags = useMemo(() => {
@@ -81,16 +78,6 @@ export const Filter = () => {
                             value={filters.semester ? semesterTags.find(t => t.value === filters.semester) : null}
                             onChange={(option) => dispatch(actions.updateFilter({ key: "semester", value: option?.value || "" }))}
                             placeholder="Filter berdasarkan semester..."
-                        />
-                    </FilterComponent.Group>
-
-                    <FilterComponent.Group>
-                        <FilterComponent.Label>Topik</FilterComponent.Label>
-                        <Dropdown
-                            options={topicTags}
-                            value={filters.topic ? topicTags.find(t => t.value === filters.topic) : null}
-                            onChange={(option) => dispatch(actions.updateFilter({ key: "topic", value: option?.value || "" }))}
-                            placeholder="Filter berdasarkan topik..."
                         />
                     </FilterComponent.Group>
 
