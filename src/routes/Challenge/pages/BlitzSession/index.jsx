@@ -5,13 +5,15 @@ import { PhotoProvider, PhotoView } from 'react-photo-view'
 import 'react-photo-view/dist/react-photo-view.css'
 import styled from 'styled-components'
 import { setTimeout, clearTimeout } from 'worker-timers'
+import moment from 'moment-timezone'
 import { saveAnswer, submitChallenge } from '@store/challenge/userAction'
 import { ChallengeRoute } from '../../routes'
 import {
-  PageWrapper, StickyHeader, TopBar, LeftSlot, TopBarRight, TimerBox, ScoreBadge,
-  QuestionTimerBar, QuestionTimerFill,
+  PageWrapper, StickyHeader, TimerBox, ScoreBadge, CardStats,
+  QuestionTimerBar, QuestionTimerFill, QuestionCounter,
   Main, QuestionCard, QuestionText, OptionsGrid,
   OptionBtn, OptionLetter, PointsFlash,
+  SpecialOverlay, SpecialCard, SpecialCardTitle, SpecialCardSub, SpecialStar,
 } from '../Session/Session.styles'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E']
@@ -33,28 +35,8 @@ const PhaseBadge = styled.div`
   letter-spacing: 0.03em;
 `
 
-const TransitionScreen = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-`
 
-const TransitionTitle = styled.div`
-  font-size: 2rem;
-  font-weight: 800;
-  color: #b45309;
-  letter-spacing: 0.05em;
-`
-
-const TransitionSub = styled.div`
-  font-size: 1rem;
-  color: #6b7280;
-`
-
-export default function BlitzSession({ session, uniqueId }) {
+export default function BlitzSession({ session, uniqueId, endAt }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -99,10 +81,9 @@ export default function BlitzSession({ session, uniqueId }) {
   const [locked, setLocked] = useState(false)
   const [revealed, setRevealed] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [answeredCount, setAnsweredCount] = useState(
-    (answeredQuestions || []).filter(a => a.isCorrect).length
-  )
+  const [totalScore, setTotalScore] = useState(session.score ?? 0)
   const [showTransition, setShowTransition] = useState(false)
+  const [specialOut, setSpecialOut] = useState(false)
 
   const questionStartTimeRef = useRef(Date.now())
   const timerRef = useRef(null)
@@ -121,6 +102,13 @@ export default function BlitzSession({ session, uniqueId }) {
     dispatch(saveAnswer(uniqueId, { questionId: q.id, selectedOptionIndex: null, timeTakenSeconds: null }))
   }, [currentIdx, phase])
 
+  useEffect(() => {
+    if (!showTransition) return
+    setSpecialOut(false)
+    const t = setTimeout(() => setSpecialOut(true), 1300)
+    return () => clearTimeout(t)
+  }, [showTransition])
+
   const doSubmit = async () => {
     if (submittingRef.current) return
     submittingRef.current = true
@@ -134,6 +122,15 @@ export default function BlitzSession({ session, uniqueId }) {
       submittingRef.current = false
     }
   }
+
+  // Force-submit when the challenge end_at deadline passes
+  useEffect(() => {
+    if (!endAt) return
+    const msLeft = moment(endAt).tz('Asia/Jakarta').diff(moment().tz('Asia/Jakarta'))
+    if (msLeft <= 0) { doSubmit(); return }
+    const t = setTimeout(() => doSubmit(), msLeft)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     if (submittingRef.current) return
@@ -197,7 +194,7 @@ export default function BlitzSession({ session, uniqueId }) {
         clearTimeout(fallback)
         const isCorrect = result?.isCorrect ?? false
         setRevealed({ isCorrect })
-        if (isCorrect) setAnsweredCount(prev => prev + 1)
+        if (result?.totalScore != null) setTotalScore(result.totalScore)
         setTimeout(advanceNext, 900)
       })
       .catch(() => {
@@ -220,12 +217,18 @@ export default function BlitzSession({ session, uniqueId }) {
 
   if (showTransition) {
     return (
-      <PageWrapper>
-        <TransitionScreen>
-          <TransitionTitle>⭐ Soal Spesial!</TransitionTitle>
-          <TransitionSub>Waktu reguler habis. Soal spesial dimulai sekarang.</TransitionSub>
-        </TransitionScreen>
-      </PageWrapper>
+      <SpecialOverlay $out={specialOut}>
+        <SpecialCard>
+          <SpecialStar $tx="-90px" $ty="-75px" $delay={0.05} $size="2.25rem">⭐</SpecialStar>
+          <SpecialStar $tx="90px"  $ty="-75px" $delay={0.15} $size="1.75rem">✨</SpecialStar>
+          <SpecialStar $tx="-110px" $ty="10px" $delay={0.1}  $size="1.5rem">🌟</SpecialStar>
+          <SpecialStar $tx="110px"  $ty="10px" $delay={0.2}  $size="1.75rem">⭐</SpecialStar>
+          <SpecialStar $tx="-70px"  $ty="65px" $delay={0.25} $size="1.25rem">✨</SpecialStar>
+          <SpecialStar $tx="70px"   $ty="65px" $delay={0.08} $size="1.5rem">🌟</SpecialStar>
+          <SpecialCardTitle>⭐ Soal Spesial!</SpecialCardTitle>
+          <SpecialCardSub>Waktu reguler habis. Soal spesial dimulai sekarang 🎯</SpecialCardSub>
+        </SpecialCard>
+      </SpecialOverlay>
     )
   }
 
@@ -247,13 +250,6 @@ export default function BlitzSession({ session, uniqueId }) {
     <PhotoProvider>
     <PageWrapper>
       <StickyHeader>
-        <TopBar>
-          <LeftSlot></LeftSlot>
-          <TopBarRight>
-            <ScoreBadge>{answeredCount} benar</ScoreBadge>
-            <TimerBox $urgent={isUrgent}>{formatTime(secondsLeft)}</TimerBox>
-          </TopBarRight>
-        </TopBar>
         <QuestionTimerBar>
           <QuestionTimerFill
             key={phase}
@@ -266,6 +262,16 @@ export default function BlitzSession({ session, uniqueId }) {
 
       <Main>
         <QuestionCard>
+          <QuestionCounter>
+            <PhaseBadge $special={phase === 'special'}>
+              {phase === 'special' ? '⭐ Spesial' : 'Reguler'} · Soal {currentIdx + 1}
+            </PhaseBadge>
+            <CardStats>
+              <ScoreBadge $compact>{totalScore} pts</ScoreBadge>
+              <TimerBox $compact $urgent={isUrgent}>⏱ {formatTime(secondsLeft)}</TimerBox>
+            </CardStats>
+          </QuestionCounter>
+
           {currentQ?.isSpecial && (
             <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '0.375rem 0.75rem', marginBottom: '1rem', fontSize: '0.8125rem', color: '#92400e', fontWeight: 600 }}>
               ⭐ Soal Spesial — poin kamu lebih besar di soal ini!

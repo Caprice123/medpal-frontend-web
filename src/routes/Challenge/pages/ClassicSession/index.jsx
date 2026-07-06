@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom'
 import { PhotoProvider, PhotoView } from 'react-photo-view'
 import 'react-photo-view/dist/react-photo-view.css'
 import { setTimeout, clearTimeout } from 'worker-timers'
+import moment from 'moment-timezone'
 import { saveAnswer, submitChallenge } from '@store/challenge/userAction'
 import { ChallengeRoute } from '../../routes'
 import {
-  PageWrapper, StickyHeader, TopBar, LeftSlot, TopBarRight, TimerBox,
-  QuestionTimerBar, QuestionTimerFill, StreakBadge, ScoreBadge, PointsFlash,
+  PageWrapper, StickyHeader, TimerBox,
+  QuestionTimerBar, QuestionTimerFill, StreakBadge, ScoreBadge, CardStats, PointsFlash,
   Main, QuestionCard, QuestionCounter, QuestionText, OptionsGrid,
   OptionBtn, OptionLetter,
+  SpecialOverlay, SpecialCard, SpecialCardTitle, SpecialCardSub, SpecialStar,
 } from '../Session/Session.styles'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E']
@@ -29,11 +31,11 @@ function computePoints(basePoints, isSpecial, timeTaken, secondsPerQuestion, str
   return Math.round(basePoints * pointMult * speedFactor * streakMult)
 }
 
-export default function ClassicSession({ session, uniqueId }) {
+export default function ClassicSession({ session, uniqueId, endAt }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { questions, answeredQuestions, secondsPerQuestion, basePointsPerCorrect } = session
+  const { questions, answeredQuestions, secondsPerQuestion, basePointsPerCorrect, currentStreak: resumedStreak, score: resumedScore } = session
 
   const initialAnswers = Object.fromEntries(
     (answeredQuestions || []).map(a => [a.questionId, { selectedOptionIndex: a.selectedOptionIndex, timeTakenSeconds: a.timeTakenSeconds }])
@@ -54,17 +56,19 @@ export default function ClassicSession({ session, uniqueId }) {
     const elapsed = Math.floor((Date.now() - parseInt(stored)) / 1000)
     return Math.max(0, secondsPerQuestion - elapsed)
   })
-  const [streak, setStreak] = useState(0)
-  const [totalScore, setTotalScore] = useState(0)
+  const [streak, setStreak] = useState(resumedStreak ?? 0)
+  const [totalScore, setTotalScore] = useState(resumedScore ?? 0)
   const [pointsFlash, setPointsFlash] = useState(null)
   const [revealed, setRevealed] = useState(null) // { isCorrect } — shows feedback highlight on options
   const [locked, setLocked] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [showSpecialAnnounce, setShowSpecialAnnounce] = useState(false)
+  const [specialOut, setSpecialOut] = useState(false)
 
   // Refs to avoid stale closures in timer callbacks
   const currentIdxRef = useRef(startIdx)
   const answersRef = useRef(initialAnswers)
-  const streakRef = useRef(0)
+  const streakRef = useRef(resumedStreak ?? 0)
   const lockedRef = useRef(false)
   const questionStartTimeRef = useRef((() => {
     const q = questions[startIdx]
@@ -78,6 +82,16 @@ export default function ClassicSession({ session, uniqueId }) {
   // Keep refs in sync
   useEffect(() => { currentIdxRef.current = currentIdx }, [currentIdx])
   useEffect(() => { answersRef.current = answers }, [answers])
+
+  // Special question announcement
+  useEffect(() => {
+    if (!questions[currentIdx]?.isSpecial) return
+    setSpecialOut(false)
+    setShowSpecialAnnounce(true)
+    const t1 = setTimeout(() => setSpecialOut(true), 1300)
+    const t2 = setTimeout(() => setShowSpecialAnnounce(false), 1600)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [currentIdx])
 
   // Mark question as seen and record start time when it appears for the first time
   useEffect(() => {
@@ -107,6 +121,7 @@ export default function ClassicSession({ session, uniqueId }) {
     submittingRef.current = true
     setSubmitting(true)
     clearTimeout(timerRef.current)
+    questions.forEach(q => localStorage.removeItem(`qs_${uniqueId}_${q.id}`))
     try {
       await dispatch(submitChallenge(uniqueId))
       navigate(ChallengeRoute.resultRoute(uniqueId))
@@ -115,6 +130,15 @@ export default function ClassicSession({ session, uniqueId }) {
       submittingRef.current = false
     }
   }
+
+  // Force-submit when the challenge end_at deadline passes
+  useEffect(() => {
+    if (!endAt) return
+    const msLeft = moment(endAt).tz('Asia/Jakarta').diff(moment().tz('Asia/Jakarta'))
+    if (msLeft <= 0) { doSubmit(); return }
+    const t = setTimeout(() => doSubmit(), msLeft)
+    return () => clearTimeout(t)
+  }, [])
 
   const goNext = () => {
     const nextIdx = currentIdxRef.current + 1
@@ -143,7 +167,10 @@ export default function ClassicSession({ session, uniqueId }) {
       setStreak(0)
       setPointsFlash({ timedOut: true, points: 0, isCorrect: false })
       const q = questions[currentIdxRef.current]
-      if (q) dispatch(saveAnswer(uniqueId, { questionId: q.id, selectedOptionIndex: null, timeTakenSeconds: secondsPerQuestion }))
+      if (q) {
+        localStorage.removeItem(`qs_${uniqueId}_${q.id}`)
+        dispatch(saveAnswer(uniqueId, { questionId: q.id, selectedOptionIndex: null, timeTakenSeconds: secondsPerQuestion }))
+      }
       const t = setTimeout(() => {
         setPointsFlash(null)
         goNext()
@@ -168,29 +195,43 @@ export default function ClassicSession({ session, uniqueId }) {
     setLocked(true)
     setAnswers(newAnswers)
 
-    const advanceWithResult = (isCorrect) => {
-      if (isCorrect) {
-        streakRef.current++
+    const advanceWithResult = (isCorrect, serverStreak = null, serverTotalScore = null, serverPointsEarned = null) => {
+      let newStreak, pts
+      if (serverStreak !== null || serverTotalScore !== null) {
+        newStreak = serverStreak ?? streakRef.current
+        pts = serverPointsEarned ?? 0
+        streakRef.current = newStreak
+        setStreak(newStreak)
+        setTotalScore(serverTotalScore ?? 0)
       } else {
-        streakRef.current = 0
+        if (isCorrect) {
+          streakRef.current++
+        } else {
+          streakRef.current = 0
+        }
+        newStreak = streakRef.current
+        pts = isCorrect ? computePoints(basePointsPerCorrect, q.isSpecial, timeTaken, secondsPerQuestion, newStreak) : 0
+        setStreak(newStreak)
+        if (isCorrect) setTotalScore(prev => prev + pts)
       }
-      setStreak(streakRef.current)
       setRevealed({ isCorrect })
-      const pts = isCorrect
-        ? computePoints(basePointsPerCorrect, q.isSpecial, timeTaken, secondsPerQuestion, streakRef.current)
-        : 0
-      setPointsFlash({ points: pts, isCorrect, streak: streakRef.current })
-      if (isCorrect) setTotalScore(prev => prev + pts)
+      setPointsFlash({ points: pts, isCorrect, streak: newStreak })
       setTimeout(() => { setPointsFlash(null); goNext() }, 900)
     }
 
-    // Fallback: advance after 3s even if server is slow
+    // Fallback: advance after 1.5s even if server is slow
     const fallbackTimer = setTimeout(() => advanceWithResult(false), 1500)
 
+    localStorage.removeItem(`qs_${uniqueId}_${q.id}`)
     dispatch(saveAnswer(uniqueId, { questionId: q.id, selectedOptionIndex: idx, timeTakenSeconds: timeTaken }))
       .then((result) => {
         clearTimeout(fallbackTimer)
-        advanceWithResult(result?.isCorrect ?? false)
+        advanceWithResult(
+          result?.isCorrect ?? false,
+          result?.streak ?? null,
+          result?.totalScore ?? null,
+          result?.pointsEarned ?? null,
+        )
       })
   }
 
@@ -200,30 +241,41 @@ export default function ClassicSession({ session, uniqueId }) {
 
   return (
     <PhotoProvider>
+    {showSpecialAnnounce && (
+      <SpecialOverlay $out={specialOut}>
+        <SpecialCard>
+          <SpecialStar $tx="-90px" $ty="-75px" $delay={0.05} $size="2.25rem">⭐</SpecialStar>
+          <SpecialStar $tx="90px"  $ty="-75px" $delay={0.15} $size="1.75rem">✨</SpecialStar>
+          <SpecialStar $tx="-110px" $ty="10px" $delay={0.1}  $size="1.5rem">🌟</SpecialStar>
+          <SpecialStar $tx="110px"  $ty="10px" $delay={0.2}  $size="1.75rem">⭐</SpecialStar>
+          <SpecialStar $tx="-70px"  $ty="65px" $delay={0.25} $size="1.25rem">✨</SpecialStar>
+          <SpecialStar $tx="70px"   $ty="65px" $delay={0.08} $size="1.5rem">🌟</SpecialStar>
+          <SpecialCardTitle>⭐ Soal Spesial!</SpecialCardTitle>
+          <SpecialCardSub>Poin kamu lebih besar di soal ini 🎯</SpecialCardSub>
+        </SpecialCard>
+      </SpecialOverlay>
+    )}
     <PageWrapper>
       <StickyHeader>
-        <TopBar>
-          <LeftSlot />
-          <TopBarRight>
-            <ScoreBadge>{totalScore} pts</ScoreBadge>
-            {streak >= 2 && <StreakBadge>🔥 {streak}</StreakBadge>}
-            <TimerBox $urgent={isUrgent}>{questionTimer}s</TimerBox>
-          </TopBarRight>
-        </TopBar>
         <QuestionTimerBar>
           <QuestionTimerFill key={currentIdx} $duration={secondsPerQuestion} $delay={timerDelay} $paused={locked} />
         </QuestionTimerBar>
       </StickyHeader>
 
       <Main>
-        <QuestionCard>
+        <QuestionCard $isSpecial={currentQ?.isSpecial}>
           <QuestionCounter>
             <span>Soal {currentIdx + 1} dari {questions.length}</span>
+            <CardStats>
+              {streak >= 2 && <StreakBadge $compact>🔥 {streak}</StreakBadge>}
+              <ScoreBadge $compact>{totalScore} pts</ScoreBadge>
+              <TimerBox $compact $urgent={isUrgent}>⏱ {questionTimer}s</TimerBox>
+            </CardStats>
           </QuestionCounter>
 
           {currentQ?.isSpecial && (
-            <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '0.375rem 0.75rem', marginBottom: '1rem', fontSize: '0.8125rem', color: '#92400e', fontWeight: 600 }}>
-              ⭐ Soal Spesial — poin kamu lebih besar di soal ini!
+            <div style={{ background: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: 6, padding: '0.3rem 0.75rem', marginBottom: '1rem', fontSize: '0.8125rem', color: '#92400e', fontWeight: 700 }}>
+              ⭐ Soal Spesial
             </div>
           )}
 
