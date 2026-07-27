@@ -55,6 +55,16 @@ export const updateFeatureNode = (id, payload, onSuccess) => async (dispatch) =>
   }
 }
 
+export const fetchFeatureNodeDetail = (id) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingDetail: true }))
+    const res = await getWithToken(`${Endpoints.admin.featureNodes}/${id}`)
+    return res.data.data
+  } finally {
+    dispatch(setLoading({ isFetchingDetail: false }))
+  }
+}
+
 export const deleteFeatureNode = (id, onSuccess) => async (dispatch) => {
   try {
     dispatch(setLoading({ isDeleting: true }))
@@ -96,12 +106,17 @@ export const deleteNodeRecord = (id, onSuccess) => async (dispatch) => {
   }
 }
 
-export const autoLinkFlashcardDecks = (onSuccess) => async (dispatch) => {
+export const uploadNodeVideo = (file, provider = 'idrive') => async (dispatch) => {
   try {
-    dispatch(setLoading({ isAutoLinking: true }))
-    const response = await postWithToken(Endpoints.admin.autoLinkFlashcardDecks, {})
-    onSuccess?.(response.data.data)
+    dispatch(setLoading({ isUploadingVideo: true }))
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('provider', provider)
+    formData.append('folder', 'feature-node-videos')
+    const res = await postWithToken(Endpoints.api.uploadFile, formData)
+    return res.data.data // { blobId, filename, provider }
   } finally {
-    dispatch(setLoading({ isAutoLinking: false }))
+    dispatch(setLoading({ isUploadingVideo: false }))
   }
 }
+

@@ -18,7 +18,7 @@ export default function MoveCardModal({ card, currentNode, onClose, onSuccess, o
   const loadNodes = async (layer, parentId = null) => {
     setLoadingNodes(true)
     try {
-      const params = { layer }
+      const params = { layer, visibility: 'general' }
       if (parentId) params.parentId = parentId
       const data = await dispatch(fetchFilteredNodes(params))
       setNodes(data)
