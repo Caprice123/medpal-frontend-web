@@ -32,12 +32,18 @@ import profile from "./profile/reducer"
 import featureNodes from "./featureNodes/reducer";
 import nodeCards from "./nodeCards/reducer";
 import nodeQuestions from "./nodeQuestions/reducer";
+import nodeAtlas from "./nodeAtlas/reducer";
+import nodeAnatomy from "./nodeAnatomy/reducer";
 import unlinkedCards from "./unlinkedCards/reducer";
 import unlinkedQuestions from "./unlinkedQuestions/reducer";
+import unlinkedAtlas from "./unlinkedAtlas/reducer";
+import unlinkedAnatomy from "./unlinkedAnatomy/reducer";
 import flashcardNodes from "./flashcardNodes/reducer";
 import diagnosticNodes from "./diagnosticNodes/reducer";
 import mcqNodes from "./mcqNodes/reducer";
 import review from "./review/reducer";
+import atlasQuiz from "./atlasQuiz/reducer";
+import featureV2 from "./featureV2/reducer";
 
 export const rootReducer = combineReducers({
     auth,
@@ -73,11 +79,17 @@ export const rootReducer = combineReducers({
     featureNodes,
     nodeCards,
     nodeQuestions,
+    nodeAtlas,
+    nodeAnatomy,
     unlinkedCards,
     unlinkedQuestions,
+    unlinkedAtlas,
+    unlinkedAnatomy,
     flashcardNodes,
     diagnosticNodes,
     mcqNodes,
+    atlasQuiz,
+    featureV2,
 })
 
 export const store = configureStore({
