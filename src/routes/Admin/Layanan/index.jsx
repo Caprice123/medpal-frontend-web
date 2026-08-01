@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import ChallengeAdminPage from '../Features/subpages/Challenge'
+import ChallengeAdminPage from './subpages/Challenge'
+import WebinarAdminPage from './subpages/Webinar'
+import EventAdminPage from './subpages/Event'
+import BannerAdminPage from './subpages/Banner'
 import Button from '@components/common/Button'
 import styled from 'styled-components'
 
@@ -83,6 +86,24 @@ const LAYANAN_LIST = [
     description: 'Kelola challenge, soal, dan badge. Pengguna dapat bersaing satu sama lain berdasarkan skor.',
     icon: '🏆',
   },
+  {
+    key: 'webinar',
+    name: 'Webinar',
+    description: 'Kelola webinar, jadwal, dan registrasi peserta.',
+    icon: '🎓',
+  },
+  {
+    key: 'event',
+    name: 'Event',
+    description: 'Kelola event, periode pendaftaran, dan registrasi peserta.',
+    icon: '🗓️',
+  },
+  {
+    key: 'banner',
+    name: 'Banner',
+    description: 'Kelola banner slideshow yang ditampilkan di halaman dashboard pengguna.',
+    icon: '🖼️',
+  },
 ]
 
 function Layanan() {
@@ -92,6 +113,9 @@ function Layanan() {
 
   if (selected) {
     if (selected.key === 'challenge') return <ChallengeAdminPage onBack={handleBack} />
+    if (selected.key === 'webinar') return <WebinarAdminPage onBack={handleBack} />
+    if (selected.key === 'event') return <EventAdminPage onBack={handleBack} />
+    if (selected.key === 'banner') return <BannerAdminPage onBack={handleBack} />
     return null
   }
 
