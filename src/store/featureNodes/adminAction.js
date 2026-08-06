@@ -167,7 +167,7 @@ export const swapNodeOrder = (nodeId, withNodeId, onSuccess) => async (dispatch)
   }
 }
 
-export const uploadNodeVideo = (file, provider = 'idrive') => async (dispatch) => {
+export const uploadNodeVideo = (file, provider = 'bunny_stream') => async (dispatch) => {
   try {
     dispatch(setLoading({ isUploadingVideo: true }))
     const formData = new FormData()
@@ -180,4 +180,3 @@ export const uploadNodeVideo = (file, provider = 'idrive') => async (dispatch) =
     dispatch(setLoading({ isUploadingVideo: false }))
   }
 }
-
