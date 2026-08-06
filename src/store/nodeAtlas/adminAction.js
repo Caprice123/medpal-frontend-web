@@ -2,22 +2,28 @@ import { actions } from './reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '@utils/requestUtils'
 
-const { setModels, setPagination, setLoading } = actions
+const { setModels, appendModels, setPagination, setLoading } = actions
 
-export const fetchNodeAtlasModels = (nodeId, overrides = {}) => async (dispatch, getState) => {
+export const fetchNodeAtlasModels = (nodeId, { append = false } = {}) => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ isFetchingModels: true }))
     const { pagination } = getState().nodeAtlas
-    const page = overrides.page ?? pagination.page
     const res = await getWithToken(`${Endpoints.admin.featureNodes}/${nodeId}/atlas-models`, {
-      page,
+      page: pagination.page,
       perPage: pagination.perPage,
     })
-    dispatch(setModels(res.data.data || []))
+    dispatch(append ? appendModels(res.data.data || []) : setModels(res.data.data || []))
     if (res.data.pagination) dispatch(setPagination(res.data.pagination))
   } finally {
     dispatch(setLoading({ isFetchingModels: false }))
   }
+}
+
+export const loadMoreNodeAtlasModels = (nodeId) => (dispatch, getState) => {
+  const { pagination } = getState().nodeAtlas
+  if (pagination.isLastPage) return
+  dispatch(setPagination({ page: pagination.page + 1 }))
+  dispatch(fetchNodeAtlasModels(nodeId, { append: true }))
 }
 
 export const unlinkNodeAtlasModel = (nodeId, modelId, onSuccess) => async (dispatch) => {
@@ -56,19 +62,15 @@ export const fetchAtlasModelsForNode = (nodeId) => async () => {
   return res.data.data || []
 }
 
-// atlas model content_relations — fire-and-return, no Redux state
-export const fetchAtlasModelRelations = (uniqueId) => async () => {
-  const res = await getWithToken(Endpoints.admin.contentRelationsV2, { sourceType: 'atlas_model', sourceUniqueId: uniqueId, targetType: 'atlas_model' })
-  return res.data.data || []
-}
-
-export const addAtlasModelRelation = (uniqueId, targetUniqueId, relationType = '') => async () => {
-  const res = await postWithToken(Endpoints.admin.contentRelationsV2, { sourceType: 'atlas_model', sourceUniqueId: uniqueId, targetType: 'atlas_model', targetUniqueId, relationType })
-  return res.data.data
-}
-
-export const removeAtlasModelRelation = (uniqueId, relationId) => async () => {
-  await deleteWithToken(`${Endpoints.admin.contentRelationsV2}/${relationId}`)
+// atlas model ordering within a node — swaps two siblings' order directly
+export const swapAtlasModelOrder = (nodeId, modelId, withModelId, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isSwappingOrder: true }))
+    await putWithToken(`${Endpoints.admin.featureNodes}/${nodeId}/atlas-models/${modelId}/swap-order`, { withModelId })
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isSwappingOrder: false }))
+  }
 }
 
 // atlas model → anatomy quiz explicit links — fire-and-return, no Redux state

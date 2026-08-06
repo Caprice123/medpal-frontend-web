@@ -2,22 +2,28 @@ import { actions } from './reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '@utils/requestUtils'
 
-const { setQuizzes, setPagination, setLoading } = actions
+const { setQuizzes, appendQuizzes, setPagination, setLoading } = actions
 
-export const fetchNodeAnatomyQuizzes = (nodeId, overrides = {}) => async (dispatch, getState) => {
+export const fetchNodeAnatomyQuizzes = (nodeId, { append = false } = {}) => async (dispatch, getState) => {
   try {
     dispatch(setLoading({ isFetchingQuizzes: true }))
     const { pagination } = getState().nodeAnatomy
-    const page = overrides.page ?? pagination.page
     const res = await getWithToken(`${Endpoints.admin.featureNodes}/${nodeId}/anatomy-quizzes`, {
-      page,
+      page: pagination.page,
       perPage: pagination.perPage,
     })
-    dispatch(setQuizzes(res.data.data || []))
+    dispatch(append ? appendQuizzes(res.data.data || []) : setQuizzes(res.data.data || []))
     if (res.data.pagination) dispatch(setPagination(res.data.pagination))
   } finally {
     dispatch(setLoading({ isFetchingQuizzes: false }))
   }
+}
+
+export const loadMoreNodeAnatomyQuizzes = (nodeId) => (dispatch, getState) => {
+  const { pagination } = getState().nodeAnatomy
+  if (pagination.isLastPage) return
+  dispatch(setPagination({ page: pagination.page + 1 }))
+  dispatch(fetchNodeAnatomyQuizzes(nodeId, { append: true }))
 }
 
 export const unlinkNodeAnatomyQuiz = (nodeId, quizId, onSuccess) => async (dispatch) => {
@@ -56,18 +62,15 @@ export const fetchQuizzesForNode = (nodeId) => async () => {
   return res.data.data || []
 }
 
-// anatomy quiz content_relations — fire-and-return, no Redux state
-export const fetchQuizRelations = (uniqueId) => async () => {
-  const res = await getWithToken(Endpoints.admin.contentRelationsV2, { sourceType: 'anatomy_quiz', sourceUniqueId: uniqueId, targetType: 'anatomy_quiz' })
-  return res.data.data || []
-}
-
-export const addQuizRelation = (uniqueId, targetUniqueId, relationType = '') => async () => {
-  await postWithToken(Endpoints.admin.contentRelationsV2, { sourceType: 'anatomy_quiz', sourceUniqueId: uniqueId, targetType: 'anatomy_quiz', targetUniqueId, relationType })
-}
-
-export const removeQuizRelation = (uniqueId, relationId) => async () => {
-  await deleteWithToken(`${Endpoints.admin.contentRelationsV2}/${relationId}`)
+// anatomy quiz ordering within a node — swaps two siblings' order directly
+export const swapAnatomyQuizOrder = (nodeId, quizId, withQuizId, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isSwappingOrder: true }))
+    await putWithToken(`${Endpoints.admin.featureNodes}/${nodeId}/anatomy-quizzes/${quizId}/swap-order`, { withQuizId })
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isSwappingOrder: false }))
+  }
 }
 
 // anatomy quiz → atlas model explicit links — fire-and-return, no Redux state

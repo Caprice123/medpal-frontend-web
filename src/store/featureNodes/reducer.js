@@ -14,6 +14,12 @@ const initialState = {
     classification: '',
     layer: '',
     parentId: '',
+    sortBy: '',
+  },
+  pagination: {
+    page: 1,
+    perPage: 50,
+    isLastPage: true,
   },
   loading: {
     isFetchingNodes: false,
@@ -28,6 +34,7 @@ const initialState = {
     isUploadingVideo: false,
     isFetchingDetail: false,
     isFetchingSubtopics: false,
+    isSwappingOrder: false,
   },
 }
 
@@ -36,6 +43,8 @@ const featureNodesSlice = createSlice({
   initialState,
   reducers: {
     setNodes(state, action) { state.nodes = action.payload },
+    appendNodes(state, action) { state.nodes = [...state.nodes, ...action.payload] },
+    setPagination(state, action) { state.pagination = { ...state.pagination, ...action.payload } },
     setNodeRecords(state, action) { state.nodeRecords = action.payload },
     setUserTopics(state, action) { state.userTopics = action.payload },
     setTopic(state, action) { state.topic = action.payload },

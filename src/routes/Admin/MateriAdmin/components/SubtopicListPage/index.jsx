@@ -1,22 +1,28 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchFeatureNodes, fetchFeatureNodeDetail, deleteFeatureNode, actions } from '@store/featureNodes'
+import { fetchFeatureNodesPaginated, loadMoreFeatureNodes, fetchFeatureNodeDetail, deleteFeatureNode, actions } from '@store/featureNodes'
 import Button from '@components/common/Button'
 import Table from '@components/common/Table'
 import TextInput from '@components/common/TextInput'
 import ConfirmationModal from '@components/common/ConfirmationModal'
 import SubtopicFormModal from '../SubtopicFormModal'
 import SubtopicAtlasModelModal from '../SubtopicAtlasModelModal'
-import { Header, HeaderLeft, Title, SearchRow, ClassificationBadge, IconPreview } from '../../MateriAdmin.styles'
+import ClassificationBadge from '@components/common/ClassificationBadge'
+import { Header, HeaderLeft, Title, SearchRow, IconPreview } from '../../MateriAdmin.styles'
 
 const CLASSIFICATION_LABELS = {
   sistem_blok: 'Sistem Blok',
   ilmu_lintas_sistem: 'Ilmu Lintas Sistem',
 }
 
+const CLASSIFICATION_COLORS = {
+  sistem_blok: { bg: '#d1fae5', color: '#065f46' },
+  ilmu_lintas_sistem: { bg: '#ede9fe', color: '#5b21b6' },
+}
+
 function SubtopicListPage({ topic, onBack }) {
   const dispatch = useDispatch()
-  const { nodes, loading } = useSelector(s => s.featureNodes)
+  const { nodes, pagination, loading } = useSelector(s => s.featureNodes)
   const [modal, setModal] = useState({ type: null, subtopic: null })
   const [atlasModalSubtopic, setAtlasModalSubtopic] = useState(null)
   const [search, setSearch] = useState('')
@@ -27,8 +33,11 @@ function SubtopicListPage({ topic, onBack }) {
     dispatch(actions.updateFilter({ key: 'parentId', value: String(topic.id) }))
     dispatch(actions.updateFilter({ key: 'visibility', value: 'general' }))
     dispatch(actions.updateFilter({ key: 'search', value: search.trim() }))
-    dispatch(fetchFeatureNodes())
+    dispatch(actions.setPagination({ page: 1 }))
+    dispatch(fetchFeatureNodesPaginated())
   }
+
+  const handleLoadMore = () => dispatch(loadMoreFeatureNodes())
 
   useEffect(() => {
     load()
@@ -56,7 +65,7 @@ function SubtopicListPage({ topic, onBack }) {
     },
     {
       header: 'Aksi',
-      width: '160px',
+      width: '260px',
       align: 'right',
       render: (sub) => (
         <div style={{ display: 'flex', gap: '0.375rem', justifyContent: 'flex-end' }}>
@@ -75,11 +84,7 @@ function SubtopicListPage({ topic, onBack }) {
           <Button variant="secondary" onClick={onBack}>← Topik</Button>
           {topic.icon && <IconPreview>{topic.icon}</IconPreview>}
           <Title>{topic.name}</Title>
-          {topic.classification && (
-            <ClassificationBadge $type={topic.classification}>
-              {CLASSIFICATION_LABELS[topic.classification] ?? topic.classification}
-            </ClassificationBadge>
-          )}
+          <ClassificationBadge value={topic.classification} labels={CLASSIFICATION_LABELS} colorMap={CLASSIFICATION_COLORS} />
         </HeaderLeft>
         <Button variant="primary" onClick={() => setModal({ type: 'create', subtopic: null })}>
           + Sub-topik
@@ -102,6 +107,14 @@ function SubtopicListPage({ topic, onBack }) {
         loading={loading.isFetchingNodes}
         emptyText="Belum ada sub-topik."
       />
+
+      {!pagination.isLastPage && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+          <Button variant="secondary" onClick={handleLoadMore} disabled={loading.isFetchingNodes}>
+            {loading.isFetchingNodes ? 'Memuat...' : 'Muat Lebih Banyak'}
+          </Button>
+        </div>
+      )}
 
       {(modal.type === 'create' || modal.type === 'edit') && (
         <SubtopicFormModal
