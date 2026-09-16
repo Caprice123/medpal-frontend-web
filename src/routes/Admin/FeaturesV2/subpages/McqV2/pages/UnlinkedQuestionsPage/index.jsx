@@ -9,7 +9,7 @@ import { useUnlinkedQuestionsPage } from './hooks/useUnlinkedQuestionsPage'
 import { Container, Header, HeaderLeft, PageTitle } from '../../McqV2.styles'
 import { ActionGroup } from '../QuestionsPage/QuestionsPage.styles'
 
-const OPTION_LABELS = ['A', 'B', 'C', 'D']
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E']
 
 export default function UnlinkedQuestionsPage({ onBack }) {
   const dispatch = useDispatch()

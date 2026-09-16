@@ -12,7 +12,7 @@ import { useQuestionsPage } from './hooks/useQuestionsPage'
 import { Container, Header, HeaderLeft, Breadcrumb, BreadcrumbLink, BreadcrumbSep, BreadcrumbCurrent, PageTitle } from '../../McqV2.styles'
 import { ActionGroup, CorrectAnswer } from './QuestionsPage.styles'
 
-const OPTION_LABELS = ['A', 'B', 'C', 'D']
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E']
 
 export default function QuestionsPage({ node, parentNode, onBack }) {
   const dispatch = useDispatch()
