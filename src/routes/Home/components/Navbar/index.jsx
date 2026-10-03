@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import Button from '@components/common/Button'
+import medPalIcon from '@/assets/icon.svg'
 import { useNavbar } from './hooks/useNavbar'
 import {
   NavbarBar,
   NavContent,
   Logo,
-  LogoMark,
-  LogoText,
+  LogoImage,
   NavLinks,
   NavLink,
   NavCtaGroup,
@@ -31,16 +31,7 @@ export default function Navbar({ scrollToSection }) {
       <NavbarBar $scrolled={scrolled}>
         <NavContent>
           <Logo to="/" aria-label="MedPal beranda">
-            <LogoMark width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
-              <circle cx="16" cy="15" r="12.5" fill="none" stroke="#3d8fc6" strokeWidth="3.2" />
-              <path d="M11 9v5a5 5 0 0 0 10 0V9" fill="none" stroke="#3d8fc6" strokeWidth="2.4" strokeLinecap="round" />
-              <circle cx="11" cy="8.5" r="1.6" fill="#3d8fc6" />
-              <circle cx="21" cy="8.5" r="1.6" fill="#3d8fc6" />
-              <path d="M16 19v5.5" stroke="#3d8fc6" strokeWidth="2.4" strokeLinecap="round" />
-              <rect x="21" y="22" width="11" height="11" rx="3" fill="#86c440" />
-              <path d="M26.5 24.5v6M23.5 27.5h6" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-            </LogoMark>
-            <LogoText><span className="med">Med</span><span className="pal">Pal</span></LogoText>
+            <LogoImage src={medPalIcon} alt="MedPal" />
           </Logo>
 
           <NavLinks>

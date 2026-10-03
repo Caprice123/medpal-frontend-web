@@ -1,3 +1,4 @@
+import { FaInstagram, FaWhatsapp } from 'react-icons/fa'
 import { SectionContent, SectionHeader, SectionBadge, SectionTitle, SectionSubtitle } from '@routes/Home/Home.styles'
 import { mascots } from '@routes/Home/utils/mascots'
 import {
@@ -17,8 +18,8 @@ const DEFAULT_SOCIAL_CARDS = [
 ]
 
 const ICON_STYLES = {
-  instagram: { bg: '#fde6ec', icon: '📷' },
-  whatsapp: { bg: '#e4f6de', icon: '💬' },
+  instagram: { bg: '#fde6ec', icon: <FaInstagram color="#e1306c" /> },
+  whatsapp: { bg: '#e4f6de', icon: <FaWhatsapp color="#25d366" /> },
   youtube: { bg: '#fde2e2', icon: '▶️' },
   tiktok: { bg: '#e4e7fb', icon: '🎵' },
   facebook: { bg: '#dceefb', icon: '👍' },

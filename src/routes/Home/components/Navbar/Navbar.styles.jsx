@@ -33,13 +33,10 @@ export const Logo = styled(Link)`
   letter-spacing: -0.02em;
 `;
 
-export const LogoMark = styled.svg`
+export const LogoImage = styled.img`
+  height: 36px;
+  width: auto;
   flex-shrink: 0;
-`;
-
-export const LogoText = styled.span`
-  .med { color: #3d8fc6; }
-  .pal { color: #6fae2c; }
 `;
 
 export const NavLinks = styled.div`
