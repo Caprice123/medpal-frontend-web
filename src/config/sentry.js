@@ -95,12 +95,18 @@ export const initSentry = () => {
   }
 };
 
-export const captureException = (error, context = {}) => {
+export const captureException = (error, context = {}, options = {}) => {
   if (isDev) {
-    console.error('[Sentry captureException]', error, context);
+    console.error('[Sentry captureException]', error, context, options);
     return;
   }
-  Sentry.captureException(error, { extra: context });
+  const { tags, level, fingerprint } = options;
+  Sentry.captureException(error, {
+    extra: context,
+    ...(tags ? { tags } : {}),
+    ...(level ? { level } : {}),
+    ...(fingerprint ? { fingerprint } : {}),
+  });
 };
 
 export const captureMessage = (message, level = 'info', context = {}) => {
