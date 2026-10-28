@@ -1,81 +1,92 @@
-import { useNavigate } from 'react-router-dom'
-import Button from '@components/common/Button'
-import medPalIcon from '@/assets/icon.svg'
+import { ContentWidth } from '../../Home.styles'
 import { useNavbar } from './hooks/useNavbar'
 import {
-  NavbarBar,
-  NavContent,
-  Logo,
-  LogoImage,
+  HeaderBar,
+  HeaderInner,
+  Brand,
   NavLinks,
   NavLink,
-  NavCtaGroup,
-  NavCtaSecondary,
-  NavCtaPrimary,
-  BurgerButton,
+  HeaderActions,
+  SignInLink,
+  TrialButton,
+  MenuToggle,
   MobileMenu,
-  MobileNavLink,
+  MobileActions,
+  MobileSignIn,
+  MobileTrial,
 } from './Navbar.styles'
 
-export default function Navbar({ scrollToSection }) {
-  const navigate = useNavigate()
-  const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu, scrolled } = useNavbar()
+// Matches the links drawn in the Figma header; an admin can override the list
+// through the `home_nav_items` constant.
+const DEFAULT_NAV_ITEMS = [
+  { label: 'Tentang', target: 'about' },
+  { label: 'Fitur', target: 'features' },
+  { label: 'Produk', target: 'pricing' },
+  { label: 'FAQ', target: 'faq' },
+]
 
-  const handleNavClick = (id) => {
-    scrollToSection(id)
-    closeMobileMenu()
-  }
+function Navbar({ scrollToSection, navItems }) {
+  const { isMenuOpen, toggleMenu, handleNavClick, goToSignIn } = useNavbar({ scrollToSection })
+  const items = navItems || DEFAULT_NAV_ITEMS
 
   return (
-    <>
-      <NavbarBar $scrolled={scrolled}>
-        <NavContent>
-          <Logo to="/" aria-label="MedPal beranda">
-            <LogoImage src={medPalIcon} alt="MedPal" />
-          </Logo>
+    <HeaderBar>
+      <ContentWidth>
+        <HeaderInner>
+          <Brand href="/" aria-label="MedPal">
+            <span>Med</span>
+            <span>Pal</span>
+          </Brand>
 
           <NavLinks>
-            <NavLink onClick={() => handleNavClick('features')}>Fitur</NavLink>
-            <NavLink onClick={() => handleNavClick('pricing')}>Harga</NavLink>
-            <NavLink onClick={() => handleNavClick('how-it-works')}>Demo</NavLink>
-            <NavLink onClick={() => handleNavClick('faq')}>FAQ</NavLink>
+            {items.map((item) => (
+              <NavLink key={item.target} onClick={() => handleNavClick(item.target)}>
+                {item.label}
+              </NavLink>
+            ))}
           </NavLinks>
 
-          <NavCtaGroup>
-            <NavCtaSecondary to="/sign-in">Masuk</NavCtaSecondary>
-            <NavCtaPrimary to="/sign-in">Mulai Gratis</NavCtaPrimary>
-          </NavCtaGroup>
+          <HeaderActions>
+            <SignInLink onClick={goToSignIn}>Masuk</SignInLink>
+            <TrialButton onClick={goToSignIn}>Coba Gratis</TrialButton>
+            <MenuToggle
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? 'Tutup menu' : 'Buka menu'}
+              aria-expanded={isMenuOpen}
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {isMenuOpen ? (
+                  <>
+                    <line x1="5" y1="5" x2="19" y2="19" />
+                    <line x1="19" y1="5" x2="5" y2="19" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </>
+                )}
+              </svg>
+            </MenuToggle>
+          </HeaderActions>
+        </HeaderInner>
+      </ContentWidth>
 
-          <BurgerButton onClick={toggleMobileMenu} aria-label="Buka menu">
-            {mobileMenuOpen ? '✕' : '☰'}
-          </BurgerButton>
-        </NavContent>
-      </NavbarBar>
+      <MobileMenu $open={isMenuOpen}>
+        {items.map((item) => (
+          <NavLink key={item.target} onClick={() => handleNavClick(item.target)}>
+            {item.label}
+          </NavLink>
+        ))}
 
-      <MobileMenu $isOpen={mobileMenuOpen}>
-        <MobileNavLink onClick={() => handleNavClick('features')}>Fitur</MobileNavLink>
-        <MobileNavLink onClick={() => handleNavClick('pricing')}>Harga</MobileNavLink>
-        <MobileNavLink onClick={() => handleNavClick('how-it-works')}>Demo</MobileNavLink>
-        <MobileNavLink onClick={() => handleNavClick('faq')}>FAQ</MobileNavLink>
-        <Button
-          variant="primary"
-          size="large"
-          fullWidth
-          onClick={() => navigate('/sign-in')}
-          style={{ marginTop: '2rem' }}
-        >
-          Mulai Gratis
-        </Button>
-        <Button
-          variant="outline"
-          size="large"
-          fullWidth
-          onClick={() => navigate('/sign-in')}
-          style={{ marginTop: '0.75rem' }}
-        >
-          Masuk
-        </Button>
+        <MobileActions>
+          <MobileSignIn onClick={goToSignIn}>Masuk</MobileSignIn>
+          <MobileTrial onClick={goToSignIn}>Coba Gratis</MobileTrial>
+        </MobileActions>
       </MobileMenu>
-    </>
+    </HeaderBar>
   )
 }
+
+export default Navbar
