@@ -62,9 +62,9 @@ export const colors = {
 }
 
 export const gradients = {
-  // Primary call-to-action buttons (hero "Coba Gratis Sekarang", CTA banner)
+  // Primary call-to-action buttons (hero "Mulai Sekarang", CTA banner)
   cta: `linear-gradient(103deg, ${colors.brandBlue} 0%, ${colors.brandBlueLight} 100%)`,
-  // Navbar "Coba Gratis" button — three stops, slightly different angle
+  // Navbar "Mulai Sekarang" button — three stops, slightly different angle
   navButton: `linear-gradient(109.6deg, ${colors.brandBlueLight} 0%, ${colors.brandBlueMid} 65%, ${colors.brandBlue} 100%)`,
   // Closing CTA banner — lighter and bluer than the button gradients
   ctaBanner: 'linear-gradient(101.8deg, #58b3e0 0%, #2689c5 100%)',
@@ -112,4 +112,26 @@ export const media = {
   tablet: `@media (max-width: ${breakpoints.tablet})`,
   mobile: `@media (max-width: ${breakpoints.mobile})`,
   small: `@media (max-width: ${breakpoints.small})`,
+
+  // Height, not width. The hero fits itself and the ticker into the first
+  // screen, so what it has to react to is how much vertical room there is.
+  //
+  // 960px is where the two spacings below meet: above it the hero art is
+  // already as wide as its column allows, so compressing the chrome buys it
+  // nothing and the switch is invisible. Below it the art is the thing paying
+  // for every pixel the chrome takes.
+  shortViewport: '@media (max-height: 960px)',
+}
+
+// The hero art gets whatever height the fixed bands above and below it leave
+// over, so its size is a subtraction — and every term of that subtraction is
+// set in a different stylesheet. The totals live here so they can be read
+// against each other instead of being rediscovered one file at a time.
+//
+// Anything that changes a term has to change the matching total here too.
+export const heroChrome = {
+  // 75 header + 89 ticker + 40 HeroGrid + 69 TrustCardSlot + 127 trust card
+  full: '400px',
+  // 75 header + 89 ticker + 20 HeroGrid + 40 TrustCardSlot + 96 trust card
+  compact: '320px',
 }

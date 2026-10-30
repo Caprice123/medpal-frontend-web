@@ -42,11 +42,16 @@ export const BackgroundLayer = styled.div`
   overflow: hidden;
 `
 
+// This plate is the whole backdrop, not just a right-hand panel: the blob and
+// the leaves live on its right, but its left half carries the soft waves that
+// are supposed to run underneath the headline. Squeezing it into the 84.5% the
+// Figma frame measures pushed those waves off the copy and left a seam where
+// the left plate ended, so it spans the hero instead.
 export const BackgroundRight = styled.img`
   position: absolute;
   top: 0;
   right: 0;
-  width: 84.5%;
+  width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: right top;
@@ -79,6 +84,12 @@ export const HeroGrid = styled.div`
   flex: 1;
   min-height: 0;
 
+  /* Half the top padding, handed to the art. See heroChrome in the theme —
+     this is one of the terms its compact total counts. */
+  ${media.shortViewport} {
+    padding-block: 20px 0;
+  }
+
   ${media.desktop} {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
@@ -100,6 +111,13 @@ export const HeroGrid = styled.div`
 export const TrustCardSlot = styled.div`
   position: relative;
   padding-block: 32px 37px;
+
+  /* Same trade as HeroGrid above: 69px of padding becomes 40px so the art can
+     have the other 29. The card keeps a smaller band of hero background
+     underneath it, but still ends clear of the ticker. */
+  ${media.shortViewport} {
+    padding-block: 18px 22px;
+  }
 
   ${media.tablet} {
     padding-block: 28px 28px;
