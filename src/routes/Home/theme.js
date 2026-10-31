@@ -130,8 +130,13 @@ export const media = {
 //
 // Anything that changes a term has to change the matching total here too.
 export const heroChrome = {
-  // 75 header + 89 ticker + 40 HeroGrid + 69 TrustCardSlot + 127 trust card
-  full: '400px',
-  // 75 header + 89 ticker + 20 HeroGrid + 40 TrustCardSlot + 96 trust card
-  compact: '320px',
+  // 75 header + 89 ticker + 40 HeroGrid.
+  //
+  // The trust card used to sit between the art and the ticker and took the
+  // larger share of this budget (69px of slot padding plus a 127px card). Its
+  // three figures now float on the art itself as stat cards, so the band is
+  // gone and the art inherits what it was spending.
+  full: '204px',
+  // 75 header + 89 ticker + 20 HeroGrid.
+  compact: '184px',
 }

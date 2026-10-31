@@ -3,8 +3,8 @@ import { heroChrome, media } from '../../../../theme'
 
 // The art is laid out against the same reference box Figma uses — the region of
 // the 1440x774 hero frame running x 620..1440, y 120..680. Keeping the children
-// positioned as percentages of that box preserves the overlap between the
-// mascot and the two floating UI cards at every width.
+// positioned as percentages of that box preserves where the stat cards sit
+// relative to the mascot at every width.
 /* The art is the tallest thing in the hero, so it is what has to give when the
    window is short enough that the hero and the ticker cannot both fit.
 
@@ -16,19 +16,11 @@ import { heroChrome, media } from '../../../../theme'
 
    Both terms of that cap vary, and not with the same thing — the column with
    the window's width, the leftover height with the chrome budget in play — so
-   each is a custom property and the width itself is written once. Spelling the
-   four combinations out as four `width:` declarations instead would leave them
-   to override each other in source order. */
+   each is a custom property and the width itself is written once. */
 
 // The floor under all of that: below roughly two thirds of the 820px Figma
-// draws, the mascot and its two UI cards stop reading as an illustration and
+// draws, the mascot and its stat cards stop reading as an illustration and
 // start reading as a thumbnail.
-//
-// It is a real trade, not a free win. Once this floor beats the height cap the
-// hero is taller than the screen can hold and the page scrolls — about 55px of
-// it on a 620px-tall window. HeroWrapper sizes on min-height precisely so that
-// it can grow instead of clipping, so the overflow is a short scroll rather
-// than a cut-off ticker.
 const MIN_WIDTH = '520px'
 
 export const ArtBox = styled.div`
@@ -52,8 +44,6 @@ export const ArtBox = styled.div`
      in, and the slack opens up between the copy and the art instead. */
   justify-self: end;
 
-  /* The trust card and the paddings around it compress here and hand the art
-     what they save. */
   ${media.shortViewport} {
     --hero-chrome: ${heroChrome.compact};
   }
@@ -72,54 +62,25 @@ export const ArtBox = styled.div`
     margin: 0 auto;
     justify-self: center;
   }
+
+  ${media.mobile} {
+    /* The stat cards hang off both edges of the mascot, so the art needs room
+       inside its column for them rather than bleeding them off-screen. */
+    max-width: 440px;
+  }
 `
 
+// The artwork is square (1750x1750), so height drives it and the leftover
+// width on either side is what the stat cards float over.
 export const Mascot = styled.img`
   position: absolute;
-  left: 12.44%;
-  top: 7.32%;
-  width: 59.87%;
-  height: 90%;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  height: 100%;
+  width: auto;
   max-width: 100%;
   object-fit: contain;
-`
-
-// Both cards are crops of one exported sprite, so each sits in an
-// overflow-hidden frame with the shared image offset inside it.
-const CardFrame = styled.div`
-  position: absolute;
-  overflow: hidden;
   pointer-events: none;
-`
-
-export const TopCardFrame = styled(CardFrame)`
-  left: 52.8%;
-  top: 2.14%;
-  width: 38.93%;
-  height: 50.18%;
-`
-
-export const TopCardImage = styled.img`
-  position: absolute;
-  top: 0;
-  left: -95.19%;
-  width: 195.19%;
-  height: 100%;
-  max-width: none;
-`
-
-export const BottomCardFrame = styled(CardFrame)`
-  left: 3.78%;
-  top: 46.96%;
-  width: 29.39%;
-  height: 21.27%;
-`
-
-export const BottomCardImage = styled.img`
-  position: absolute;
-  top: -95.31%;
-  left: -6.31%;
-  width: 214.03%;
-  height: 195.31%;
-  max-width: none;
+  user-select: none;
 `
