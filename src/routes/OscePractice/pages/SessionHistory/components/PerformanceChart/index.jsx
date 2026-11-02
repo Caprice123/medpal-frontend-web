@@ -31,7 +31,7 @@ const BANDS = [
 const bandColor = (value) => BANDS.find((band) => value >= band.min).color
 
 const toChartRow = (topic) => ({
-  key: topic.topicId,
+  key: topic.tagId,
   name: topic.title,
   // Kept unrounded for the bar height and the tooltip; the label above the bar rounds.
   score: Number(topic.averageScore) || 0,
