@@ -11,7 +11,6 @@
 // every value was read off the individual layers. Styled-components in this
 // route import from here instead of hardcoding colours.
 
-
 import { palette } from '../../theme/palette'
 
 export const colors = {
