@@ -1,5 +1,6 @@
+import { PiArrowRight } from 'react-icons/pi'
 import {
-  LastSessionSection, SectionLabel, LastSessionCard, LastSessionIcon,
+  LastSessionSection, SectionLabel, LastSessionCard,
   LastSessionText, LastSessionName, LastSessionMeta, LastSessionArrow,
 } from './LastSession.styles'
 
@@ -10,12 +11,11 @@ export default function LastSession({ topic, onClick }) {
     <LastSessionSection>
       <SectionLabel>Sesi Terakhir</SectionLabel>
       <LastSessionCard onClick={onClick}>
-        <LastSessionIcon>{topic.icon || '🕐'}</LastSessionIcon>
         <LastSessionText>
           <LastSessionName>{topic.name}</LastSessionName>
           <LastSessionMeta>Overview topik</LastSessionMeta>
         </LastSessionText>
-        <LastSessionArrow>→</LastSessionArrow>
+        <LastSessionArrow><PiArrowRight size={18} /></LastSessionArrow>
       </LastSessionCard>
     </LastSessionSection>
   )

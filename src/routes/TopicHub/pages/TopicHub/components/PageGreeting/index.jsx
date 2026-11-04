@@ -1,12 +1,11 @@
-import { PageHeader, Greeting, GreetingSubtitle } from './PageGreeting.styles'
+import { getGreeting } from '@utils/greeting'
+import { PageHeader, Greeting, GreetingName, GreetingSubtitle } from './PageGreeting.styles'
 
 export default function PageGreeting({ name }) {
   return (
     <PageHeader>
-      <Greeting>Hi, {name}.</Greeting>
-      <GreetingSubtitle>
-        Pilih topik dari Sistem Blok atau Ilmu Lintas Sistem untuk mulai belajar.
-      </GreetingSubtitle>
+      <Greeting>{getGreeting()}, <GreetingName>{name}</GreetingName>.</Greeting>
+      <GreetingSubtitle>Pilih topik untuk mulai belajar.</GreetingSubtitle>
     </PageHeader>
   )
 }

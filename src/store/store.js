@@ -25,7 +25,9 @@ import skripsi from "./skripsi/reducer";
 import oscePractice from "./oscePractice";
 import atlas from "./atlas";
 import webinar from "./webinar"
+import webinarV2 from "./webinar/v2"
 import event from "./event";
+import eventV2 from "./event/v2";
 import featureSubscriptions from "./featureSubscriptions/reducer";
 import banner from "./banner";
 import challenge from "./challenge";
@@ -73,7 +75,9 @@ export const rootReducer = combineReducers({
     oscePractice,
     atlas,
     webinar,
+    webinarV2,
     event,
+    eventV2,
     featureSubscriptions,
     banner,
     challenge,

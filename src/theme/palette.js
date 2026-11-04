@@ -29,7 +29,20 @@ export const palette = {
 
   // -------------------------------------------------------------- surface
   surface: '#ffffff',               // cards, panels, modals
-  surfacePage: '#f6fafb',           // page background
+  surfacePage: '#f6fafb',           // landing page background
+  // The app sits on the same near-white as the landing page rather than on a
+  // stronger blue: every card and panel is `surface` white, and a tinted page
+  // behind them is what gives them an edge without a border or shadow. Pure
+  // white here would flatten that separation; a saturated blue is too loud to
+  // read against all day.
+  surfaceApp: '#f6fafb',
+
+  // The summary-note reader deliberately sits on a warm paper tone instead of the
+  // cool near-white used by the rest of the app: long-form reading is easier on a
+  // slightly yellow ground, and it marks the reader as its own surface, distinct
+  // from the app chrome around it. Only the reader uses these two.
+  surfaceReader: '#fdfcf8',        // the reading canvas itself
+  surfaceReaderShell: '#f5f3ee',   // the shell/gutter the canvas floats on
 
   // ------------------------------------------------------- neutral ramp
   // A single cool grey ramp. The app previously mixed Tailwind's `gray` and
@@ -45,6 +58,14 @@ export const palette = {
   gray800: '#15242e',
   gray900: '#0b1419',
 
+  // The boundary colour for interactive surfaces (cards, inputs, pickers).
+  // The ramp above cannot draw one: a card is #ffffff on a #f6fafb page, which
+  // is 1.05:1, and gray-200 as its border is 1.19:1 — WCAG 1.4.11 asks 3:1 for
+  // a boundary that identifies a component. Measured, this value is 3.36:1
+  // against the card and 3.19:1 against the page, so it clears on both sides;
+  // gray-400 (2.92:1) and gray-300 (1.26:1) clear on neither.
+  borderStrong: '#828e96',
+
   // --------------------------------------------------------------- status
   danger: '#ef4444',
   dangerDark: '#dc2626',
@@ -55,7 +76,11 @@ export const palette = {
   warning: '#f59e0b',
   warningLight: '#fbbf24',
   warningDark: '#d97706',
-  warningText: '#9d7438',
+  // Text on an amber ground. The previous value (#9d7438) failed WCAG AA for
+  // small text on every ground it is actually used on — 3.78:1 on warningTint,
+  // 3.19:1 on warningTintStrong, and 4.21:1 even on plain white. Measured, this
+  // value clears all three at 5.62:1, 4.75:1 and 6.26:1.
+  warningText: '#7d5a1f',
   warningTint: '#fef3c7',
   warningTintStrong: '#ffdba6',
 }

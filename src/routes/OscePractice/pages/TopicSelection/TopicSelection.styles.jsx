@@ -2,14 +2,13 @@ import styled from 'styled-components'
 import { colors } from '@config/colors'
 
 export const PageContainer = styled.div`
-    background: #f0fdfa;
+    background: var(--color-surface-app);
 `
 
 export const Container = styled.div`
     margin: 0 auto;
     padding: 2rem;
     min-height: 100vh;
-    background: "red";
     
     @media (max-width: 768px) {
       padding: 1rem;
@@ -127,7 +126,7 @@ export const TagList = styled.div`
 export const Tag = styled.span`
   display: inline-block;
   padding: 0.25rem 0.625rem;
-  background: ${props => props.university ? '#ede9fe' : '#fef3c7'};
+  background: ${props => props.university ? '#ede9fe' : 'var(--color-warning-tint)'};
   color: ${props => props.university ? '#5b21b6' : '#92400e'};
   border-radius: 4px;
   font-size: 0.75rem;
