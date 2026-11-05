@@ -1,0 +1,268 @@
+import { memo, useRef, useEffect, useCallback } from 'react'
+import {
+  MessageList,
+  Message,
+  UserMessage,
+  AIMessage,
+  MessageAuthor,
+  MessageText,
+  EmptyState,
+  TypingIndicator,
+  TypingDot,
+} from '../../../../SessionPractice.styles'
+import { useSelector, useDispatch } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import CustomMarkdownRenderer from '@components/common/CustomMarkdownRenderer/CustomMarkdownRenderer'
+import { loadMoreMessages, loadMorePhysicalExamMessages } from '@store/oscePractice/userAction'
+
+const MessageListComponent = ({ messages: messagesProp, mode = 'conversation' }) => {
+  const { sessionId } = useParams()
+  const dispatch = useDispatch()
+
+  // Use props if provided, otherwise use Redux state
+  const isPhysicalExam = mode === 'physical_exam'
+
+  const sessionMessages = messagesProp || useSelector(state =>
+    isPhysicalExam ? state.oscePractice.physicalExamMessages : state.oscePractice.sessionMessages
+  )
+
+  const isLoadingMessage = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.loading.isLoadingPhysicalExamMessages
+      : state.oscePractice.loading.isLoadingSessionMessages
+  )
+
+  const isLoadingMoreMessages = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.loading.isLoadingMorePhysicalExamMessages
+      : state.oscePractice.loading.isLoadingMoreMessages
+  )
+
+  const isSendingMessage = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.loading.isSendingPhysicalExamMessage
+      : state.oscePractice.loading.isSendingMessage
+  )
+
+  const isAssistantTyping = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.loading.isPhysicalExamAssistantTyping
+      : state.oscePractice.loading.isAssistantTyping
+  )
+
+  const messagesPagination = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.physicalExamMessagesPagination
+      : state.oscePractice.messagesPagination
+  )
+  const messagesEndRef = useRef(null)
+  const messageListRef = useRef(null)
+  const prevMessagesLengthRef = useRef(0)
+  const wasLoadingRef = useRef(false)
+  const isLoadingMoreRef = useRef(false)
+  const hasMountedRef = useRef(false)
+
+  // Show typing indicator throughout the entire sending + streaming process (same as chatbot)
+  const showTypingIndicator = isSendingMessage || isAssistantTyping
+
+  // Instant scroll to bottom on initial mount (tab switch)
+  useEffect(() => {
+    if (!hasMountedRef.current && sessionMessages.length > 0) {
+      // First mount - scroll instantly to bottom
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
+      prevMessagesLengthRef.current = sessionMessages.length
+      hasMountedRef.current = true
+    }
+  }, [sessionMessages.length])
+
+  // Instant scroll to bottom when loading completes
+  useEffect(() => {
+    // When loading finishes (was loading, now not loading)
+    if (wasLoadingRef.current && !isLoadingMessage && sessionMessages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
+      prevMessagesLengthRef.current = sessionMessages.length
+    }
+
+    // Track loading state
+    wasLoadingRef.current = isLoadingMessage
+  }, [isLoadingMessage, sessionMessages])
+
+  // Smooth scroll only when new messages are added (not during streaming/typing)
+  useEffect(() => {
+    // Don't scroll if currently loading or just mounted
+    if (isLoadingMessage || !hasMountedRef.current) return
+
+    // Only scroll when message count increases (new message added)
+    const shouldScroll = sessionMessages.length > prevMessagesLengthRef.current
+
+    if (shouldScroll) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+
+    // Update ref
+    prevMessagesLengthRef.current = sessionMessages.length
+  }, [sessionMessages.length, isLoadingMessage])
+
+  // Infinite scroll: load more messages when scrolling near top
+  const handleScroll = useCallback(async () => {
+    const container = messageListRef.current
+    if (!container) return
+
+    // Check if scrolled near top (within 200px)
+    const threshold = 200
+    const isNearTop = container.scrollTop < threshold
+
+    // Load more if:
+    // 1. Near top
+    // 2. Has more messages
+    // 3. Not currently loading
+    // 4. Not loading initial messages
+    if (
+      isNearTop &&
+      messagesPagination.hasMore &&
+      !isLoadingMoreRef.current &&
+      !isLoadingMessage &&
+      messagesPagination.nextCursor
+    ) {
+      isLoadingMoreRef.current = true
+
+      // Save current scroll position
+      const previousScrollHeight = container.scrollHeight
+      const previousScrollTop = container.scrollTop
+
+      try {
+        const loadMoreAction = isPhysicalExam ? loadMorePhysicalExamMessages : loadMoreMessages
+        const loadedCount = await dispatch(loadMoreAction(sessionId, messagesPagination.nextCursor))
+
+        // Restore scroll position after loading (so user stays in same place)
+        if (loadedCount > 0) {
+          setTimeout(() => {
+            const newScrollHeight = container.scrollHeight
+            const heightDifference = newScrollHeight - previousScrollHeight
+            container.scrollTop = previousScrollTop + heightDifference
+          }, 50)
+        }
+      } catch (error) {
+        console.error('Error loading more messages:', error)
+      } finally {
+        isLoadingMoreRef.current = false
+      }
+    }
+  }, [sessionId, dispatch, messagesPagination, isLoadingMessage])
+
+  // Add scroll listener
+  useEffect(() => {
+    const container = messageListRef.current
+    if (!container) return
+
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
+
+  return (
+    <MessageList ref={messageListRef}>
+      {isLoadingMessage ? (
+        <EmptyState>
+          Memuat riwayat percakapan...
+        </EmptyState>
+      ) : sessionMessages.length === 0 ? (
+        <EmptyState>
+          {isPhysicalExam
+            ? 'Mulai pemeriksaan fisik dengan mengetik pemeriksaan yang ingin dilakukan'
+            : 'Mulai percakapan dengan mengetik pesan atau merekam audio'}
+        </EmptyState>
+      ) : (
+        <>
+          {/* Loading indicator at top when loading more messages */}
+          {isLoadingMoreMessages && (
+            <div style={{
+              textAlign: 'center',
+              padding: '1rem',
+              color: 'var(--color-gray-400)',
+              fontSize: '0.875rem'
+            }}>
+              Memuat pesan lama...
+            </div>
+          )}
+
+          {sessionMessages.map(message => (
+            <MessageComponent key={message.id} message={message} mode={mode} />
+          ))}
+
+          {showTypingIndicator && (
+            <Message isUser={false}>
+              <AIMessage>
+                <TypingIndicator>
+                  <TypingDot delay="0s" />
+                  <TypingDot delay="0.2s" />
+                  <TypingDot delay="0.4s" />
+                </TypingIndicator>
+              </AIMessage>
+            </Message>
+          )}
+
+          {/* Scroll anchor - inside MessageList for proper scrolling */}
+          <div ref={messagesEndRef} />
+        </>
+      )}
+    </MessageList>
+  )
+}
+
+const MessageComponent = memo(function MessageComponent({ message, mode = 'conversation' }) {
+  const isPhysicalExam = mode === 'physical_exam'
+
+  // Get streaming state from Redux instead of checking message ID
+  const isAssistantTyping = useSelector(state =>
+    isPhysicalExam
+      ? state.oscePractice.loading.isPhysicalExamAssistantTyping
+      : state.oscePractice.loading.isAssistantTyping
+  )
+
+  const sessionMessages = useSelector(state =>
+    isPhysicalExam ? state.oscePractice.physicalExamMessages : state.oscePractice.sessionMessages
+  )
+
+  // Check if this is the last AI message AND assistant is typing
+  const isLastAIMessage = !message.isUser &&
+    sessionMessages.length > 0 &&
+    sessionMessages[sessionMessages.length - 1].id === message.id
+
+  const isStreaming = isLastAIMessage && isAssistantTyping
+
+  const aiAuthorName = isPhysicalExam ? 'Temuan Fisik' : 'AI Pasien'
+
+  return (
+    <Message isUser={message.isUser}>
+      {message.isUser ? (
+        <UserMessage>
+          <MessageAuthor>Anda</MessageAuthor>
+          <MessageText>
+            <CustomMarkdownRenderer
+              item={message.content || message.text || ''}
+              isStreaming={false}
+            />
+          </MessageText>
+        </UserMessage>
+      ) : (
+        <AIMessage>
+          <MessageAuthor>{aiAuthorName}</MessageAuthor>
+          <MessageText>
+            <CustomMarkdownRenderer
+              item={message.content || message.text || ''}
+              isStreaming={isStreaming}
+            />
+          </MessageText>
+        </AIMessage>
+      )}
+    </Message>
+  )
+}, (prev, next) => {
+  // Only rerender if content or id changes
+  return prev.message.content === next.message.content &&
+         prev.message.id === next.message.id
+})
+
+export default MessageListComponent

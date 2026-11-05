@@ -23,6 +23,7 @@ import home from "./home";
 import chatbot from "./chatbot/reducer";
 import skripsi from "./skripsi/reducer";
 import oscePractice from "./oscePractice";
+import oscePracticeV2 from "./oscePractice/v2";
 import atlas from "./atlas";
 import webinar from "./webinar"
 import webinarV2 from "./webinar/v2"
@@ -35,6 +36,7 @@ import profile from "./profile/reducer"
 import featureNodes from "./featureNodes/reducer";
 import nodeCards from "./nodeCards/reducer";
 import nodeQuestions from "./nodeQuestions/reducer";
+import diagnosticCases from "./diagnosticCases/reducer";
 import nodeAtlas from "./nodeAtlas/reducer";
 import nodeAnatomy from "./nodeAnatomy/reducer";
 import unlinkedCards from "./unlinkedCards/reducer";
@@ -73,6 +75,7 @@ export const rootReducer = combineReducers({
     chatbot,
     skripsi,
     oscePractice,
+    oscePracticeV2,
     atlas,
     webinar,
     webinarV2,
@@ -85,6 +88,7 @@ export const rootReducer = combineReducers({
     featureNodes,
     nodeCards,
     nodeQuestions,
+    diagnosticCases,
     nodeAtlas,
     nodeAnatomy,
     unlinkedCards,
