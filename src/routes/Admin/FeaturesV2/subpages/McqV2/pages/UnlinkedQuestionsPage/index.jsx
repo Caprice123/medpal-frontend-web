@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import Button from '@components/common/Button'
 import Table from '@components/common/Table'
+import LoadMore from '@components/common/LoadMore'
 import TextInput from '@components/common/TextInput'
 import MoveCardModal from '@routes/Admin/FeaturesV2/subpages/FlashcardV2/components/MoveCardModal'
 import QuestionFormModal from '../../components/QuestionFormModal'
@@ -82,21 +83,17 @@ export default function UnlinkedQuestionsPage({ onBack }) {
       <Table
         columns={columns}
         data={questions}
-        loading={loading.isFetchingQuestions}
+        loading={loading.isFetchingQuestions && questions.length === 0}
         emptyText="Tidak ada pertanyaan tanpa sub-topik"
         emptySubtext="Semua pertanyaan sudah terhubung ke sub-topik."
       />
 
-      {!pagination.isLastPage && (
-        <Button
-          variant="secondary"
-          onClick={handleLoadMore}
-          disabled={loading.isFetchingQuestions}
-          style={{ margin: '0 auto' }}
-        >
-          {loading.isFetchingQuestions ? 'Memuat...' : 'Muat Lebih Banyak'}
-        </Button>
-      )}
+      <LoadMore
+        isLastPage={pagination.isLastPage}
+        isLoading={loading.isFetchingQuestions}
+        itemCount={questions.length}
+        onClick={handleLoadMore}
+      />
 
       {editModal.open && (
         <QuestionFormModal

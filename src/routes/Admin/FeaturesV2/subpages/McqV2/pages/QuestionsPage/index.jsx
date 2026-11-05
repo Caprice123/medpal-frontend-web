@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import Button from '@components/common/Button'
 import Table from '@components/common/Table'
+import LoadMore from '@components/common/LoadMore'
 import Modal from '@components/common/Modal'
 import Breadcrumb from '@components/common/Breadcrumb'
 import MoveCardModal from '@routes/Admin/FeaturesV2/subpages/FlashcardV2/components/MoveCardModal'
@@ -83,21 +84,17 @@ export default function QuestionsPage({ node, parentNode, onBack }) {
       <Table
         columns={columns}
         data={questions}
-        loading={loading.isFetchingQuestions}
+        loading={loading.isFetchingQuestions && questions.length === 0}
         emptyText="Belum ada pertanyaan"
         emptySubtext='Klik "+ Tambah Pertanyaan" untuk memulai.'
       />
 
-      {!pagination.isLastPage && (
-        <Button
-          variant="secondary"
-          onClick={handleLoadMore}
-          disabled={loading.isFetchingQuestions}
-          style={{ margin: '0 auto' }}
-        >
-          {loading.isFetchingQuestions ? 'Memuat...' : 'Muat Lebih Banyak'}
-        </Button>
-      )}
+      <LoadMore
+        isLastPage={pagination.isLastPage}
+        isLoading={loading.isFetchingQuestions}
+        itemCount={questions.length}
+        onClick={handleLoadMore}
+      />
 
       {modal.open && (
         <QuestionFormModal
