@@ -9,10 +9,9 @@ import QuestionFormModal from '../../components/QuestionFormModal'
 import { moveNodeQuestion } from '@store/nodeQuestions'
 import { downloadQuestionsTemplate } from '@store/nodeQuestions/adminAction'
 import { useQuestionsPage } from './hooks/useQuestionsPage'
+import { formatCorrectAnswer } from '../../utils/formatCorrectAnswer'
 import { Container, Header, HeaderLeft, PageTitle } from '../../McqV2.styles'
 import { ActionGroup, CorrectAnswer } from './QuestionsPage.styles'
-
-const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
 export default function QuestionsPage({ node, parentNode, onBack }) {
   const dispatch = useDispatch()
@@ -32,9 +31,7 @@ export default function QuestionsPage({ node, parentNode, onBack }) {
     {
       header: 'Jawaban Benar',
       render: (q) => (
-        <CorrectAnswer>
-          {OPTION_LABELS[q.correctIndex] != null ? `${OPTION_LABELS[q.correctIndex]}: ${q.options?.[q.correctIndex] ?? ''}` : '—'}
-        </CorrectAnswer>
+        <CorrectAnswer>{formatCorrectAnswer(q)}</CorrectAnswer>
       ),
     },
     {

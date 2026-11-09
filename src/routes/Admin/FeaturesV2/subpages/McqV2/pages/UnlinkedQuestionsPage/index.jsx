@@ -7,10 +7,9 @@ import MoveCardModal from '@routes/Admin/FeaturesV2/subpages/FlashcardV2/compone
 import QuestionFormModal from '../../components/QuestionFormModal'
 import { updateUnlinkedQuestion, assignQuestionToNode } from '@store/unlinkedQuestions'
 import { useUnlinkedQuestionsPage } from './hooks/useUnlinkedQuestionsPage'
+import { formatCorrectAnswer } from '../../utils/formatCorrectAnswer'
 import { Container, Header, HeaderLeft, PageTitle } from '../../McqV2.styles'
-import { ActionGroup } from '../QuestionsPage/QuestionsPage.styles'
-
-const OPTION_LABELS = ['A', 'B', 'C', 'D']
+import { ActionGroup, CorrectAnswer } from '../QuestionsPage/QuestionsPage.styles'
 
 export default function UnlinkedQuestionsPage({ onBack }) {
   const dispatch = useDispatch()
@@ -38,9 +37,7 @@ export default function UnlinkedQuestionsPage({ onBack }) {
     {
       header: 'Jawaban Benar',
       render: (q) => (
-        <span style={{ fontWeight: 600, color: '#059669' }}>
-          {OPTION_LABELS[q.correctIndex] != null ? `${OPTION_LABELS[q.correctIndex]}: ${q.options?.[q.correctIndex] ?? ''}` : '—'}
-        </span>
+        <CorrectAnswer>{formatCorrectAnswer(q)}</CorrectAnswer>
       ),
     },
     {
