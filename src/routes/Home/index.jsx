@@ -1,106 +1,65 @@
-import { useState, useEffect } from 'react'
-import AOS from 'aos'
-import 'aos/dist/aos.css'
-import { GlobalStyles, LandingContainer } from './Home.styles'
-import { ParallaxProvider } from 'react-scroll-parallax'
-import { useAppDispatch } from '@store/store'
-import { useSelector } from 'react-redux'
-import { fetchFeatures } from '@store/feature/userAction'
-import { fetchPricingPlans } from '@store/pricing/action'
-import { fetchPublicConstants } from '@store/constant/userAction'
+// Grid primitives only — NOT the full Bootstrap stylesheet. Vite injects any
+// imported CSS globally, and Bootstrap's reset/typography would restyle the
+// admin panel and every other page. bootstrap-grid ships just the container,
+// row, column and breakpoint rules, which nothing else in the app uses.
+import 'bootstrap/dist/css/bootstrap-grid.min.css'
 
-// Import components
+import { GlobalStyles, LandingContainer } from './Home.styles'
+import { useHome } from './hooks/useHome'
+
 import Navbar from './components/Navbar'
 import HeroSection from './components/HeroSection'
-import FeaturesSection from './components/FeaturesSection'
-import HowItWorksSection from './components/HowItWorksSection'
+import WhyMedPalSection from './components/WhyMedPalSection'
+import FeatureDetailSection from './components/FeatureDetailSection'
 import PricingSection from './components/PricingSection'
-import CTASection from './components/CTASection'
+import EventSection from './components/EventSection'
+import ChallengeSection from './components/ChallengeSection'
+import TestimonialSection from './components/TestimonialSection'
 import FAQSection from './components/FAQSection'
+import CTASection from './components/CTASection'
 import FooterSection from './components/FooterSection'
 
-const HOME_CONSTANT_KEYS = [
-  'home_hero_badge',
-  'home_hero_title',
-  'home_hero_subtitle',
-  'home_hero_slides',
-  'home_how_it_works_youtube_url',
-  'home_faq_items',
-  'home_social_items',
-]
-
-function parseJson(value) {
-  if (!value) return null
-  try {
-    const parsed = JSON.parse(value)
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null
-  } catch {
-    return null
-  }
-}
-
 function Home() {
-  const dispatch = useAppDispatch()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const constants = useSelector(state => state.constant.constants)
-
-  useEffect(() => {
-    AOS.init({
-      duration: 500,
-      easing: 'ease-out-cubic',
-      once: true,
-      offset: 100,
-      delay: 0,
-    })
-
-    dispatch(fetchFeatures())
-    dispatch(fetchPricingPlans())
-    dispatch(fetchPublicConstants(HOME_CONSTANT_KEYS))
-  }, [dispatch])
-
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-      setMobileMenuOpen(false)
-    }
-  }
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen)
-  }
+  const {
+    scrollToSection,
+    heroTitle,
+    heroSubtitle,
+    faqItems,
+    testimonialItems,
+    socialItems,
+  } = useHome()
 
   return (
-    <ParallaxProvider>
+    <>
       <GlobalStyles />
       <LandingContainer>
-        <Navbar
-          scrollToSection={scrollToSection}
-          toggleMobileMenu={toggleMobileMenu}
-          mobileMenuOpen={mobileMenuOpen}
-        />
+        <Navbar scrollToSection={scrollToSection} />
 
         <HeroSection
+          title={heroTitle}
+          subtitle={heroSubtitle}
           scrollToSection={scrollToSection}
-          badge={constants.home_hero_badge}
-          title={constants.home_hero_title}
-          subtitle={constants.home_hero_subtitle}
-          slides={parseJson(constants.home_hero_slides)}
         />
 
-        <FeaturesSection />
+        <WhyMedPalSection />
 
-        <HowItWorksSection youtubeUrl={constants.home_how_it_works_youtube_url} />
+        <FeatureDetailSection />
 
         <PricingSection />
 
-        <FAQSection faqItems={parseJson(constants.home_faq_items)} />
+        <EventSection />
+
+        <ChallengeSection />
+
+        <TestimonialSection testimonialItems={testimonialItems} />
+
+        <FAQSection faqItems={faqItems} />
 
         <CTASection />
 
-        <FooterSection socialItems={parseJson(constants.home_social_items)} />
+        <FooterSection socialItems={socialItems} />
       </LandingContainer>
-    </ParallaxProvider>
+    </>
   )
 }
 

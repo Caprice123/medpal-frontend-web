@@ -2,17 +2,17 @@ import styled from 'styled-components'
 import { colors } from '@config/colors'
 
 export const Container = styled.div`
-background: #f0fdfa;
+background: var(--color-surface-app);
 `
 
 export const Wrapper = styled.div`
-    min-height: 100vh;
-    max-width: 1200px;
+    min-height: calc(100vh - 44px);
     margin: 0 auto;
     padding: 2rem;
-
+    
     @media (max-width: 768px) {
-      padding: 1rem;
+        padding: 1rem;
+        min-height: 100vh;
     }
 `
 

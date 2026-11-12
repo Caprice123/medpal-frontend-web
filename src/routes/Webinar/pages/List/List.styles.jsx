@@ -3,12 +3,11 @@ import styled from 'styled-components'
 // ─── Page layout ───────────────────────────────────────────────────────────
 
 export const PageWrapper = styled.div`
-  min-height: calc(100vh - 90px);
+  min-height: 100vh;
   background: #f0fdfa;
 `
 
 export const Container = styled.div`
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
 

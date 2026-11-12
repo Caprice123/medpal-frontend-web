@@ -12,36 +12,62 @@ import session from "./session/reducer";
 import feature from "./feature/reducer";
 import pricing from "./pricing/reducer";
 import summaryNotes from "./summaryNotes";
+import summaryNotesV2 from "./summaryNotes/v2";
+import favorites from "./favorites/reducer";
 import user from "./user";
 import diagnostic from "./diagnostic";
 import anatomy from "./anatomy";
 import mcq from "./mcq";
 import constant from "./constant";
+import home from "./home";
 import chatbot from "./chatbot/reducer";
 import skripsi from "./skripsi/reducer";
 import oscePractice from "./oscePractice";
+import oscePracticeV2 from "./oscePractice/v2";
 import atlas from "./atlas";
 import webinar from "./webinar"
+import webinarV2 from "./webinar/v2"
 import event from "./event";
+import eventV2 from "./event/v2";
 import featureSubscriptions from "./featureSubscriptions/reducer";
 import banner from "./banner";
 import challenge from "./challenge";
 import profile from "./profile/reducer";
+import featureNodes from "./featureNodes/reducer";
+import nodeCards from "./nodeCards/reducer";
+import nodeQuestions from "./nodeQuestions/reducer";
+import diagnosticCases from "./diagnosticCases/reducer";
+import nodeAtlas from "./nodeAtlas/reducer";
+import nodeAnatomy from "./nodeAnatomy/reducer";
+import unlinkedCards from "./unlinkedCards/reducer";
+import unlinkedQuestions from "./unlinkedQuestions/reducer";
+import unlinkedAtlas from "./unlinkedAtlas/reducer";
+import unlinkedAnatomy from "./unlinkedAnatomy/reducer";
+import flashcardNodes from "./flashcardNodes/reducer";
+import diagnosticNodes from "./diagnosticNodes/reducer";
+import mcqNodes from "./mcqNodes/reducer";
+import review from "./review/reducer";
+import atlasQuiz from "./atlasQuiz/reducer";
+import featureV2 from "./featureV2/reducer";
 
 export const rootReducer = combineReducers({
     auth,
     calculator,
     constant,
+    home,
     common,
     credit,
     exercise,
     flashcard,
+    review,
     tags,
     tagGroups,
     session,
     feature,
     pricing,
     summaryNotes,
+    summaryNotesV2,
+    favorites,
     user,
     diagnostic,
     anatomy,
@@ -49,13 +75,31 @@ export const rootReducer = combineReducers({
     chatbot,
     skripsi,
     oscePractice,
+    oscePracticeV2,
     atlas,
     webinar,
+    webinarV2,
     event,
+    eventV2,
     featureSubscriptions,
     banner,
     challenge,
     profile,
+    featureNodes,
+    nodeCards,
+    nodeQuestions,
+    diagnosticCases,
+    nodeAtlas,
+    nodeAnatomy,
+    unlinkedCards,
+    unlinkedQuestions,
+    unlinkedAtlas,
+    unlinkedAnatomy,
+    flashcardNodes,
+    diagnosticNodes,
+    mcqNodes,
+    atlasQuiz,
+    featureV2,
 })
 
 export const store = configureStore({

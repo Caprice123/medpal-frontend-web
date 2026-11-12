@@ -1,4 +1,3 @@
-import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import {
@@ -16,7 +15,7 @@ import { EditorContainer, EditorWrapper, ModeToggle, ModeButton } from './BlockN
 import { insertEmbed } from './customBlocks/EmbedSlashMenu'
 import { CropImageButton } from './CropImageButton'
 import ImageCropModal from './ImageCropModal'
-import { PhotoViewerToolbar } from './PhotoViewerToolbar'
+import { PhotoViewerToolbar } from '@components/common/PhotoViewerToolbar'
 import { filterSuggestionItems } from "@blocknote/core/extensions"
 import { editorSchema } from './schema'
 import { actions as commonActions } from '@store/common/reducer'
@@ -30,15 +29,13 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
   const [images, setImages] = useState([])
   const dispatch = useDispatch()
 
-  // Use the shared schema instead of creating a new one
   const schema = editorSchema;
+  const safeInitialContent = (Array.isArray(initialContent) && initialContent.length > 0)
+    ? initialContent
+    : [{ type: "paragraph", content: "" }]
+
   const editor = useCreateBlockNote({
-    initialContent: initialContent || [
-      {
-        type: "paragraph",
-        content: "",
-      },
-    ],
+    initialContent: safeInitialContent,
     schema: schema,
     uploadFile: onImageUpload ? async (file) => {
       try {
@@ -204,7 +201,7 @@ function BlockNoteEditor({ initialContent, onChange, editable = true, placeholde
   }, [editor])
 
   if (!editor) {
-    return <div style={{ padding: '1rem', color: '#9ca3af' }}>Loading editor...</div>
+    return <div style={{ padding: '1rem', color: 'var(--color-gray-400)' }}>Loading editor...</div>
   }
 
   return (

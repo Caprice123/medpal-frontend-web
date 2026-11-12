@@ -1,0 +1,115 @@
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { createFeatureNode, updateFeatureNode } from '@store/featureNodes'
+import Modal from '@components/common/Modal'
+import Button from '@components/common/Button'
+import TextInput from '@components/common/TextInput'
+import Textarea from '@components/common/Textarea'
+import Dropdown from '@components/common/Dropdown'
+import { firstIcon, lastIcon } from '@utils/iconUtils'
+
+const CLASSIFICATION_OPTIONS = [
+  { value: 'sistem_blok', label: 'Sistem Blok' },
+  { value: 'ilmu_lintas_sistem', label: 'Ilmu Lintas Sistem' },
+]
+
+function TopicFormModal({ topic, onClose, onSuccess }) {
+  const dispatch = useDispatch()
+  const { loading } = useSelector(s => s.featureNodes)
+  const isEdit = !!topic
+
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    classification: CLASSIFICATION_OPTIONS[0].value,
+    icon: '',
+  })
+
+  useEffect(() => {
+    if (isEdit) {
+      setForm({
+        name: topic.name,
+        description: topic.description ?? '',
+        classification: topic.classification ?? CLASSIFICATION_OPTIONS[0].value,
+        icon: firstIcon(topic.icon) ?? '',
+      })
+    } else {
+      setForm({ name: '', description: '', classification: CLASSIFICATION_OPTIONS[0].value, icon: '' })
+    }
+  }, [isEdit, topic])
+
+  const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
+
+  const handleSubmit = () => {
+    const slug = form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const payload = {
+      name: form.name,
+      description: form.description || null,
+      slug: isEdit ? topic.slug : slug,
+      visibility: 'general',
+      layer: 1,
+      nodeType: 'topic',
+      classification: form.classification,
+      icon: form.icon || null,
+    }
+    if (isEdit) {
+      dispatch(updateFeatureNode(topic.id, payload, onSuccess))
+    } else {
+      dispatch(createFeatureNode(payload, onSuccess))
+    }
+  }
+
+  const isSaving = isEdit ? loading.isUpdating : loading.isCreating
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={isEdit ? 'Edit Topik' : 'Tambah Topik Baru'}
+      size="medium"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Batal</Button>
+          <Button variant="primary" onClick={handleSubmit} disabled={!form.name.trim() || isSaving}>
+            {isSaving ? 'Menyimpan...' : 'Simpan'}
+          </Button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <TextInput
+          label="Nama Topik"
+          required
+          value={form.name}
+          onChange={e => set('name', e.target.value)}
+          placeholder="Contoh: Sistem Kardiovaskular"
+        />
+        <Textarea
+          label="Deskripsi"
+          value={form.description}
+          onChange={e => set('description', e.target.value)}
+          placeholder="Deskripsi singkat topik ini..."
+          rows={3}
+        />
+        <Dropdown
+          label="Klasifikasi"
+          options={CLASSIFICATION_OPTIONS}
+          value={CLASSIFICATION_OPTIONS.find(o => o.value === form.classification) ?? CLASSIFICATION_OPTIONS[0]}
+          onChange={opt => set('classification', opt?.value ?? CLASSIFICATION_OPTIONS[0].value)}
+        />
+        {/* One emoji only: the topic and sub-topic lists each render a single
+            mark, so a second emoji would be stored and never shown. Clamped as
+            the admin types rather than rejected on save — typing a new emoji
+            swaps the old one out. */}
+        <TextInput
+          label="Ikon (1 emoji)"
+          value={form.icon}
+          onChange={e => set('icon', lastIcon(e.target.value) ?? '')}
+          placeholder="Contoh: 🫀"
+        />
+      </div>
+    </Modal>
+  )
+}
+
+export default TopicFormModal

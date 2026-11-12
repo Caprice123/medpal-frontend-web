@@ -30,15 +30,15 @@ export const ModeButton = styled.button`
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
-  background: ${props => props.$active ? '#3b82f6' : 'transparent'};
-  color: ${props => props.$active ? 'white' : '#6b7280'};
+  background: ${props => props.$active ? 'var(--color-brand-blue)' : 'transparent'};
+  color: ${props => props.$active ? 'white' : 'var(--color-gray-500)'};
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.$active ? '#2563eb' : '#f3f4f6'};
+    background: ${props => props.$active ? 'var(--color-brand-blue-deep)' : 'var(--color-gray-100)'};
   }
 
   svg {
@@ -67,14 +67,19 @@ export const EditorWrapper = styled.div`
 
   @media (max-width: 768px) {
     border-radius: 8px;
-    padding: ${props => props.$isStructured ? '0.75rem 0' : '0'};
   }
 
-  /* Make BlockNote fill available space */
+  /* Make BlockNote fill available space, and use the app's global font
+     (BlockNote ships its own Inter font-family by default) */
   .bn-container {
     height: 100%;
     display: flex;
     flex-direction: column;
+    font-family: inherit;
+  }
+
+  .bn-default-styles {
+    font-family: inherit;
   }
 
   .bn-editor {
@@ -82,7 +87,7 @@ export const EditorWrapper = styled.div`
     overflow: auto;
   }
 
-  /* Structured mode - ensure all BlockNote elements are transparent to show grid */
+  /* Structured mode - ensure all BlockNote elements are transparent to show warm paper background */
   ${props => props.$isStructured && `
     .bn-container,
     .bn-editor,
@@ -117,8 +122,7 @@ export const EditorWrapper = styled.div`
   ${props => !props.$isStructured && `
     /* Headings with yellow highlight */
     .bn-block-content[data-content-type="heading"] {
-      font-family: 'Pacifico', cursive;
-      color: #1e293b;
+      color: var(--color-gray-800);
       background: linear-gradient(180deg, transparent 50%, #fef08a 50%);
       display: inline;
       padding: 0 0.25rem;
@@ -126,8 +130,7 @@ export const EditorWrapper = styled.div`
     }
 
     .bn-block-content {
-      font-family: 'Patrick Hand', cursive;
-      color: #334155;
+      color: var(--color-gray-700);
       font-size: 1.05rem;
       line-height: 1.8;
       outline: none;
@@ -141,7 +144,7 @@ export const EditorWrapper = styled.div`
 
     .bn-block-content[data-content-type="bulletListItem"]::before {
       content: '●';
-      color: #10b981;
+      color: var(--color-brand-green);
       position: absolute;
       left: -1.25rem;
       font-size: 0.75rem;

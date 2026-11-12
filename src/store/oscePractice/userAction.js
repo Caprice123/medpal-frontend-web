@@ -3,8 +3,7 @@ import { actions as commonActions } from '@store/common/reducer'
 import { actions as pricingActions } from '@store/pricing/reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, patchWithToken } from '../../utils/requestUtils'
-import { getToken } from '@utils/authToken'
-import { refreshAccessToken } from '../../config/api'
+import { ensureValidToken } from '../../config/api'
 import { checkMimeTypeSupport } from '@utils/testDeepgramConnection'
 import { setTimeout } from 'worker-timers'
 import { captureException } from '@config/sentry'
@@ -15,6 +14,7 @@ const {
   setLoading,
   setUserTopics,
   setUserSessions,
+  setPerformanceTopics,
   setSessionDetail,
   setSessionMessages,
   setPhysicalExamMessages,
@@ -85,6 +85,25 @@ export const fetchUserOsceSessions = () => async (dispatch, getState) => {
     return { sessions, pagination }
   } finally {
     dispatch(setLoading({ key: 'isLoadingUserSessions', value: false }))
+  }
+}
+
+// Fetch the user's per-topic average score. Served by v2 because the v1 session routes stay
+// untouched; the numbers are aggregated by the backend, never derived from the paginated
+// session list, which only ever holds one page.
+export const fetchOscePerformance = () => async (dispatch) => {
+  try {
+    dispatch(setLoading({ key: 'isLoadingPerformance', value: true }))
+
+    const route = Endpoints.api.oscePracticeV2 + "/performance"
+    const response = await getWithToken(route)
+
+    const topics = response.data.data?.topics || []
+    dispatch(setPerformanceTopics(topics))
+
+    return topics
+  } finally {
+    dispatch(setLoading({ key: 'isLoadingPerformance', value: false }))
   }
 }
 
@@ -313,29 +332,6 @@ let activePhysicalExamAbortController = null
 // Track if user stopped the stream
 let userStoppedStreamFlag = false
 let physicalExamUserStoppedStreamFlag = false
-
-// Helper function to ensure token is valid and refreshed if needed
-const ensureValidToken = async () => {
-  const token = getToken()
-
-  if (!token) {
-    throw new Error('No authentication token found')
-  }
-
-  // Check if access token is expired
-  const isTokenExpired = (isoString) => {
-    const now = new Date()
-    const targetDate = new Date(isoString)
-    return targetDate < now
-  }
-
-  // If access token is expired, refresh it using axios
-  if (isTokenExpired(token.accessTokenExpiresAt)) {
-    return await refreshAccessToken()
-  }
-
-  return token.accessToken
-}
 
 // Send message with streaming
 export const sendMessage = (sessionId, message) => async (dispatch) => {

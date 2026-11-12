@@ -2,12 +2,11 @@ import styled from 'styled-components'
 import { colors } from '@config/colors'
 
 export const Container = styled.div`
-    background: #f0fdfa;
+    background: var(--color-surface-app);
 `
 
 export const PageContainer = styled.div`
   padding: 2rem;
-  max-width: 1400px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
@@ -63,7 +62,7 @@ export const StartButton = styled.button`
   &:hover {
     background: ${colors.osce.primaryHover};
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    box-shadow: 0 4px 12px rgba(30, 115, 170, 0.3);
   }
 
   &:active {

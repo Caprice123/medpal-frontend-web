@@ -1,0 +1,18 @@
+import styled from 'styled-components'
+
+export const PageContainer = styled.div`
+  min-height: calc(100vh - 44px);
+
+  @media (max-width: 768px) {
+    min-height: 100vh;
+  }
+`
+
+export const LoadingWrap = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-size: 1rem;
+  color: var(--color-gray-500);
+`

@@ -1,0 +1,149 @@
+// Design tokens for the public landing page.
+//
+// The brand, surface, text and line colours now come from `theme/palette.js`,
+// which the app behind sign-in reads too — the landing page and the product
+// share one palette, so a colour only ever has to be changed in one place. The
+// keys below are the landing page's own names for those shared values; the
+// remaining literals are roles only this page has.
+//
+// Originally extracted from Figma file 6wb6ON3pKs0TwuKS0cHQTN, frame 1:2
+// ("Landing Page FIx MedPal.id") — that file defines no Figma Variables, so
+// every value was read off the individual layers. Styled-components in this
+// route import from here instead of hardcoding colours.
+
+import { palette } from '../../theme/palette'
+
+export const colors = {
+  // Surfaces
+  pageBackground: palette.surfacePage,
+  tickerBackground: palette.brandBlueTint,
+  surface: palette.surface,
+  eyebrowBackground: palette.brandBlueTintStrong,
+
+  // Brand
+  brandBlue: palette.brandBlue,
+  brandBlueLight: palette.brandBlueLight,
+  brandBlueMid: palette.brandBlueMid,
+  brandBlueDeep: palette.brandBlueDeep,
+  brandGreen: palette.brandGreen,
+
+  // Text
+  headingDark: palette.gray800,
+  headingDarker: '#0e2a38',
+  textPrimary: '#111111',
+  textSecondary: palette.gray600,
+  textMuted: '#555555',
+  textNav: palette.gray700,
+
+  // Lines
+  border: palette.gray200,
+  divider: '#e2ecef',
+
+  // "Kenapa MedPal.id?" numbered cards
+  cardNumberBackground: palette.brandGreenTint,
+  cardNumber: '#759963',
+  sectionSubheading: '#325871',
+
+  // Body copy in the lower sections (FAQ, testimonials, events, challenges)
+  bodyText: palette.gray500,
+  metaText: palette.gray400,
+
+  // Small surfaces: FAQ toggle chip, testimonial avatar, hairline rules
+  chipBackground: '#f4f6f7',
+  avatarBackground: '#eef1f3',
+  avatarBorder: palette.gray300,
+  hairline: palette.gray100,
+
+  // Event + Challenge cards
+  eventBackground: '#f7fafc',
+  cardTitle: '#16211d',
+  cardBody: '#56635f',
+  freeBadgeBackground: palette.brandGreenDark,
+  dateBadgeBackground: '#ededed',
+  dateBadgeText: '#717171',
+  imagePlaceholder: '#eceef2',
+  statDivider: '#cfdffa',
+  statLabel: '#8a938f',
+  statusBadgeBackground: palette.warningTintStrong,
+  statusBadgeText: palette.warningText,
+}
+
+export const gradients = {
+  // Primary call-to-action buttons (hero "Mulai Sekarang", CTA banner)
+  cta: `linear-gradient(103deg, ${colors.brandBlue} 0%, ${colors.brandBlueLight} 100%)`,
+  // Navbar "Mulai Sekarang" button — three stops, slightly different angle
+  navButton: `linear-gradient(109.6deg, ${colors.brandBlueLight} 0%, ${colors.brandBlueMid} 65%, ${colors.brandBlue} 100%)`,
+  // Closing CTA banner — lighter and bluer than the button gradients
+  ctaBanner: 'linear-gradient(101.8deg, #58b3e0 0%, #2689c5 100%)',
+  // "Free Event" heading, painted onto the text itself
+  eventHeading: `linear-gradient(103.36deg, ${colors.brandBlue} 0%, ${colors.brandBlueLight} 100%)`,
+}
+
+export const fonts = {
+  // Section and hero headings
+  heading: "'Baloo 2', system-ui, -apple-system, sans-serif",
+  // Wordmark and the running statistics ticker
+  display: "'Fredoka', system-ui, -apple-system, sans-serif",
+  // Body copy, labels, trust-card figures
+  body: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+}
+
+// The design is drawn at a fixed 1440px desktop width. These are the breakpoints
+// we scale it down through — Figma provides no mobile frames, so the narrower
+// layouts are derived rather than specified.
+export const breakpoints = {
+  desktop: '1200px',
+  tablet: '992px',
+  mobile: '768px',
+  small: '480px',
+}
+
+export const layout = {
+  // Figma lays the content out on a 1440px frame with 90px side gutters, so the
+  // content column itself is 1260px. ContentWidth adds 24px of inner padding on
+  // each side for narrow screens, so its max-width carries that padding on top
+  // (1260 + 48) — otherwise every section would sit 24px inside the design.
+  maxWidth: '1308px',
+  gutter: '90px',
+
+  // The sticky header and the hero's stats ticker. Both are fixed-height, and
+  // the hero sizes itself against the pair so that together they fill exactly
+  // one screen — so the numbers live here rather than inside one component's
+  // own stylesheet, where the hero could not see them.
+  headerHeight: '75px',
+  tickerHeight: '89px',
+}
+
+export const media = {
+  desktop: `@media (max-width: ${breakpoints.desktop})`,
+  tablet: `@media (max-width: ${breakpoints.tablet})`,
+  mobile: `@media (max-width: ${breakpoints.mobile})`,
+  small: `@media (max-width: ${breakpoints.small})`,
+
+  // Height, not width. The hero fits itself and the ticker into the first
+  // screen, so what it has to react to is how much vertical room there is.
+  //
+  // 960px is where the two spacings below meet: above it the hero art is
+  // already as wide as its column allows, so compressing the chrome buys it
+  // nothing and the switch is invisible. Below it the art is the thing paying
+  // for every pixel the chrome takes.
+  shortViewport: '@media (max-height: 960px)',
+}
+
+// The hero art gets whatever height the fixed bands above and below it leave
+// over, so its size is a subtraction — and every term of that subtraction is
+// set in a different stylesheet. The totals live here so they can be read
+// against each other instead of being rediscovered one file at a time.
+//
+// Anything that changes a term has to change the matching total here too.
+export const heroChrome = {
+  // 75 header + 89 ticker + 40 HeroGrid.
+  //
+  // The trust card used to sit between the art and the ticker and took the
+  // larger share of this budget (69px of slot padding plus a 127px card). Its
+  // three figures now float on the art itself as stat cards, so the band is
+  // gone and the art inherits what it was spending.
+  full: '204px',
+  // 75 header + 89 ticker + 20 HeroGrid.
+  compact: '184px',
+}

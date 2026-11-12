@@ -1,13 +1,15 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import Modal from '@components/common/Modal'
 import Button from '@components/common/Button'
 import TagSelector from '@components/common/TagSelector'
 import FileUpload from '@components/common/FileUpload'
+import Dropdown from '@components/common/Dropdown'
 import { DndContext, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useUpdateFlashcard } from '../../hooks/subhooks/useUpdateFlashcard'
+import { useContentRelations } from '../../hooks/subhooks/useContentRelations'
 import {
   FormSection,
   Label,
@@ -25,8 +27,30 @@ import {
   ErrorText,
   StatusToggle,
   StatusOption,
-  HelpText
+  HelpText,
+  RelationsTabBar,
+  RelationsTab,
+  RelationsTabCount,
+  RelationItem,
+  RelationTitle,
+  RelationTypeBadge,
+  RelationAddRow,
 } from './UpdateFlashcardModal.styles'
+
+const REL_TABS = [
+  { key: 'mcq_topic',    label: 'Soal MCQ' },
+  { key: 'summary_note', label: 'Ringkasan Materi' },
+]
+
+const TYPE_OPTIONS = [
+  { value: 'mcq_topic',    label: 'Soal MCQ' },
+  { value: 'summary_note', label: 'Ringkasan Materi' },
+]
+
+const TYPE_LABELS = {
+  mcq_topic:    'MCQ',
+  summary_note: 'Ringkasan',
+}
 
 const SortableCard = memo(function SortableCard({ card, index, form, handleRemoveCard, handleImageUpload }) {
   const {
@@ -113,7 +137,7 @@ const SortableCard = memo(function SortableCard({ card, index, form, handleRemov
 })
 
 const UpdateFlashcardModal = ({ onClose }) => {
-  const { loading } = useSelector(state => state.flashcard)
+  const { loading, detail } = useSelector(state => state.flashcard)
   const { tags } = useSelector(state => state.tags)
 
   const {
@@ -129,6 +153,30 @@ const UpdateFlashcardModal = ({ onClose }) => {
     isGenerating,
     pdfInfo
   } = useUpdateFlashcard(onClose)
+
+  const [activeRelTab, setActiveRelTab] = useState('mcq_topic')
+
+  const {
+    mcqRelations,
+    snRelations,
+    availableMcqOptions,
+    availableSnOptions,
+    setSelectedType,
+    selectedItem,
+    setSelectedItem,
+    add,
+    remove,
+    isLoading: isRelationsLoading,
+  } = useContentRelations(detail?.id)
+
+  const handleRelTabChange = (key) => {
+    setActiveRelTab(key)
+    setSelectedType(key)
+    setSelectedItem(null)
+  }
+
+  const activeRelations = activeRelTab === 'mcq_topic' ? mcqRelations : snRelations
+  const activeOptions = activeRelTab === 'mcq_topic' ? availableMcqOptions : availableSnOptions
 
   // Get tags from all tag groups - memoized
   const topicTags = useMemo(() =>
@@ -393,6 +441,67 @@ const UpdateFlashcardModal = ({ onClose }) => {
           </Button>
         )}
       </CardsSection>
+
+      {/* Konten Terkait */}
+      <FormSection>
+        <Label>Konten Terkait</Label>
+        <HelpText style={{ marginBottom: '0.75rem' }}>
+          Hubungkan deck ini dengan soal MCQ atau ringkasan materi yang relevan. Akan ditampilkan setelah pengguna selesai belajar.
+        </HelpText>
+
+        <RelationsTabBar>
+          {REL_TABS.map(tab => {
+            const count = tab.key === 'mcq_topic' ? mcqRelations.length : snRelations.length
+            return (
+              <RelationsTab
+                key={tab.key}
+                $active={activeRelTab === tab.key}
+                onClick={() => handleRelTabChange(tab.key)}
+              >
+                {tab.label}
+                {count > 0 && <RelationsTabCount>{count}</RelationsTabCount>}
+              </RelationsTab>
+            )
+          })}
+        </RelationsTabBar>
+
+        {activeRelations.map(rel => (
+          <RelationItem key={rel.id}>
+            <RelationTypeBadge $type={rel.targetType}>
+              {TYPE_LABELS[rel.targetType]}
+            </RelationTypeBadge>
+            <RelationTitle title={rel.targetTitle}>{rel.targetTitle || '—'}</RelationTitle>
+            <Button
+              variant="danger"
+              size="small"
+              onClick={() => remove(rel.id)}
+              disabled={isRelationsLoading}
+            >
+              ✕
+            </Button>
+          </RelationItem>
+        ))}
+
+        <RelationAddRow>
+          <div style={{ flex: 1 }}>
+            <Dropdown
+              placeholder={activeRelTab === 'mcq_topic' ? 'Pilih topik MCQ...' : 'Pilih ringkasan...'}
+              options={activeOptions}
+              value={selectedItem}
+              onChange={setSelectedItem}
+              isClearable
+            />
+          </div>
+          <Button
+            variant="primary"
+            onClick={add}
+            disabled={!selectedItem || isRelationsLoading}
+            style={{ flexShrink: 0 }}
+          >
+            Tambah
+          </Button>
+        </RelationAddRow>
+      </FormSection>
 
       <StatusToggle>
         <StatusOption>

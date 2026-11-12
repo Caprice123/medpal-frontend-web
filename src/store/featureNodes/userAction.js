@@ -1,0 +1,112 @@
+import { actions } from './reducer'
+import Endpoints from '@config/endpoint'
+import { getWithToken } from '@utils/requestUtils'
+
+const { setUserTopics, setTopic, setSubtopics, setAtlasGroups, setLoading, setError } = actions
+
+const LIST_PAGE_LIMIT = 50
+
+// The backend stays paginated (bounded per-request), but these lists need the complete
+// set — so page through here rather than truncating at a single page.
+async function fetchAllFeatureNodes(params) {
+  const nodes = []
+  let page = 1
+  for (;;) {
+    const res = await getWithToken(Endpoints.api.featureNodes, { ...params, page, perPage: LIST_PAGE_LIMIT })
+    nodes.push(...(res.data.data || []))
+    if (res.data.pagination?.isLastPage ?? true) break
+    page += 1
+  }
+  return nodes
+}
+
+export const fetchUserTopics = () => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingUserTopics: true }))
+    dispatch(setError({ userTopics: null }))
+    const [primary, special] = await Promise.all([
+      fetchAllFeatureNodes({ visibility: 'general', layer: 1, nodeType: 'topic', hasContent: true, classification: 'sistem_blok' }),
+      fetchAllFeatureNodes({ visibility: 'general', layer: 1, nodeType: 'topic', hasContent: true, classification: 'ilmu_lintas_sistem' }),
+    ])
+    dispatch(setUserTopics({ primary, special }))
+  } catch (error) {
+    // Without this the request failed silently: the page rendered a greeting
+    // over blank space and the rejection surfaced only in the console, so a
+    // dropped connection was indistinguishable from "no content published".
+    dispatch(setError({ userTopics: error?.message || 'Gagal memuat topik' }))
+  } finally {
+    dispatch(setLoading({ isFetchingUserTopics: false }))
+  }
+}
+
+export const fetchUserSubtopics = (parentSlug) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingSubtopics: true }))
+    dispatch(setError({ topicDetail: null }))
+    const subtopics = await fetchAllFeatureNodes({ parentSlug, layer: 2, nodeType: 'subtopic', hasContent: true })
+    dispatch(setSubtopics(subtopics))
+    return subtopics
+  } catch (error) {
+    dispatch(setError({ topicDetail: error?.message || 'Gagal memuat subtopik' }))
+    return []
+  } finally {
+    dispatch(setLoading({ isFetchingSubtopics: false }))
+  }
+}
+
+export const fetchUserTopicBySlug = (slug) => async (dispatch) => {
+  const res = await getWithToken(Endpoints.api.featureNodes, { slug, layer: 1, nodeType: 'topic', perPage: 1 })
+  const topic = (res.data.data || [])[0] ?? null
+  dispatch(setTopic(topic))
+  return topic
+}
+
+export const fetchUserNodeById = (id) => async () => {
+  const res = await getWithToken(Endpoints.api.featureNodes, { id, perPage: 1 })
+  return (res.data.data || [])[0] ?? null
+}
+
+export const fetchUserNodeBySlug = (slug) => async () => {
+  const res = await getWithToken(Endpoints.api.featureNodes, { slug, perPage: 1 })
+  return (res.data.data || [])[0] ?? null
+}
+
+export const fetchUserNodeByName = (name) => async () => {
+  const res = await getWithToken(Endpoints.api.featureNodes, { name, layer: 2, nodeType: 'subtopic', perPage: 1 })
+  return (res.data.data || [])[0] ?? null
+}
+
+export const fetchUserSubtopicBySlug = (slug) => async () => {
+  const res = await getWithToken(Endpoints.api.featureNodes, { slug, layer: 2, nodeType: 'subtopic', perPage: 1, hasContent: true, includeAdjacent: true })
+  return (res.data.data || [])[0] ?? null
+}
+
+export const fetchNodeStats = (nodeId) => async () => {
+  const res = await getWithToken(Endpoints.api.featureNodeStats(nodeId))
+  return res.data.data
+}
+
+export const fetchNodePreview = (nodeId, type) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingPreview: true }))
+    const res = await getWithToken(Endpoints.api.featureNodePreview(nodeId), { type })
+    return res.data.data
+  } finally {
+    dispatch(setLoading({ isFetchingPreview: false }))
+  }
+}
+
+export const fetchTopicAtlasModels = (topicId) => async (dispatch) => {
+  const res = await getWithToken(Endpoints.api.featureNodeTopicAtlasModels(topicId))
+  const atlasGroups = res.data.data || []
+  dispatch(setAtlasGroups(atlasGroups))
+  return atlasGroups
+}
+
+// node (subtopic) ↔ atlas model content_relations
+export const fetchNodeAtlasModelRelations = (slug) => async () => {
+  const res = await getWithToken(Endpoints.api.contentRelationsV2, {
+    sourceType: 'feature_node', sourceUniqueId: slug, targetType: 'atlas_model',
+  })
+  return res.data.data || []
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { getUserData } from '@utils/authToken'
 import { resetAllState } from '@store/globalAction'
@@ -11,65 +11,28 @@ import Users from './Users'
 import TransactionList from './Transactions/components/Table'
 import Transactions from './Transactions'
 import GlobalSettings from './GlobalSettings'
-import WebinarAdmin from './Features/subpages/Webinar'
-import EventAdmin from './Features/subpages/Event'
-import BannerAdmin from './Features/subpages/Banner'
 import Layanan from './Layanan'
+import FeaturesV2 from './FeaturesV2'
+import MateriAdmin from './MateriAdmin'
 
 const AdminContainer = styled.div`
   min-height: 100vh;
-  background: #f0fdfa;
+  background: var(--color-surface-app);
 `
-
-const Header = styled.header`
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
-`
-
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`
-
 
 const MainContent = styled.main`
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-`
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6BB9E8, #8DC63F);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
-`
-
-const PageSubtitle = styled.p`
-  color: #6b7280;
-  margin-bottom: 2rem;
-  font-size: 1.05rem;
 `
 
 const TabContainer = styled.div`
   display: flex;
   gap: 1rem;
   border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  padding-top: 0.5rem;
 `
 
 const Tab = styled.button`
@@ -83,6 +46,8 @@ const Tab = styled.button`
   transition: all 0.2s;
   margin-bottom: -2px;
   position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
 
   ${props => props.active && `
     background: linear-gradient(180deg, rgba(107, 185, 232, 0.05), transparent);
@@ -101,12 +66,6 @@ const ContentArea = styled.div`
   border: 1px solid #e5e7eb;
 `
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-`
-
 // Helper function to check if user has permission to access a tab
 const hasTabPermission = (user, tab) => {
   // Superadmin always has all permissions
@@ -122,7 +81,7 @@ const hasTabPermission = (user, tab) => {
   // Default permissions based on role
   if (user.role === 'admin') {
     // Admins by default have access to all tabs except 'users'
-    return ['features', 'layanan', 'webinar', 'events', 'banners', 'tags', 'pricingPlans', 'transactions', 'globalSettings'].includes(tab)
+    return ['features', 'layanan', 'tags', 'pricingPlans', 'transactions', 'globalSettings', 'featuresV2', 'nodeStructure', 'materi'].includes(tab)
   }
 
   // Other roles don't have admin panel access
@@ -132,24 +91,24 @@ const hasTabPermission = (user, tab) => {
 // Get available tabs for user
 const getAvailableTabs = (user) => {
   const allTabs = [
-    { key: 'features', label: 'Kelola Fitur' },
-    { key: 'layanan', label: 'Layanan' },
-    { key: 'webinar', label: 'Webinar' },
-    { key: 'events', label: 'Events' },
-    { key: 'banners', label: 'Banner' },
-    { key: 'tags', label: 'Kelola Tag' },
-    { key: 'pricingPlans', label: 'Paket Harga' },
-    { key: 'transactions', label: 'Transaksi' },
-    { key: 'users', label: 'Kelola User' },
-    { key: 'globalSettings', label: 'Pengaturan Global' }
+    { key: 'features', label: 'Kelola Fitur', permission: 'features' },
+    { key: 'featuresV2', label: 'Fitur V2', permission: 'features' },
+    { key: 'materi', label: 'Materi', permission: 'features' },
+    { key: 'layanan', label: 'Layanan', permission: 'layanan' },
+    { key: 'tags', label: 'Kelola Tag', permission: 'tags' },
+    { key: 'pricingPlans', label: 'Paket Harga', permission: 'pricingPlans' },
+    { key: 'transactions', label: 'Transaksi', permission: 'transactions' },
+    { key: 'users', label: 'Kelola User', permission: 'users' },
+    { key: 'globalSettings', label: 'Pengaturan Global', permission: 'globalSettings' },
   ]
 
-  return allTabs.filter(tab => hasTabPermission(user, tab.key))
+  return allTabs.filter(tab => hasTabPermission(user, tab.permission))
 }
 
 function AdminPanel() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
   const [user, setUser] = useState(null)
   const [activeTab, setActiveTab] = useState(null)
   const [availableTabs, setAvailableTabs] = useState([])
@@ -169,11 +128,11 @@ function AdminPanel() {
     const tabs = getAvailableTabs(userData)
     setAvailableTabs(tabs)
 
-    // Set first available tab as active
-    if (tabs.length > 0) {
-      setActiveTab(tabs[0].key)
-    }
-  }, [navigate])
+    // Set tab from URL param if valid, otherwise default to first tab
+    const tabParam = searchParams.get('tab')
+    const initialTab = tabParam && tabs.find(t => t.key === tabParam) ? tabParam : tabs[0]?.key
+    if (initialTab) setActiveTab(initialTab)
+  }, [navigate, searchParams])
 
   useEffect(() => {
     if (activeTab) dispatch(resetAllState())
@@ -203,12 +162,6 @@ function AdminPanel() {
 
           {activeTab === 'layanan' && <Layanan />}
 
-          {activeTab === 'webinar' && <WebinarAdmin />}
-
-          {activeTab === 'events' && <EventAdmin />}
-
-          {activeTab === 'banners' && <BannerAdmin />}
-
           {activeTab === 'tags' && <Tags />}
 
           {activeTab === 'pricingPlans' && <PricingPlans />}
@@ -218,6 +171,10 @@ function AdminPanel() {
           {activeTab === 'users' && <Users />}
 
           {activeTab === 'globalSettings' && <GlobalSettings />}
+
+          {activeTab === 'featuresV2' && <FeaturesV2 />}
+
+          {activeTab === 'materi' && <MateriAdmin />}
         </ContentArea>
       </MainContent>
     </AdminContainer>

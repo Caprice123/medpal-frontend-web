@@ -2,7 +2,6 @@ import styled from 'styled-components'
 import { colors } from '@config/colors'
 
 export const Container = styled.div`
-  max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
 `
@@ -107,7 +106,6 @@ export const MetricValue = styled.div`
   font-size: 2rem;
   font-weight: 700;
   color: ${colors.text.primary};
-  font-family: 'Courier New', monospace;
 `
 
 export const StatusBadge = styled.div`
@@ -297,7 +295,6 @@ export const AnswerKeyContent = styled.div`
     background: ${colors.neutral.gray100};
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
-    font-family: 'Courier New', monospace;
     font-size: 0.875rem;
   }
 

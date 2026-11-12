@@ -1,0 +1,1027 @@
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { actions } from '@store/challenge/reducer'
+import {
+  fetchAdminQuestions, createQuestion, updateQuestion, deleteQuestion,
+  fetchAdminBadges, createBadge, updateBadge, deleteBadge,
+  fetchAdminLeaderboard,
+  fetchAdminRewards, createAdminReward, updateAdminReward, deleteAdminReward,
+  fetchAdminDisbursements, updateAdminDisbursement,
+} from '@store/challenge/adminAction'
+import { upload } from '@store/common/action'
+import * as XLSX from 'xlsx'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import Button from '@components/common/Button'
+import Modal from '@components/common/Modal'
+import TextInput from '@components/common/TextInput'
+import Textarea from '@components/common/Textarea'
+import Dropdown from '@components/common/Dropdown'
+import FileUpload from '@components/common/FileUpload'
+import Loading from '@components/common/Loading'
+import CommonTable from '@components/common/Table'
+import Pagination from '@components/Pagination'
+import { formatJakartaDateTimeFull } from '@utils/dateUtils'
+import {
+  Container, Header, TabsContainer, Tab,
+  SubHeader, SubTitle, Table, Th, Td, Tr, ActionCell,
+  Badge, ScoringBadge, EmptyRow, FormGrid, FormGroup, Label,
+  OptionsList, OptionContainer, OptionBadge, OptionInput, AddOptionButton, RemoveOptionButton, BadgeImagePreview,
+  BadgeCardGrid, BadgeCard, BadgeCardImage, BadgeCardPlaceholder,
+  BadgeCardName, BadgeCardRank, BadgeCardDesc, BadgeCardActions,
+} from '../../Challenge.styles'
+
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E']
+
+const QUESTION_TYPE_OPTIONS = [
+  { label: 'Regular', value: false },
+  { label: '⭐ Spesial (poin × 2)', value: true },
+]
+
+const defaultQuestionForm = {
+  question: '',
+  questionImageBlobId: null,
+  questionImagePreviewUrl: null,
+  options: [
+    { text: '', imageBlobId: null, imagePreviewUrl: null },
+    { text: '', imageBlobId: null, imagePreviewUrl: null },
+    { text: '', imageBlobId: null, imagePreviewUrl: null },
+    { text: '', imageBlobId: null, imagePreviewUrl: null },
+  ],
+  correctOptionIndex: 0,
+  isSpecial: false,
+  references: [],
+}
+
+const defaultBadgeForm = {
+  name: '', description: '', minRank: 1, maxRank: 10, imageBlobId: null, imagePreviewUrl: null,
+}
+
+// ── Sortable question row ────────────────────────────────────────────────────
+
+function SortableQuestionRow({ q, index, onEdit, onDelete, locked }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.uniqueId, disabled: locked })
+
+  return (
+    <Tr
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        background: isDragging ? '#EFF6FF' : undefined,
+      }}
+    >
+      {!locked && (
+        <Td style={{ width: 32, cursor: 'grab', color: '#9CA3AF', fontSize: '1.1rem', userSelect: 'none' }}
+          {...attributes} {...listeners}>
+          ⠿
+        </Td>
+      )}
+      <Td style={{ width: 40, color: '#9CA3AF', fontSize: '0.8rem' }}>{index + 1}</Td>
+      <Td style={{ maxWidth: 260 }}>{q.question || <em style={{ color: '#9CA3AF' }}>(gambar)</em>}</Td>
+      <Td>
+        {q.isSpecial
+          ? <span style={{ background: '#FEF3C7', color: '#92400E', borderRadius: 999, padding: '0.15rem 0.5rem', fontSize: '0.7rem', fontWeight: 600 }}>⭐ Spesial</span>
+          : <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>Regular</span>}
+      </Td>
+      <Td>{q.options?.length} opsi</Td>
+      <Td>{OPTION_LABELS[q.correctOptionIndex] ?? q.correctOptionIndex}</Td>
+      {!locked && (
+        <Td>
+          <ActionCell>
+            <Button onClick={() => onEdit(q)}>Edit</Button>
+            <Button variant="danger" onClick={() => onDelete(q)}>Hapus</Button>
+          </ActionCell>
+        </Td>
+      )}
+    </Tr>
+  )
+}
+
+// ── Soal Tab ────────────────────────────────────────────────────────────────
+
+function SoalTab({ challenge }) {
+  const dispatch = useDispatch()
+  const { questions, questionsPagination, loading } = useSelector(s => s.challenge)
+  const [orderedQuestions, setOrderedQuestions] = useState([])
+  const [modal, setModal] = useState({ open: false, mode: 'create', target: null })
+  const [form, setForm] = useState(defaultQuestionForm)
+  const [importResult, setImportResult] = useState(null)
+  const fileInputRef = useRef(null)
+
+  const sensors = useSensors(useSensor(PointerSensor))
+
+  useEffect(() => {
+    dispatch(fetchAdminQuestions(challenge.uniqueId))
+  }, [challenge.uniqueId, dispatch])
+
+  useEffect(() => {
+    setOrderedQuestions(questions)
+  }, [questions])
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event
+    if (!active || !over || active.id === over.id) return
+
+    const oldIdx = orderedQuestions.findIndex(q => q.uniqueId === active.id)
+    const newIdx = orderedQuestions.findIndex(q => q.uniqueId === over.id)
+    const reordered = arrayMove(orderedQuestions, oldIdx, newIdx)
+    setOrderedQuestions(reordered)
+
+    reordered.forEach((q, i) => {
+      dispatch(updateQuestion(challenge.uniqueId, q.uniqueId, { order: i }))
+    })
+  }
+
+  const openCreate = () => {
+    setForm(defaultQuestionForm)
+    setModal({ open: true, mode: 'create', target: null })
+  }
+
+  const openEdit = (q) => {
+    setForm({
+      question: q.question || '',
+      questionImageBlobId: null,
+      questionImagePreviewUrl: q.questionImage?.url || null,
+      options: (q.options || ['', '', '', '']).map((text, i) => ({
+        text,
+        imageBlobId: null,
+        imagePreviewUrl: q.optionImages?.[i]?.url || null,
+      })),
+      correctOptionIndex: q.correctOptionIndex,
+      isSpecial: q.isSpecial || false,
+      references: Array.isArray(q.references) ? q.references.map(r => ({ label: r.label || '', url: r.url || '' })) : [],
+    })
+    setModal({ open: true, mode: 'edit', target: q })
+  }
+
+  const handleQuestionImageSelect = async (file) => {
+    const result = await dispatch(upload(file, 'challenge-questions'))
+    setForm(prev => ({ ...prev, questionImageBlobId: result.blobId, questionImagePreviewUrl: result.url }))
+  }
+
+  const handleClearQuestionImage = () => {
+    setForm(prev => ({ ...prev, questionImageBlobId: null, questionImagePreviewUrl: null }))
+  }
+
+  const handleOptionImageSelect = async (file, idx) => {
+    const result = await dispatch(upload(file, 'challenge-questions'))
+    setForm(prev => {
+      const options = [...prev.options]
+      options[idx] = { ...options[idx], imageBlobId: result.blobId, imagePreviewUrl: result.url }
+      return { ...prev, options }
+    })
+  }
+
+  const handleClearOptionImage = (idx) => {
+    setForm(prev => {
+      const options = [...prev.options]
+      options[idx] = { ...options[idx], imageBlobId: null, imagePreviewUrl: null }
+      return { ...prev, options }
+    })
+  }
+
+  const setOptionText = (idx, e) => {
+    const val = e?.target?.value ?? e
+    setForm(prev => {
+      const options = [...prev.options]
+      options[idx] = { ...options[idx], text: val }
+      return { ...prev, options }
+    })
+  }
+
+  const handleAddOption = () => {
+    setForm(prev => ({ ...prev, options: [...prev.options, { text: '', imageBlobId: null, imagePreviewUrl: null }] }))
+  }
+
+  const handleRemoveOption = (idx) => {
+    if (form.options.length <= 2) return
+    setForm(prev => {
+      const options = prev.options.filter((_, i) => i !== idx)
+      const correctOptionIndex = prev.correctOptionIndex === idx
+        ? 0
+        : prev.correctOptionIndex > idx
+          ? prev.correctOptionIndex - 1
+          : prev.correctOptionIndex
+      return { ...prev, options, correctOptionIndex }
+    })
+  }
+
+  const addReference = () => {
+    setForm(prev => ({ ...prev, references: [...prev.references, { label: '', url: '' }] }))
+  }
+
+  const setReference = (idx, key, val) => {
+    setForm(prev => {
+      const references = [...prev.references]
+      references[idx] = { ...references[idx], [key]: val }
+      return { ...prev, references }
+    })
+  }
+
+  const removeReference = (idx) => {
+    setForm(prev => ({ ...prev, references: prev.references.filter((_, i) => i !== idx) }))
+  }
+
+  const handleSave = async () => {
+    const payload = {
+      question: form.question || null,
+      options: form.options.map(o => o.text),
+      correctOptionIndex: form.correctOptionIndex,
+      isSpecial: form.isSpecial,
+      order: modal.mode === 'create' ? orderedQuestions.length : undefined,
+      questionImageBlobId: form.questionImageBlobId || null,
+      optionImageBlobIds: form.options.map(o => o.imageBlobId || null),
+      references: form.references
+        .filter(r => r.label.trim() || r.url.trim())
+        .map(r => ({ label: r.label.trim(), url: r.url.trim() || undefined })),
+    }
+    const onSuccess = () => {
+      setModal({ open: false, mode: 'create', target: null })
+      dispatch(fetchAdminQuestions(challenge.uniqueId))
+    }
+    if (modal.mode === 'create') {
+      await dispatch(createQuestion(challenge.uniqueId, payload, onSuccess))
+    } else {
+      await dispatch(updateQuestion(challenge.uniqueId, modal.target.uniqueId, payload, onSuccess))
+    }
+  }
+
+  const handleDelete = async (q) => {
+    if (!window.confirm('Hapus soal ini?')) return
+    await dispatch(deleteQuestion(challenge.uniqueId, q.uniqueId, () => dispatch(fetchAdminQuestions(challenge.uniqueId))))
+  }
+
+  const handlePageChange = (page) => {
+    dispatch(actions.setQuestionsPage(page))
+    dispatch(fetchAdminQuestions(challenge.uniqueId))
+  }
+
+  // ── Excel / CSV import ────────────────────────────────────────────────────
+
+  const downloadTemplate = () => {
+    const header = ['Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Jawaban Benar (A-E)', 'Tipe (regular/spesial)']
+    const example = ['Apa ibu kota Indonesia?', 'Jakarta', 'Surabaya', 'Bandung', 'Medan', '', 'A', 'regular']
+    const csv = [header, example].map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'template_soal_challenge.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    const data = await file.arrayBuffer()
+    const workbook = XLSX.read(data, { type: 'array' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' })
+
+    const dataRows = rows.slice(1).filter(row => row.some(c => String(c).trim() !== ''))
+    const parsedQuestions = []
+    const parseErrors = []
+
+    dataRows.forEach((row, i) => {
+      const [q, a, b, c, d, e, correct, type] = row.map(x => String(x ?? '').trim())
+      const opts = [a, b, c, d, e].filter(o => o !== '')
+      if (opts.length < 2) {
+        parseErrors.push(`Baris ${i + 2}: Minimal 2 opsi diperlukan`)
+        return
+      }
+      const ci = OPTION_LABELS.indexOf(correct.toUpperCase())
+      if (ci < 0 || ci >= opts.length) {
+        parseErrors.push(`Baris ${i + 2}: Jawaban benar '${correct}' tidak valid`)
+        return
+      }
+      parsedQuestions.push({
+        question: q || null,
+        options: opts,
+        correctOptionIndex: ci,
+        isSpecial: type.toLowerCase() === 'spesial',
+        order: orderedQuestions.length + i,
+      })
+    })
+
+    if (parseErrors.length > 0 && parsedQuestions.length === 0) {
+      setImportResult({ created: 0, failed: parseErrors.length, errors: parseErrors })
+      return
+    }
+
+    dispatch(actions.setLoading({ key: 'isImporting', value: true }))
+    let created = 0
+    const importErrors = [...parseErrors]
+    try {
+      for (let i = 0; i < parsedQuestions.length; i++) {
+        try {
+          await dispatch(createQuestion(challenge.uniqueId, parsedQuestions[i]))
+          created++
+        } catch (err) {
+          importErrors.push(`Soal ${i + 1}: ${err?.message || 'Gagal disimpan'}`)
+        }
+      }
+    } finally {
+      dispatch(actions.setLoading({ key: 'isImporting', value: false }))
+    }
+    setImportResult({ created, failed: parsedQuestions.length - created + parseErrors.length, errors: importErrors })
+    dispatch(fetchAdminQuestions(challenge.uniqueId))
+  }
+
+  const isLocked = challenge.status === 'active'
+
+  if (loading.isGetQuestionsLoading) return <Loading />
+
+  return (
+    <>
+      <SubHeader>
+        <SubTitle>Pool Soal ({orderedQuestions.length} soal)</SubTitle>
+        {!isLocked && (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Button onClick={downloadTemplate} style={{ fontSize: '0.8rem' }}>⬇ Template</Button>
+            <Button onClick={() => fileInputRef.current?.click()} disabled={loading.isImporting}>
+              {loading.isImporting ? 'Mengimpor...' : '📥 Import Excel/CSV'}
+            </Button>
+            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleImportFile} />
+            <Button variant="primary" onClick={openCreate}>+ Tambah Soal</Button>
+          </div>
+        )}
+      </SubHeader>
+
+      {isLocked && (
+        <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 6, padding: '0.625rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#92400E' }}>
+          Challenge sedang <strong>aktif</strong> — soal tidak dapat diubah, ditambah, atau dihapus.
+        </div>
+      )}
+
+      {importResult && (
+        <div style={{ background: importResult.failed > 0 ? '#FEF3C7' : '#D1FAE5', border: `1px solid ${importResult.failed > 0 ? '#FCD34D' : '#6EE7B7'}`, borderRadius: 6, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          <strong>Import selesai:</strong> {importResult.created} berhasil, {importResult.failed} gagal.
+          {importResult.errors.length > 0 && (
+            <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem' }}>
+              {importResult.errors.slice(0, 5).map((err, i) => <li key={i}>{err}</li>)}
+              {importResult.errors.length > 5 && <li>...dan {importResult.errors.length - 5} error lainnya</li>}
+            </ul>
+          )}
+          <button onClick={() => setImportResult(null)} style={{ marginTop: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.8rem' }}>Tutup</button>
+        </div>
+      )}
+
+      {orderedQuestions.length === 0 ? (
+        <EmptyRow>Belum ada soal. Tambah manual atau import via Excel/CSV.</EmptyRow>
+      ) : (
+        <DndContext sensors={isLocked ? [] : sensors} collisionDetection={closestCenter} onDragEnd={isLocked ? undefined : handleDragEnd}>
+          <SortableContext items={orderedQuestions.map(q => q.uniqueId)} strategy={verticalListSortingStrategy}>
+            <Table>
+              <thead>
+                <tr>
+                  {!isLocked && <Th style={{ width: 32 }} />}
+                  <Th style={{ width: 40 }}>#</Th>
+                  <Th>Pertanyaan</Th>
+                  <Th>Tipe</Th>
+                  <Th>Opsi</Th>
+                  <Th>Benar</Th>
+                  {!isLocked && <Th>Aksi</Th>}
+                </tr>
+              </thead>
+              <tbody>
+                {orderedQuestions.map((q, i) => (
+                  <SortableQuestionRow
+                    key={q.uniqueId}
+                    q={q}
+                    index={i}
+                    onEdit={openEdit}
+                    onDelete={handleDelete}
+                    locked={isLocked}
+                  />
+                ))}
+              </tbody>
+            </Table>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {(questionsPagination.page > 1 || !questionsPagination.isLastPage) && (
+        <Pagination
+          currentPage={questionsPagination.page}
+          isLastPage={questionsPagination.isLastPage}
+          onPageChange={handlePageChange}
+          variant="admin"
+          language="id"
+        />
+      )}
+
+      {modal.open && (
+        <Modal
+          isOpen={modal.open}
+          onClose={() => setModal({ open: false, mode: 'create', target: null })}
+          title={modal.mode === 'create' ? 'Tambah Soal' : 'Edit Soal'}
+          footer={<Button variant="primary" onClick={handleSave} disabled={loading.isQuestionMutating}>{loading.isQuestionMutating ? 'Menyimpan...' : 'Simpan'}</Button>}
+          size="large"
+        >
+          <FormGrid>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Pertanyaan</Label>
+              <Textarea
+                value={form.question}
+                onChange={v => setForm(prev => ({ ...prev, question: v?.target?.value ?? v }))}
+                placeholder="Teks pertanyaan (opsional jika ada gambar)"
+                rows={3}
+              />
+            </FormGroup>
+
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Gambar Soal (opsional)</Label>
+              <FileUpload
+                file={form.questionImagePreviewUrl ? { name: 'Gambar soal', type: 'image/jpeg' } : null}
+                onFileSelect={handleQuestionImageSelect}
+                onRemove={handleClearQuestionImage}
+                acceptedTypes={['image/*']}
+                acceptedTypesLabel="PNG, JPG, GIF"
+                maxSizeMB={5}
+                uploadText="Klik untuk upload gambar"
+                actions={
+                  form.questionImagePreviewUrl
+                    ? <Button variant="primary" size="small" onClick={() => window.open(form.questionImagePreviewUrl, '_blank')}>Lihat</Button>
+                    : null
+                }
+              />
+            </FormGroup>
+
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Tipe Soal</Label>
+              <Dropdown
+                options={QUESTION_TYPE_OPTIONS}
+                value={QUESTION_TYPE_OPTIONS.find(o => o.value === form.isSpecial)}
+                onChange={opt => setForm(prev => ({ ...prev, isSpecial: opt.value }))}
+              />
+            </FormGroup>
+          </FormGrid>
+
+          <FormGroup style={{ marginTop: '1rem' }}>
+            <Label>Opsi Jawaban *</Label>
+            <OptionsList>
+              {form.options.map((opt, idx) => {
+                const optLabel = String.fromCharCode(65 + idx)
+                const selected = form.correctOptionIndex === idx
+                return (
+                  <div key={idx}>
+                    <OptionContainer
+                      $selected={selected}
+                      onClick={() => setForm(prev => ({ ...prev, correctOptionIndex: idx }))}
+                    >
+                      <OptionBadge $selected={selected}>{optLabel}</OptionBadge>
+                      <OptionInput
+                        type="text"
+                        value={opt.text}
+                        onChange={e => { e.stopPropagation(); setOptionText(idx, e) }}
+                        onClick={e => e.stopPropagation()}
+                        placeholder={`Teks opsi ${optLabel} (opsional jika ada gambar)`}
+                      />
+                      {form.options.length > 2 && (
+                        <RemoveOptionButton
+                          type="button"
+                          onClick={e => { e.stopPropagation(); handleRemoveOption(idx) }}
+                        >
+                          Hapus
+                        </RemoveOptionButton>
+                      )}
+                    </OptionContainer>
+                    <div style={{ marginTop: '0.5rem', marginLeft: '2.5rem' }}>
+                      <FileUpload
+                        file={opt.imagePreviewUrl ? { name: `Gambar opsi ${optLabel}`, type: 'image/jpeg' } : null}
+                        onFileSelect={file => handleOptionImageSelect(file, idx)}
+                        onRemove={() => handleClearOptionImage(idx)}
+                        acceptedTypes={['image/*']}
+                        acceptedTypesLabel="PNG, JPG, GIF"
+                        maxSizeMB={5}
+                        uploadText="Klik untuk upload gambar"
+                        actions={
+                          opt.imagePreviewUrl
+                            ? <Button variant="primary" size="small" onClick={() => window.open(opt.imagePreviewUrl, '_blank')}>Lihat</Button>
+                            : null
+                        }
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+
+              <AddOptionButton type="button" onClick={handleAddOption}>
+                + Tambah Opsi
+              </AddOptionButton>
+            </OptionsList>
+          </FormGroup>
+
+          <FormGroup style={{ marginTop: '1rem' }}>
+            <Label>Referensi (Opsional)</Label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {form.references.map((ref, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <TextInput value={ref.label} onChange={e => setReference(i, 'label', e.target.value)} placeholder="Nama sumber" />
+                  <TextInput value={ref.url} onChange={e => setReference(i, 'url', e.target.value)} placeholder="Link (opsional)" />
+                  <Button variant="danger" onClick={() => removeReference(i)}>Hapus</Button>
+                </div>
+              ))}
+              <Button onClick={addReference}>+ Tambah Referensi</Button>
+            </div>
+          </FormGroup>
+        </Modal>
+      )}
+    </>
+  )
+}
+
+// ── Badge Tab ────────────────────────────────────────────────────────────────
+/* BADGES COMMENTED OUT — restore when ready
+function BadgeTab({ challenge }) {
+  const dispatch = useDispatch()
+  const { badges, loading } = useSelector(s => s.challenge)
+  const [modal, setModal] = useState({ open: false, mode: 'create', target: null })
+  const [form, setForm] = useState(defaultBadgeForm)
+
+  useEffect(() => {
+    dispatch(fetchAdminBadges(challenge.uniqueId))
+  }, [challenge.uniqueId, dispatch])
+
+  const openCreate = () => { setForm(defaultBadgeForm); setModal({ open: true, mode: 'create', target: null }) }
+  const openEdit = (b) => {
+    setForm({
+      name: b.name, description: b.description || '',
+      minRank: b.minRank, maxRank: b.maxRank,
+      imageBlobId: null, imagePreviewUrl: b.image?.url || null,
+    })
+    setModal({ open: true, mode: 'edit', target: b })
+  }
+
+  const handleImageSelect = async (file) => {
+    const result = await dispatch(upload(file, 'challenge-badges'))
+    setForm(prev => ({ ...prev, imageBlobId: result.blobId, imagePreviewUrl: result.url }))
+  }
+
+  const handleSave = async () => {
+    const payload = {
+      name: form.name, description: form.description,
+      minRank: parseInt(form.minRank), maxRank: parseInt(form.maxRank),
+      imageBlobId: form.imageBlobId,
+    }
+    const onSuccess = () => {
+      setModal({ open: false, mode: 'create', target: null })
+      dispatch(fetchAdminBadges(challenge.uniqueId))
+    }
+    if (modal.mode === 'create') {
+      await dispatch(createBadge(challenge.uniqueId, payload, onSuccess))
+    } else {
+      await dispatch(updateBadge(challenge.uniqueId, modal.target.uniqueId, payload, onSuccess))
+    }
+  }
+
+  const handleDelete = async (b) => {
+    if (!window.confirm(`Hapus badge "${b.name}"?`)) return
+    await dispatch(deleteBadge(challenge.uniqueId, b.uniqueId, () => dispatch(fetchAdminBadges(challenge.uniqueId))))
+  }
+
+  const set = (key) => (val) => setForm(prev => ({ ...prev, [key]: val?.target?.value ?? val?.value ?? val }))
+
+  return (
+    <>
+      <SubHeader>
+        <SubTitle>Daftar Badge</SubTitle>
+        <Button variant="primary" onClick={openCreate}>+ Tambah Badge</Button>
+      </SubHeader>
+
+      {loading.isGetBadgesLoading ? (
+        <Loading />
+      ) : badges.length === 0 ? (
+        <EmptyRow>Belum ada badge. Klik "+ Tambah Badge" untuk memulai.</EmptyRow>
+      ) : (
+        <BadgeCardGrid>
+          {badges.map(b => (
+            <BadgeCard key={b.uniqueId}>
+              {b.image?.url
+                ? <BadgeCardImage src={b.image.url} alt={b.name} />
+                : <BadgeCardPlaceholder>🏅</BadgeCardPlaceholder>}
+              <BadgeCardName>{b.name}</BadgeCardName>
+              <BadgeCardRank>Rank {b.minRank} – {b.maxRank}</BadgeCardRank>
+              {b.description && <BadgeCardDesc>{b.description}</BadgeCardDesc>}
+              <BadgeCardActions>
+                <Button onClick={() => openEdit(b)}>Edit</Button>
+                <Button variant="danger" onClick={() => handleDelete(b)}>Hapus</Button>
+              </BadgeCardActions>
+            </BadgeCard>
+          ))}
+        </BadgeCardGrid>
+      )}
+
+      {modal.open && (
+        <Modal
+          isOpen={modal.open}
+          onClose={() => setModal({ open: false, mode: 'create', target: null })}
+          title={modal.mode === 'create' ? 'Tambah Badge' : 'Edit Badge'}
+          footer={<Button variant="primary" onClick={handleSave} disabled={loading.isBadgeMutating}>{loading.isBadgeMutating ? 'Menyimpan...' : 'Simpan'}</Button>}
+        >
+          <FormGrid>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Nama Badge *</Label>
+              <TextInput value={form.name} onChange={set('name')} placeholder="Contoh: Gold Badge" />
+            </FormGroup>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Deskripsi</Label>
+              <Textarea value={form.description} onChange={set('description')} placeholder="Deskripsi badge..." rows={2} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Rank Minimum *</Label>
+              <TextInput type="number" min="1" value={form.minRank} onChange={set('minRank')} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Rank Maksimum *</Label>
+              <TextInput type="number" min="1" value={form.maxRank} onChange={set('maxRank')} />
+            </FormGroup>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Gambar Badge</Label>
+              {form.imagePreviewUrl && (
+                <BadgeImagePreview src={form.imagePreviewUrl} alt="preview" style={{ marginBottom: '0.5rem' }} />
+              )}
+              <FileUpload onFileSelect={handleImageSelect} accept="image/*" />
+            </FormGroup>
+          </FormGrid>
+        </Modal>
+      )}
+    </>
+  )
+}
+
+*/
+// ── Reward Tab ───────────────────────────────────────────────────────────────
+
+const DISBURSEMENT_STATUS_OPTIONS = [
+  { label: 'Pending', value: 'pending' },
+  { label: 'Completed', value: 'completed' },
+]
+
+const defaultRewardForm = { title: '', description: '', minRank: '', maxRank: '' }
+
+// ── Reward Tab ───────────────────────────────────────────────────────────────
+
+function RewardTab({ challenge }) {
+  const dispatch = useDispatch()
+  const { adminRewards, loading } = useSelector(s => s.challenge)
+  const [modal, setModal] = useState({ open: false, mode: 'create', target: null })
+  const [form, setForm] = useState(defaultRewardForm)
+
+  useEffect(() => {
+    dispatch(fetchAdminRewards(challenge.uniqueId))
+  }, [challenge.uniqueId, dispatch])
+
+  const refresh = () => dispatch(fetchAdminRewards(challenge.uniqueId))
+
+  const openCreate = () => { setForm(defaultRewardForm); setModal({ open: true, mode: 'create', target: null }) }
+  const openEdit = (r) => {
+    setForm({ title: r.title, description: r.description || '', minRank: r.minRank ?? '', maxRank: r.maxRank ?? '' })
+    setModal({ open: true, mode: 'edit', target: r })
+  }
+
+  const set = (key) => (val) => setForm(prev => ({ ...prev, [key]: val?.target?.value ?? val?.value ?? val }))
+
+  const handleSave = async () => {
+    const payload = {
+      title: form.title,
+      description: form.description || null,
+      minRank: form.minRank !== '' ? parseInt(form.minRank) : null,
+      maxRank: form.maxRank !== '' ? parseInt(form.maxRank) : null,
+    }
+    const onSuccess = () => { setModal({ open: false, mode: 'create', target: null }); refresh() }
+    if (modal.mode === 'create') {
+      await dispatch(createAdminReward(challenge.uniqueId, payload, onSuccess))
+    } else {
+      await dispatch(updateAdminReward(challenge.uniqueId, modal.target.id, payload, onSuccess))
+    }
+  }
+
+  const handleDelete = async (r) => {
+    if (!window.confirm(`Hapus reward "${r.title}"?`)) return
+    await dispatch(deleteAdminReward(challenge.uniqueId, r.id, refresh))
+  }
+
+  return (
+    <>
+      <SubHeader>
+        <SubTitle>Daftar Reward</SubTitle>
+        <Button variant="primary" onClick={openCreate}>+ Tambah Reward</Button>
+      </SubHeader>
+
+      {loading.isGetAdminRewardLoading ? (
+        <Loading />
+      ) : adminRewards.length === 0 ? (
+        <EmptyRow>Belum ada reward. Klik "+ Tambah Reward" untuk memulai.</EmptyRow>
+      ) : (
+        <BadgeCardGrid>
+          {adminRewards.map(r => (
+            <BadgeCard key={r.id}>
+              <BadgeCardName>{r.title}</BadgeCardName>
+              {(r.minRank || r.maxRank) && (
+                <BadgeCardRank>
+                  {r.minRank && r.maxRank
+                    ? r.minRank === r.maxRank ? `Rank ${r.minRank}` : `Rank ${r.minRank} – ${r.maxRank}`
+                    : r.minRank ? `Rank ≥ ${r.minRank}` : `Rank ≤ ${r.maxRank}`}
+                </BadgeCardRank>
+              )}
+              {r.description && <BadgeCardDesc>{r.description}</BadgeCardDesc>}
+              <BadgeCardActions>
+                <Button onClick={() => openEdit(r)}>Edit</Button>
+                <Button variant="danger" onClick={() => handleDelete(r)}>Hapus</Button>
+              </BadgeCardActions>
+            </BadgeCard>
+          ))}
+        </BadgeCardGrid>
+      )}
+
+      {modal.open && (
+        <Modal
+          isOpen={modal.open}
+          onClose={() => setModal({ open: false, mode: 'create', target: null })}
+          title={modal.mode === 'create' ? 'Tambah Reward' : 'Edit Reward'}
+          footer={
+            <Button variant="primary" onClick={handleSave} disabled={loading.isRewardMutating}>
+              {loading.isRewardMutating ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          }
+        >
+          <FormGrid>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Judul Reward *</Label>
+              <TextInput value={form.title} onChange={set('title')} placeholder="Contoh: Voucher Belanja Rp100.000" />
+            </FormGroup>
+            <FormGroup style={{ gridColumn: '1 / -1' }}>
+              <Label>Deskripsi</Label>
+              <Textarea value={form.description} onChange={set('description')} placeholder="Keterangan reward..." rows={2} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Peringkat Minimum (opsional)</Label>
+              <TextInput type="number" min="1" value={form.minRank} onChange={set('minRank')} placeholder="Contoh: 1" />
+            </FormGroup>
+            <FormGroup>
+              <Label>Peringkat Maksimum (opsional)</Label>
+              <TextInput type="number" min="1" value={form.maxRank} onChange={set('maxRank')} placeholder="Contoh: 10" />
+            </FormGroup>
+          </FormGrid>
+        </Modal>
+      )}
+    </>
+  )
+}
+
+// ── Disbursement Tab ─────────────────────────────────────────────────────────
+
+function DisbursementTab({ challenge }) {
+  const dispatch = useDispatch()
+  const { adminDisbursements, loading } = useSelector(s => s.challenge)
+  const [savingId, setSavingId] = useState(null)
+  const [localData, setLocalData] = useState({})
+
+  useEffect(() => {
+    dispatch(fetchAdminDisbursements(challenge.uniqueId))
+  }, [challenge.uniqueId, dispatch])
+
+  useEffect(() => {
+    const next = {}
+    adminDisbursements.forEach(group => {
+      group.disbursements.forEach(d => {
+        next[d.id] = {
+          status: d.status,
+          proofBlobId: null,
+          proofPreviewUrl: d.proof?.url || null,
+        }
+      })
+    })
+    setLocalData(next)
+  }, [adminDisbursements])
+
+  const handleProofUpload = async (file, id) => {
+    const result = await dispatch(upload(file, 'challenge-disbursements'))
+    setLocalData(prev => ({
+      ...prev,
+      [id]: { ...prev[id], proofBlobId: result.blobId, proofPreviewUrl: result.url },
+    }))
+  }
+
+  const handleRemoveProof = (id) => {
+    setLocalData(prev => ({ ...prev, [id]: { ...prev[id], proofBlobId: null, proofPreviewUrl: null } }))
+  }
+
+  const handleComplete = async (id) => {
+    const data = localData[id] || {}
+    setSavingId(id)
+    await dispatch(updateAdminDisbursement(
+      challenge.uniqueId,
+      id,
+      { status: 'completed', proofBlobId: data.proofBlobId || null },
+      () => dispatch(fetchAdminDisbursements(challenge.uniqueId))
+    ))
+    setSavingId(null)
+  }
+
+  if (loading.isGetDisbursementsLoading) return <Loading />
+
+  return (
+    <>
+      <SubHeader>
+        <SubTitle>Disbursement Reward</SubTitle>
+      </SubHeader>
+
+      {adminDisbursements.length === 0 ? (
+        <EmptyRow>Belum ada disbursement. Data akan muncul setelah challenge selesai dan reward telah dikonfigurasi.</EmptyRow>
+      ) : (
+        adminDisbursements.map(({ reward, disbursements }) => (
+          <div key={reward.id} style={{ marginBottom: '2.5rem' }}>
+            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontWeight: 700, color: '#78350f', fontSize: '0.9375rem' }}>🎁 {reward.title}</span>
+              {(reward.minRank || reward.maxRank) && (
+                <span style={{ fontSize: '0.8125rem', color: '#92400e', background: '#fef3c7', borderRadius: 999, padding: '0.15rem 0.625rem', fontWeight: 600 }}>
+                  {reward.minRank && reward.maxRank
+                    ? reward.minRank === reward.maxRank ? `Rank ${reward.minRank}` : `Rank ${reward.minRank}–${reward.maxRank}`
+                    : reward.minRank ? `Rank ≥ ${reward.minRank}` : `Rank ≤ ${reward.maxRank}`}
+                </span>
+              )}
+              <span style={{ fontSize: '0.8rem', color: '#9ca3af', marginLeft: 'auto' }}>
+                {disbursements.filter(d => d.status === 'completed').length}/{disbursements.length} selesai
+              </span>
+            </div>
+
+            {disbursements.length === 0 ? (
+              <EmptyRow>Tidak ada penerima untuk reward ini.</EmptyRow>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                {disbursements.map(d => {
+                  const local = localData[d.id] || {}
+                  const isCompleted = local.status === 'completed'
+                  return (
+                    <div key={d.id} style={{ background: '#fff', border: `1.5px solid ${isCompleted ? '#6ee7b7' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                      <div style={{ background: isCompleted ? '#f0fdf4' : '#f9fafb', borderBottom: `1px solid ${isCompleted ? '#bbf7d0' : '#e5e7eb'}`, padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#111827' }}>{d.user?.name || '-'}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.125rem' }}>{d.user?.email || '-'}</div>
+                        </div>
+                        <div style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: isCompleted ? '#d1fae5' : '#fef3c7', color: isCompleted ? '#065f46' : '#92400e', borderRadius: 999, padding: '0.2rem 0.625rem', fontSize: '0.75rem', fontWeight: 700 }}>
+                          {isCompleted ? '✓ Selesai' : '⏳ Pending'}
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '1rem' }}>
+                        <Label style={{ fontSize: '0.8125rem', marginBottom: '0.5rem', display: 'block' }}>Bukti / Proof</Label>
+
+                        {local.proofPreviewUrl ? (
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <img src={local.proofPreviewUrl} alt="Proof" style={{ width: '100%', borderRadius: 8, border: '1px solid #e5e7eb', maxHeight: 160, objectFit: 'cover', display: 'block' }} />
+                            {!isCompleted && (
+                              <button onClick={() => handleRemoveProof(d.id)} style={{ marginTop: '0.375rem', fontSize: '0.75rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                                Hapus gambar
+                              </button>
+                            )}
+                          </div>
+                        ) : !isCompleted ? (
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <FileUpload
+                              onFileSelect={file => handleProofUpload(file, d.id)}
+                              acceptedTypes={['image/*']}
+                              acceptedTypesLabel="PNG, JPG, GIF"
+                              maxSizeMB={5}
+                              uploadText="Upload bukti reward"
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ marginBottom: '0.75rem', fontSize: '0.8125rem', color: '#9ca3af', fontStyle: 'italic' }}>Tidak ada bukti diunggah</div>
+                        )}
+
+                        {!isCompleted && (
+                          <Button
+                            variant="primary"
+                            style={{ width: '100%' }}
+                            onClick={() => handleComplete(d.id)}
+                            disabled={savingId === d.id}
+                          >
+                            {savingId === d.id ? 'Menyimpan...' : '✓ Tandai Selesai'}
+                          </Button>
+                        )}
+
+                        {isCompleted && (
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280', textAlign: 'center', marginTop: '0.25rem' }}>
+                            Selesai pada {formatJakartaDateTimeFull(d.updatedAt)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </>
+  )
+}
+
+// ── Sesi Tab ─────────────────────────────────────────────────────────────────
+
+const formatTime = (totalSeconds) => {
+  if (!totalSeconds && totalSeconds !== 0) return '-'
+  const m = Math.floor(totalSeconds / 60)
+  const s = totalSeconds % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function SesiTab({ challenge }) {
+  const dispatch = useDispatch()
+  const { leaderboard, leaderboardPagination, loading } = useSelector(s => s.challenge)
+
+  useEffect(() => {
+    dispatch(fetchAdminLeaderboard(challenge.uniqueId))
+  }, [challenge.uniqueId, dispatch])
+
+  const handlePageChange = (page) => {
+    dispatch(actions.setLeaderboardPage(page))
+    dispatch(fetchAdminLeaderboard(challenge.uniqueId))
+  }
+
+  const sesiColumns = [
+    { header: 'Rank', key: 'rank', width: '60px' },
+    { header: 'Nama', render: (s) => s.user?.name || '-' },
+    { header: 'Email', render: (s) => s.user?.email || '-' },
+    { header: 'Universitas', render: (s) => s.user?.university || '-' },
+    { header: 'Skor', key: 'score' },
+    { header: 'Benar', render: (s) => s.correctCount ?? '-' },
+    { header: 'Waktu', render: (s) => formatTime(s.totalTimeSeconds) },
+    { header: 'Selesai', render: (s) => s.completedAt ? formatJakartaDateTimeFull(s.completedAt) : '-' },
+  ]
+
+  return (
+    <>
+      <SubHeader>
+        <SubTitle>Sesi Pengguna</SubTitle>
+      </SubHeader>
+
+      <CommonTable
+        columns={sesiColumns}
+        data={leaderboard}
+        loading={loading.isGetLeaderboardLoading}
+        emptyText="Belum ada sesi"
+        emptySubtext="Belum ada pengguna yang menyelesaikan challenge ini."
+      />
+
+      {(leaderboardPagination.page > 1 || !leaderboardPagination.isLastPage) && (
+        <Pagination
+          currentPage={leaderboardPagination.page}
+          isLastPage={leaderboardPagination.isLastPage}
+          onPageChange={handlePageChange}
+          variant="admin"
+          language="id"
+        />
+      )}
+    </>
+  )
+}
+
+// ── Detail Page ──────────────────────────────────────────────────────────────
+
+export default function ChallengeDetailPage({ challenge, onBack }) {
+  const [activeTab, setActiveTab] = useState('soal')
+
+  return (
+    <Container>
+      <Header>
+        <Button onClick={onBack}>← Kembali</Button>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: '#111827' }}>{challenge.title}</h2>
+            <Badge $status={challenge.status}>{challenge.status}</Badge>
+            <ScoringBadge $type={challenge.scoringType}>
+              {challenge.scoringType === 'blitz' ? 'Blitz' : 'Classic'}
+            </ScoringBadge>
+          </div>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#6B7280' }}>
+            {challenge.durationSeconds}s · {challenge.totalQuestions} soal per sesi
+            {challenge.maxSpecialPerSession > 0 && ` · maks ${challenge.maxSpecialPerSession} soal spesial`}
+          </p>
+        </div>
+      </Header>
+
+      <TabsContainer>
+        <Tab $active={activeTab === 'soal'} onClick={() => setActiveTab('soal')}>Soal</Tab>
+        <Tab $active={activeTab === 'reward'} onClick={() => setActiveTab('reward')}>Reward</Tab>
+        <Tab $active={activeTab === 'disbursement'} onClick={() => setActiveTab('disbursement')}>Disbursement</Tab>
+        <Tab $active={activeTab === 'sesi'} onClick={() => setActiveTab('sesi')}>Sesi</Tab>
+      </TabsContainer>
+
+      {activeTab === 'soal' && <SoalTab challenge={challenge} />}
+      {activeTab === 'reward' && <RewardTab challenge={challenge} />}
+      {activeTab === 'disbursement' && <DisbursementTab challenge={challenge} />}
+      {activeTab === 'sesi' && <SesiTab challenge={challenge} />}
+    </Container>
+  )
+}

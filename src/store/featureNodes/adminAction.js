@@ -1,0 +1,183 @@
+import { actions } from './reducer'
+import Endpoints from '@config/endpoint'
+import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '@utils/requestUtils'
+
+const { setNodes, appendNodes, setPagination, setNodeRecords, setLoading } = actions
+
+// Returns filtered nodes without touching Redux state — for pickers and dropdowns
+export const fetchFilteredNodes = (params = {}) => async () => {
+  const res = await getWithToken(Endpoints.admin.featureNodes, params)
+  return res.data.data || []
+}
+
+// Returns nodes without touching Redux state — for lazy tree loading
+export const fetchLazyNodes = (parentId = null) => async () => {
+  const params = { parentId: parentId === null ? 'null' : parentId }
+  const res = await getWithToken(Endpoints.admin.featureNodes, params)
+  return res.data.data || []
+}
+
+export const fetchFeatureNodes = () => async (dispatch, getState) => {
+  try {
+    dispatch(setLoading({ isFetchingNodes: true }))
+    const { filter } = getState().featureNodes
+    const queryParams = {}
+    if (filter.search) queryParams.search = filter.search
+    if (filter.nodeType) queryParams.nodeType = filter.nodeType
+    if (filter.visibility) queryParams.visibility = filter.visibility
+    if (filter.classification) queryParams.classification = filter.classification
+    if (filter.layer) queryParams.layer = filter.layer
+    if (filter.parentId) queryParams.parentId = filter.parentId
+    if (filter.sortBy) queryParams.sortBy = filter.sortBy
+    const response = await getWithToken(Endpoints.admin.featureNodes, queryParams)
+    dispatch(setNodes(response.data.data || []))
+  } finally {
+    dispatch(setLoading({ isFetchingNodes: false }))
+  }
+}
+
+// Paginated variant of fetchFeatureNodes (limit=50, "Muat Lebih Banyak") — used by the
+// Materi admin topic/subtopic tables. The plain fetchFeatureNodes above stays unbounded
+// since many other admin pages rely on it returning the complete list for pickers/dropdowns.
+export const fetchFeatureNodesPaginated = ({ append = false } = {}) => async (dispatch, getState) => {
+  try {
+    dispatch(setLoading({ isFetchingNodes: true }))
+    const { filter, pagination } = getState().featureNodes
+    const queryParams = { page: pagination.page, perPage: pagination.perPage }
+    if (filter.search) queryParams.search = filter.search
+    if (filter.nodeType) queryParams.nodeType = filter.nodeType
+    if (filter.visibility) queryParams.visibility = filter.visibility
+    if (filter.classification) queryParams.classification = filter.classification
+    if (filter.layer) queryParams.layer = filter.layer
+    if (filter.parentId) queryParams.parentId = filter.parentId
+    if (filter.sortBy) queryParams.sortBy = filter.sortBy
+    const response = await getWithToken(Endpoints.admin.featureNodes, queryParams)
+    dispatch(append ? appendNodes(response.data.data || []) : setNodes(response.data.data || []))
+    if (response.data.pagination) dispatch(setPagination(response.data.pagination))
+  } finally {
+    dispatch(setLoading({ isFetchingNodes: false }))
+  }
+}
+
+export const loadMoreFeatureNodes = () => (dispatch, getState) => {
+  const { pagination } = getState().featureNodes
+  if (pagination.isLastPage) return
+  dispatch(setPagination({ page: pagination.page + 1 }))
+  dispatch(fetchFeatureNodesPaginated({ append: true }))
+}
+
+export const fetchFeatureNodesWithStats = () => async (dispatch, getState) => {
+  try {
+    dispatch(setLoading({ isFetchingNodes: true }))
+    const { filter } = getState().featureNodes
+    const queryParams = {}
+    if (filter.search) queryParams.search = filter.search
+    if (filter.nodeType) queryParams.nodeType = filter.nodeType
+    if (filter.visibility) queryParams.visibility = filter.visibility
+    if (filter.classification) queryParams.classification = filter.classification
+    if (filter.layer) queryParams.layer = filter.layer
+    if (filter.parentId) queryParams.parentId = filter.parentId
+    if (filter.sortBy) queryParams.sortBy = filter.sortBy
+    const response = await getWithToken(Endpoints.admin.featureNodesV2, queryParams)
+    dispatch(setNodes(response.data.data || []))
+  } finally {
+    dispatch(setLoading({ isFetchingNodes: false }))
+  }
+}
+
+export const createFeatureNode = (payload, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isCreating: true }))
+    await postWithToken(Endpoints.admin.featureNodes, payload)
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isCreating: false }))
+  }
+}
+
+export const updateFeatureNode = (id, payload, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isUpdating: true }))
+    await putWithToken(`${Endpoints.admin.featureNodes}/${id}`, payload)
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isUpdating: false }))
+  }
+}
+
+export const fetchFeatureNodeDetail = (id) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingDetail: true }))
+    const res = await getWithToken(`${Endpoints.admin.featureNodes}/${id}`)
+    return res.data.data
+  } finally {
+    dispatch(setLoading({ isFetchingDetail: false }))
+  }
+}
+
+export const deleteFeatureNode = (id, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isDeleting: true }))
+    await deleteWithToken(`${Endpoints.admin.featureNodes}/${id}`)
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isDeleting: false }))
+  }
+}
+
+// Records
+export const fetchNodeRecords = (recordType) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isFetchingRecords: true }))
+    const response = await getWithToken(Endpoints.admin.featureNodeRecords, { recordType })
+    dispatch(setNodeRecords(response.data.data || []))
+  } finally {
+    dispatch(setLoading({ isFetchingRecords: false }))
+  }
+}
+
+export const createNodeRecord = (payload, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isCreatingRecord: true }))
+    await postWithToken(Endpoints.admin.featureNodeRecords, payload)
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isCreatingRecord: false }))
+  }
+}
+
+export const deleteNodeRecord = (id, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isDeletingRecord: true }))
+    await deleteWithToken(`${Endpoints.admin.featureNodeRecords}/${id}`)
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isDeletingRecord: false }))
+  }
+}
+
+// Subtopic/module ordering — swaps two siblings' order values directly
+export const swapNodeOrder = (nodeId, withNodeId, onSuccess) => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isSwappingOrder: true }))
+    await putWithToken(`${Endpoints.admin.featureNodes}/${nodeId}/swap-order`, { withNodeId })
+    onSuccess?.()
+  } finally {
+    dispatch(setLoading({ isSwappingOrder: false }))
+  }
+}
+
+export const uploadNodeVideo = (file, provider = 'bunny_stream') => async (dispatch) => {
+  try {
+    dispatch(setLoading({ isUploadingVideo: true }))
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('provider', provider)
+    formData.append('folder', 'feature-node-videos')
+    const res = await postWithToken(Endpoints.api.uploadFile, formData)
+    return res.data.data // { blobId, filename, provider }
+  } finally {
+    dispatch(setLoading({ isUploadingVideo: false }))
+  }
+}
+

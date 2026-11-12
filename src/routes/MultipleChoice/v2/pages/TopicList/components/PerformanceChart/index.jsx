@@ -1,0 +1,146 @@
+import { useState, useEffect, memo } from 'react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LabelList, ResponsiveContainer } from 'recharts'
+import { EmptyChart, Legend, LegendDot, LegendItem } from './PerformanceChart.styles'
+
+const BAR_SIZE = 75
+const BAR_GAP = 24
+const Y_AXIS_OFFSET = 27
+
+function scoreColor(score) {
+  if (score == null) return 'var(--color-gray-200)'
+  if (score >= 75) return 'var(--color-brand-green)'
+  if (score >= 60) return 'var(--color-brand-blue)'
+  if (score >= 45) return 'var(--color-warning)'
+  return 'var(--color-danger)'
+}
+
+function CustomTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null
+  const { name, avgScore } = payload[0].payload
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid var(--color-gray-200)', borderRadius: 10,
+      padding: '0.6rem 0.875rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    }}>
+      <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-gray-900)', marginBottom: '0.2rem' }}>{name}</div>
+      <div style={{ fontSize: '1rem', fontWeight: 800, color: scoreColor(avgScore) }}>{avgScore}%</div>
+    </div>
+  )
+}
+
+// foreignObject embeds a real HTML node inside the SVG, so the browser's own CSS
+// text layout does the wrapping/clamping — no manual char-count guessing needed.
+function CustomTick({ x, y, payload }) {
+  return (
+    <foreignObject x={x - BAR_SIZE / 2} y={y} width={BAR_SIZE} height={36}>
+      <div
+        xmlns="http://www.w3.org/1999/xhtml"
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: 'var(--color-gray-500)',
+          textAlign: 'center',
+          lineHeight: '15px',
+          wordBreak: 'break-word',
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        }}
+      >
+        {payload.value}
+      </div>
+    </foreignObject>
+  )
+}
+
+function PerformanceChart({ topics, subtopicsCache = {}, onRequestSubtopics, selectedTopicId, onSelectTopic }) {
+  const attempted = topics.filter(t => t.avgScore != null)
+  const [loadingSubtopics, setLoadingSubtopics] = useState(false)
+
+  // Reset drill-down when topic list changes
+  useEffect(() => { onSelectTopic(null) }, [attempted.length])
+
+  // Fetch fresh subtopic progress whenever the selected topic changes
+  useEffect(() => {
+    if (!selectedTopicId) return
+    setLoadingSubtopics(true)
+    onRequestSubtopics?.(selectedTopicId).finally(() => setLoadingSubtopics(false))
+  }, [selectedTopicId])
+
+  if (attempted.length === 0) {
+    return <EmptyChart>Belum ada sesi yang diselesaikan. Mulai latihan untuk melihat performa.</EmptyChart>
+  }
+
+  const selectedTopic = selectedTopicId ? attempted.find(t => t.id === selectedTopicId) : null
+  const subtopics = selectedTopicId ? (subtopicsCache[selectedTopicId]?.items || []) : []
+  const subtopicsWithScore = subtopics.filter(s => s.avgScore != null)
+
+  const displayData = selectedTopicId
+    ? subtopicsWithScore.map(s => ({ name: s.name, avgScore: s.avgScore }))
+    : attempted.map(t => ({ name: t.name, avgScore: t.avgScore }))
+
+  const minChartWidth = displayData.length * (BAR_SIZE + BAR_GAP) + Y_AXIS_OFFSET
+  const showDrillDownEmpty = selectedTopicId && !loadingSubtopics && subtopicsWithScore.length === 0
+
+  return (
+    <>
+      {loadingSubtopics ? (
+        <EmptyChart>Memuat subtopik...</EmptyChart>
+      ) : showDrillDownEmpty ? (
+        <EmptyChart>Belum ada subtopik {selectedTopic?.name} yang diselesaikan.</EmptyChart>
+      ) : (
+        <div style={{ width: '100%', overflowX: 'auto' }}>
+          <div style={{ minWidth: minChartWidth }}>
+            <ResponsiveContainer width="100%" height={232}>
+              <BarChart
+                data={displayData}
+                barSize={BAR_SIZE}
+                barCategoryGap={BAR_GAP}
+                margin={{ top: 16, right: 16, left: -24, bottom: 8 }}
+              >
+                <CartesianGrid vertical={false} stroke="var(--color-gray-100)" />
+                <XAxis
+                  dataKey="name"
+                  tick={<CustomTick />}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={0}
+                  height={40}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tickFormatter={v => `${v}%`}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 13, fill: 'var(--color-gray-400)' }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--color-gray-50)', radius: 6 }} />
+                <Bar dataKey="avgScore" radius={[6, 6, 0, 0]}>
+                  {displayData.map((entry, i) => (
+                    <Cell key={i} fill={scoreColor(entry.avgScore)} />
+                  ))}
+                  <LabelList
+                    dataKey="avgScore"
+                    position="top"
+                    formatter={v => `${v}%`}
+                    style={{ fontSize: 13, fontWeight: 700, fill: 'var(--color-gray-700)' }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      <Legend>
+        <LegendItem><LegendDot $color="var(--color-brand-green)" />≥75%</LegendItem>
+        <LegendItem><LegendDot $color="var(--color-brand-blue)" />60–74%</LegendItem>
+        <LegendItem><LegendDot $color="var(--color-warning)" />45–59%</LegendItem>
+        <LegendItem><LegendDot $color="var(--color-danger)" />&lt;45%</LegendItem>
+      </Legend>
+    </>
+  )
+}
+
+export default memo(PerformanceChart)

@@ -14,7 +14,13 @@ const initialState = {
     isDeletingDeck: false,
     isGetDetailFlashcardDeckLoading: false,
     isUploadingImage: false,
+    isLinkedMcqLoading: false,
+    isLinkedSummaryNotesLoading: false,
   },
+  linkedMcq: [],
+  linkedMcqPagination: { page: 1, perPage: 6, isLastPage: true },
+  linkedSummaryNotes: [],
+  linkedSummaryNotesPagination: { page: 1, perPage: 6, isLastPage: true },
   filters: {
     search: '',
     topic: '',
@@ -40,6 +46,9 @@ const { reducer, actions } = createSlice({
     setDecks: (state, { payload }) => {
       state.decks = payload
     },
+    appendDecks: (state, { payload }) => {
+      state.decks = [...state.decks, ...payload]
+    },
     setDetail: (state, { payload }) => {
       state.detail = payload
     },
@@ -61,7 +70,23 @@ const { reducer, actions } = createSlice({
     },
     updatePagination: (state, { payload }) => {
       state.pagination = { ...state.pagination, ...payload }
-    }
+    },
+    setLinkedMcq: (state, { payload: { data, pagination } }) => {
+      state.linkedMcq = data
+      state.linkedMcqPagination = pagination
+    },
+    appendLinkedMcq: (state, { payload: { data, pagination } }) => {
+      state.linkedMcq = [...state.linkedMcq, ...data]
+      state.linkedMcqPagination = pagination
+    },
+    setLinkedSummaryNotes: (state, { payload: { data, pagination } }) => {
+      state.linkedSummaryNotes = data
+      state.linkedSummaryNotesPagination = pagination
+    },
+    appendLinkedSummaryNotes: (state, { payload: { data, pagination } }) => {
+      state.linkedSummaryNotes = [...state.linkedSummaryNotes, ...data]
+      state.linkedSummaryNotesPagination = pagination
+    },
   },
   
     extraReducers: (builder) => {

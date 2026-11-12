@@ -4,7 +4,7 @@ import { colors } from '@config/colors';
 export const LoaderWrapper = styled.div`
   position: ${props => props.fullScreen ? 'fixed' : 'absolute'};
   inset: 0;
-  z-index: 100000;
+  z-index: 999999;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -64,8 +64,8 @@ export const SpinnerRing = styled.div`
     return `${size + 30}px`;
   }};
   border: 3px solid transparent;
-  border-top-color: ${props => props.fullScreen ? 'rgba(255, 255, 255, 0.3)' : 'rgba(25, 118, 210, 0.3)'};
-  border-right-color: ${props => props.fullScreen ? 'rgba(255, 255, 255, 0.3)' : 'rgba(25, 118, 210, 0.3)'};
+  border-top-color: ${props => props.fullScreen ? 'rgba(255, 255, 255, 0.3)' : 'rgba(30, 115, 170, 0.3)'};
+  border-right-color: ${props => props.fullScreen ? 'rgba(255, 255, 255, 0.3)' : 'rgba(30, 115, 170, 0.3)'};
   border-radius: 50%;
   animation: spin 1.5s linear infinite;
 

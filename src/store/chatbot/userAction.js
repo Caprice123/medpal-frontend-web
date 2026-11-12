@@ -3,8 +3,7 @@ import { actions as commonActions } from '@store/common/reducer'
 import { actions as pricingActions } from '@store/pricing/reducer'
 import Endpoints from '@config/endpoint'
 import { getWithToken, postWithToken, putWithToken, deleteWithToken } from '../../utils/requestUtils'
-import { getToken } from '@utils/authToken'
-import { refreshAccessToken } from '../../config/api'
+import { ensureValidToken } from '../../config/api'
 import { setTimeout as setWorkerTimeout, clearTimeout as clearWorkerTimeout } from 'worker-timers'
 import { captureException } from '@config/sentry'
 
@@ -59,6 +58,15 @@ export const fetchChatbotJournals = ({ page = 1, perPage = 20, search = '' } = {
   const route = Endpoints.api.chatbotJournals + `?${params}`
   const response = await getWithToken(route)
   return response.data.data
+}
+
+// Live listing/search against OpenAlex itself (not the admin-curated list) —
+// used by the journal picker so users select a real, resolvable journal.
+// An empty query browses top journals; a non-empty one narrows by name.
+export const searchChatbotJournals = ({ query = '', page = 1, perPage = 10 } = {}) => async () => {
+  const route = Endpoints.api.chatbot + '/journals/search'
+  const response = await getWithToken(route, { q: query.trim(), page, perPage })
+  return response.data
 }
 
 export const updateUserChatbotSettings = (settings) => async (dispatch) => {
@@ -239,29 +247,6 @@ export const fetchMessages = ({ conversationId, perPage = 10, prepend = false })
 
 // Store abort controllers per conversation (cannot be stored in Redux - not serializable)
 const abortControllersByConversation = {}
-
-// Helper function to ensure token is valid and refreshed if needed
-const ensureValidToken = async () => {
-  const token = getToken()
-
-  if (!token) {
-    throw new Error('No authentication token found')
-  }
-
-  // Check if access token is expired
-  const isTokenExpired = (isoString) => {
-    const now = new Date()
-    const targetDate = new Date(isoString)
-    return targetDate < now
-  }
-
-  // If access token is expired, refresh it using axios
-  if (isTokenExpired(token.accessTokenExpiresAt)) {
-    return await refreshAccessToken()
-  }
-
-  return token.accessToken
-}
 
 export const sendMessage = (conversationId, content, mode) => async (dispatch, getState) => {
   try {

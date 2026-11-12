@@ -1,24 +1,10 @@
-import { Suspense } from 'react';
-import lazyWithRetry from '@utils/lazyWithRetry';
-const lazy = lazyWithRetry;
-import PageLoader from '@components/PageLoader';
-
-const MultipleChoiceTopicList = lazy(() => import('../pages/List'));
-const MultipleChoiceTopicDetail = lazy(() => import('../pages/Detail'));
-
-const withSuspense = (Component) => (
-    <Suspense fallback={<PageLoader text="Loading..." />}>
-        {Component}
-    </Suspense>
-);
+import BankSoalPage from '../v2/pages/TopicList';
 
 export class MultipleChoiceRoute {
     static moduleRoute = "/multiple-choice"
     static initialRoute = MultipleChoiceRoute.moduleRoute
-    static detailRoute = MultipleChoiceRoute.moduleRoute + "/:id"
 }
 
 export const multipleChoiceRoutes = [
-    { path: MultipleChoiceRoute.initialRoute, element: withSuspense(<MultipleChoiceTopicList />) },
-    { path: MultipleChoiceRoute.detailRoute, element: withSuspense(<MultipleChoiceTopicDetail />) },
+    { path: MultipleChoiceRoute.initialRoute, element: <BankSoalPage /> },
 ];
