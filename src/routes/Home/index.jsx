@@ -51,7 +51,7 @@ function Home() {
 
         <ChallengeSection />
 
-        <TestimonialSection testimonialItems={testimonialItems} />
+        {/*<TestimonialSection testimonialItems={testimonialItems} /> */}
 
         <FAQSection faqItems={faqItems} />
 
