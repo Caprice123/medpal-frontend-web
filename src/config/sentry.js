@@ -60,7 +60,7 @@ export const initSentry = () => {
       'ResizeObserver loop limit exceeded',
       'Non-Error promise rejection captured',
       'NetworkError',
-    //   'Network Error',
+      'Network Error',
       'Network request failed',
       'Failed to fetch',
       'AbortError',
@@ -99,18 +99,12 @@ export const initSentry = () => {
   }
 };
 
-export const captureException = (error, context = {}, options = {}) => {
+export const captureException = (error, context = {}) => {
   if (isDev) {
-    console.error('[Sentry captureException]', error, context, options);
+    console.error('[Sentry captureException]', error, context);
     return;
   }
-  const { tags, level, fingerprint } = options;
-  Sentry.captureException(error, {
-    extra: context,
-    ...(tags ? { tags } : {}),
-    ...(level ? { level } : {}),
-    ...(fingerprint ? { fingerprint } : {}),
-  });
+  Sentry.captureException(error, { extra: context });
 };
 
 export const captureMessage = (message, level = 'info', context = {}) => {

@@ -21,7 +21,10 @@ import mcq from "./mcq";
 import constant from "./constant";
 import home from "./home";
 import chatbot from "./chatbot/reducer";
+import chatbotV2 from "./chatbot/v2/reducer";
+import chatbotAdminV2 from "./chatbot/v2/adminReducer";
 import skripsi from "./skripsi/reducer";
+import skripsiV2 from "./skripsi/v2/reducer";
 import oscePractice from "./oscePractice";
 import oscePracticeV2 from "./oscePractice/v2";
 import atlas from "./atlas";
@@ -32,7 +35,7 @@ import eventV2 from "./event/v2";
 import featureSubscriptions from "./featureSubscriptions/reducer";
 import banner from "./banner";
 import challenge from "./challenge";
-import profile from "./profile/reducer";
+import profile from "./profile/reducer"
 import featureNodes from "./featureNodes/reducer";
 import nodeCards from "./nodeCards/reducer";
 import nodeQuestions from "./nodeQuestions/reducer";
@@ -73,7 +76,10 @@ export const rootReducer = combineReducers({
     anatomy,
     mcq,
     chatbot,
+    chatbotV2,
+    chatbotAdminV2,
     skripsi,
+    skripsiV2,
     oscePractice,
     oscePracticeV2,
     atlas,

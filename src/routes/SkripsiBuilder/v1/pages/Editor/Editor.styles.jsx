@@ -1,0 +1,855 @@
+import styled from 'styled-components'
+
+export const Wrapper = styled.div`
+    background: var(--color-brand-blue-tint);
+
+    /* Resize handle styles */
+    .resize-handle-skripsi {
+      width: 4px;
+      background: var(--color-gray-200);
+      cursor: col-resize;
+      position: relative;
+      transition: background 0.2s;
+      user-select: none;
+
+      &:hover {
+        background: var(--color-brand-blue);
+      }
+
+      &[data-resize-handle-active="pointer"],
+      &[data-resize-handle-active="keyboard"] {
+        background: var(--color-brand-blue-deep);
+      }
+
+      /* Visual indicator */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 40px;
+        background: transparent;
+        border-left: 2px dotted var(--color-gray-400);
+        border-right: 2px dotted var(--color-gray-400);
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+
+      &:hover::after {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+`
+
+export const Container = styled.div`
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: calc(100vh - 44px);
+
+@media (max-width: 768px) {
+    min-height: 100vh;
+    max-width: 100%;
+    height: initial;
+    max-height: initial;
+  }
+`
+
+export const TopBar = styled.div`
+  background: white;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
+`
+
+export const BackButton = styled.button`
+  background: transparent;
+  border: none;
+  color: var(--color-gray-500);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-gray-100);
+    color: var(--color-gray-800);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+`
+
+export const SetTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+`
+
+export const SetTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin: 0;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+`
+
+export const SetTitleInput = styled.input`
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  padding: 8px 12px;
+  border: 2px solid var(--color-brand-blue);
+  border-radius: 6px;
+  outline: none;
+  background: white;
+  text-align: center;
+  min-width: 300px;
+
+  &:focus {
+    border-color: var(--color-brand-blue-deep);
+  }
+
+  &::placeholder {
+    color: var(--color-gray-400);
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    min-width: auto;
+    width: 100%;
+    padding: 0.5rem;
+  }
+`
+
+export const EditButton = styled.button`
+  background: ${props =>
+    props.$variant === 'success' ? 'var(--color-brand-green)' :
+    props.$variant === 'danger' ? 'var(--color-danger)' :
+    'transparent'
+  };
+  color: ${props =>
+    props.$variant === 'success' || props.$variant === 'danger' ? 'white' : 'var(--color-gray-500)'
+  };
+  border: ${props =>
+    props.$variant === 'success' || props.$variant === 'danger' ? 'none' : '1px solid var(--color-gray-300)'
+  };
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: ${props =>
+      props.$variant === 'success' ? 'var(--color-brand-green-dark)' :
+      props.$variant === 'danger' ? 'var(--color-danger-dark)' :
+      'var(--color-gray-100)'
+    };
+    color: ${props =>
+      props.$variant === 'success' || props.$variant === 'danger' ? 'white' : 'var(--color-gray-800)'
+    };
+  }
+`
+
+export const TopActions = styled.div`
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`
+
+export const EditorActions = styled.div`
+  display: none;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+
+  @media (max-width: 768px) {
+    display: flex;
+    padding: 0.625rem 0.75rem;
+    gap: 0.5rem;
+  }
+`
+
+export const SaveButton = styled.button`
+  background: var(--color-brand-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: var(--color-brand-blue-deep);
+  }
+
+  &:disabled {
+    background: var(--color-gray-400);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+  }
+`
+
+export const ExportButton = styled.button`
+  background: var(--color-brand-green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: var(--color-brand-green-dark);
+  }
+
+  &:disabled {
+    background: var(--color-gray-400);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+  }
+`
+
+export const TabBar = styled.div`
+  background: white;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: 0 24px;
+  display: flex;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    gap: 0.25rem;
+  }
+`
+
+export const Tab = styled.button`
+  background: ${props => props.$active ? 'var(--color-brand-blue-tint)' : 'transparent'};
+  border: none;
+  border-bottom: 2px solid ${props => props.$active ? 'var(--color-brand-blue)' : 'transparent'};
+  color: ${props => props.$active ? 'var(--color-brand-blue)' : 'var(--color-gray-500)'};
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: ${props => props.$active ? '600' : '500'};
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-gray-50);
+    color: ${props => props.$active ? 'var(--color-brand-blue)' : 'var(--color-gray-800)'};
+  }
+
+  @media (max-width: 768px) {
+    /* padding: 0.625rem 0.875rem; */
+    font-size: 0.8125rem;
+  }
+`
+
+export const EditorArea = styled.div`
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+`
+
+export const ChatPanel = styled.div`
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100vh;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--color-gray-200);
+  }
+`
+
+export const ChatHeader = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+  }
+`
+
+export const ChatTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+  }
+`
+
+export const ChatMessages = styled.div`
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    gap: 0.625rem;
+  }
+`
+
+export const Message = styled.div`
+  display: flex;
+  justify-content: ${props => props.$sender === 'user' ? 'flex-end' : 'flex-start'};
+  max-width: 100%;
+`
+
+export const UserMessage = styled.div`
+  background: var(--color-brand-blue);
+  color: white;
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  border-bottom-right-radius: 4px;
+  max-width: 95%;
+  word-wrap: break-word;
+
+  @media (max-width: 768px) {
+    max-width: 85%;
+    padding: 0.75rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 90%;
+    padding: 0.75rem;
+  }
+`
+
+export const AIMessage = styled.div`
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  max-width: 95%;
+  word-wrap: break-word;
+
+  @media (max-width: 768px) {
+    max-width: 85%;
+    padding: 0.75rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 90%;
+    padding: 0.75rem;
+  }
+`
+
+export const MessageContent = styled.div`
+  font-size: 0.9375rem;
+  line-height: 1.6;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
+
+  p {
+    margin: 0 0 0.75rem 0;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 1rem 0 0.5rem 0;
+    font-weight: 600;
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+
+  @media (max-width: 768px) {
+    h1 { font-size: 1.25rem; }
+    h2 { font-size: 1.125rem; }
+    h3 { font-size: 1rem; }
+  }
+
+  ul, ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin: 0.25rem 0;
+  }
+
+  code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    font-size: 0.875em;
+  }
+
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+
+    code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    @media (max-width: 768px) {
+      padding: 0.75rem;
+      font-size: 0.8125rem;
+    }
+  }
+
+  blockquote {
+    border-left: 3px solid var(--color-gray-200);
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    color: var(--color-gray-500);
+
+    @media (max-width: 768px) {
+      padding-left: 0.75rem;
+    }
+  }
+
+  a {
+    color: var(--color-brand-blue);
+    text-decoration: underline;
+    &:hover {
+      color: var(--color-brand-blue-deep);
+    }
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0;
+    display: block;
+    overflow-x: auto;
+
+    @media (max-width: 768px) {
+      font-size: 0.8125rem;
+    }
+  }
+
+  th, td {
+    border: 1px solid var(--color-gray-200);
+    padding: 0.5rem;
+    text-align: left;
+
+    @media (max-width: 768px) {
+      padding: 0.375rem;
+    }
+  }
+
+  th {
+    background: var(--color-gray-50);
+    font-weight: 600;
+  }
+`
+
+export const MessageFooter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+`
+
+export const Timestamp = styled.div`
+  font-size: 0.75rem;
+  opacity: 0.7;
+`
+
+export const ModeBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+
+  ${props => {
+    switch (props.mode) {
+      case 'normal':
+        return `
+          background: var(--color-brand-blue-tint-strong);
+          color: var(--color-brand-blue-deep);
+        `
+      case 'validated_search':
+        return `
+          background: var(--color-brand-green-tint);
+          color: var(--color-brand-green-darker);
+        `
+      case 'research':
+        return `
+          background: #fae8ff;
+          color: #86198f;
+        `
+      default:
+        return `
+          background: var(--color-gray-100);
+          color: var(--color-gray-700);
+        `
+    }
+  }}
+`
+
+export const SourcesSection = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-gray-100);
+
+  .sources-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 0.5rem;
+  }
+`
+
+export const SourceItem = styled.a`
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  margin-bottom: 0.25rem;
+
+  &:hover {
+    color: var(--color-brand-blue);
+  }
+`
+
+export const ChatInputArea = styled.div`
+  padding: 16px;
+  border-top: 1px solid var(--color-gray-200);
+  background: white;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
+`
+
+export const ChatInputWrapper = styled.div`
+  display: flex;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
+`
+
+export const ChatInput = styled.textarea`
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+  resize: vertical;
+  min-height: 42px;
+  max-height: 120px;
+  line-height: 1.5;
+
+  &:focus {
+    border-color: var(--color-brand-blue);
+  }
+
+  &::placeholder {
+    color: var(--color-gray-400);
+  }
+
+  &:disabled {
+    background: var(--color-gray-50);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: 38px;
+    max-height: 100px;
+  }
+`
+
+export const SendButton = styled.button`
+  background: var(--color-brand-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: var(--color-brand-blue-deep);
+  }
+
+  &:disabled {
+    background: var(--color-gray-400);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+  }
+`
+
+export const EditorPanel = styled.div`
+  flex: 1;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    min-height: 100vh;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+`
+
+export const EditorToolbar = styled.div`
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.75rem;
+    gap: 0.25rem;
+  }
+`
+
+export const ToolbarButton = styled.button`
+  background: ${props => props.$active ? 'var(--color-brand-blue-tint)' : 'transparent'};
+  border: 1px solid ${props => props.$active ? 'var(--color-brand-blue)' : 'var(--color-gray-300)'};
+  color: ${props => props.$active ? 'var(--color-brand-blue)' : 'var(--color-gray-500)'};
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    background: var(--color-gray-100);
+    border-color: var(--color-brand-blue);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+  }
+`
+
+export const EditorContent = styled.div`
+  flex: 1;
+  padding: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    height: 100%;
+  }
+
+  /* Ensure BlockNote takes full height */
+  > div {
+    height: 100%;
+    flex: 1;
+  }
+
+  /* Custom BlockNote theme overrides */
+  .bn-editor {
+    background: transparent;
+  }
+
+  /* Ensure BlockNote content has good spacing */
+  .ProseMirror {
+    outline: none;
+    padding: 0;
+
+    /* Add spacing between blocks */
+    > * + * {
+      margin-top: 0.5em;
+    }
+  }
+
+  /* Image styling for BlockNote */
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+`
+
+export const LoadingState = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  font-size: 16px;
+  color: var(--color-gray-500);
+`
+
+export const EmptyMessages = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-gray-400);
+  font-size: 14px;
+`
+
+export const TypingIndicator = styled.div`
+  display: flex;
+  gap: 0.375rem;
+  padding: 0.5rem 0;
+`
+
+export const TypingDot = styled.div`
+  width: 8px;
+  height: 8px;
+  background: var(--color-gray-400);
+  border-radius: 50%;
+  animation: typing 1.4s infinite;
+  animation-delay: ${props => props.delay};
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.7;
+    }
+    30% {
+      transform: translateY(-10px);
+      opacity: 1;
+    }
+  }
+`
