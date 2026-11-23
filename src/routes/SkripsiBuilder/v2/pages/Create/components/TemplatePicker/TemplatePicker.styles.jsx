@@ -87,3 +87,34 @@ export const DeleteOwn = styled.span`
     background: var(--color-danger-tint-soft);
   }
 `
+
+// A form, not a div: Enter in the field runs the search, which the submit
+// handler covers without a per-input key handler.
+export const SearchRow = styled.form`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+
+  /* The input is the part that should take the width. */
+  > *:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+`
+
+export const EmptyNote = styled.p`
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-gray-500);
+  border: 1px dashed var(--color-gray-300);
+  border-radius: 10px;
+`
+
+export const LoadMoreRow = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+`

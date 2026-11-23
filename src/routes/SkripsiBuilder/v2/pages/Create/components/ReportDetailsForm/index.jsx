@@ -2,7 +2,7 @@ import { FaPlus, FaTimes } from 'react-icons/fa'
 import TextInput from '@components/common/TextInput'
 import Textarea from '@components/common/Textarea'
 import Button from '@components/common/Button'
-import { StepLabel, StepNumber } from '../../Create.styles'
+import { BlockLabel, Block } from '../../Create.styles'
 import {
   Fields, MemberRow, MemberList, RemoveButton, FieldLabel, FieldHint,
 } from './ReportDetailsForm.styles'
@@ -18,8 +18,8 @@ const ReportDetailsForm = ({
   onAddMember,
   onRemoveMember,
 }) => (
-  <>
-    <StepLabel><StepNumber>3</StepNumber> · Detail laporan</StepLabel>
+  <Block>
+    <BlockLabel>Detail laporan</BlockLabel>
 
     <Fields>
       <TextInput
@@ -76,7 +76,7 @@ const ReportDetailsForm = ({
         </Button>
       </div>
     </Fields>
-  </>
+  </Block>
 )
 
 export default ReportDetailsForm
