@@ -12,6 +12,7 @@ import {
   HeaderBlock,
   GradientHeading,
   Description,
+  ViewAllGroup,
   ViewAllLink,
   ViewAllIcon,
   CardsArea,
@@ -29,6 +30,7 @@ import {
 } from './EventSection.styles'
 import { useHomeEvents } from './hooks/useHomeEvents'
 import { EventRoute } from '../../../Event/routes'
+import { WebinarRoute } from '../../../Webinar/routes'
 
 // Real events and webinars, read live from GET /api/v2/home/landing-events —
 // the ones this section advertises are the same ones /events and /webinar show,
@@ -50,17 +52,20 @@ function EventSection() {
       <ContentWidth>
         <SectionTop>
           <HeaderBlock>
-            <GradientHeading>Free Event</GradientHeading>
+            <GradientHeading>Free Event &amp; Webinar</GradientHeading>
             <Description>
               Periode mencoba fitur MedPal tanpa biaya dan webinar bersama praktisi.
               Daftar selama pendaftarannya masih dibuka.
             </Description>
           </HeaderBlock>
 
-          <ViewAllLink href={EventRoute.moduleRoute}>
-            Lihat semua event
+          <ViewAllGroup>
+            Lihat semua
+            <ViewAllLink href={EventRoute.moduleRoute}>Event</ViewAllLink>
+            <span aria-hidden="true">·</span>
+            <ViewAllLink href={WebinarRoute.moduleRoute}>Webinar</ViewAllLink>
             <ViewAllIcon src={arrowCircle} alt="" />
-          </ViewAllLink>
+          </ViewAllGroup>
         </SectionTop>
 
         <CardsArea>
@@ -92,7 +97,7 @@ function EventSection() {
           ) : (
             isLoaded && <LandingEmptyState
               icon="🗓️"
-              title="Belum ada event yang dibuka"
+              title="Belum ada event atau webinar yang dibuka"
               description="Periode berikutnya sedang disiapkan tim MedPal. Cek halaman event untuk yang sudah lewat."
               actionLabel="Lihat semua event"
               onAction={() => { window.location.href = EventRoute.moduleRoute }}
