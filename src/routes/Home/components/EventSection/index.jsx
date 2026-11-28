@@ -50,7 +50,7 @@ function EventSection() {
       <ContentWidth>
         <SectionTop>
           <HeaderBlock>
-            <GradientHeading>Free Event &amp; Webinar</GradientHeading>
+            <GradientHeading>Free Event</GradientHeading>
             <Description>
               Periode mencoba fitur MedPal tanpa biaya dan webinar bersama praktisi.
               Daftar selama pendaftarannya masih dibuka.
@@ -92,7 +92,7 @@ function EventSection() {
           ) : (
             isLoaded && <LandingEmptyState
               icon="🗓️"
-              title="Belum ada event atau webinar yang dibuka"
+              title="Belum ada event yang dibuka"
               description="Periode berikutnya sedang disiapkan tim MedPal. Cek halaman event untuk yang sudah lewat."
               actionLabel="Lihat semua event"
               onAction={() => { window.location.href = EventRoute.moduleRoute }}
